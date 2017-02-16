@@ -1,0 +1,40 @@
+<idea-plugin version="2">
+  <id>com.crowdin.crowdin-idea</id>
+  <name>Crowdin</name>
+  <version>0.5.0</version>
+  <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
+  <description><![CDATA[
+      The plugin lets you integrate android project with Crowdin.
+      It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Version 0.5.0
+      <ul>
+        <li>Publish project BETA</li>
+      </ul>
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="141.*"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"></postStartupActivity>
+  </extensions>
+
+  <actions>
+
+    <action id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this 'strings.xml' to Crowdin">
+      <add-to-group group-id="ProjectViewPopupMenu" />
+    </action>
+
+    <group id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
+      <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
+      <action id="Crowdin.UplaodSource" class="com.crowdin.action.UploadAction" text="Upload" description="Upload Source File" />
+      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download" description="Download Translations" />
+    </group>
+
+  </actions>
+  <depends>com.intellij.modules.vcs</depends>
+  <depends>Git4Idea</depends>
+</idea-plugin>
