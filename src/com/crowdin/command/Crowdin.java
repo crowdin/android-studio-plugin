@@ -37,13 +37,22 @@ public class Crowdin {
     public Crowdin() {
         this.baseUrl = "https://api.crowdin.com/api/";
         this.projectIdentifier = Utils.getPropertyValue(CROWDIN_PROJECT_IDENTIFIER);
-        this.projectKey = Utils.getPropertyValue(CROWDIN_PROJECT_KEY);
+        if (!"".equals(this.projectIdentifier)) {
+            this.projectKey = Utils.getPropertyValue(CROWDIN_PROJECT_KEY);
+        }
     }
 
     public ClientResponse uploadFile(VirtualFile source, String branch) {
         if (source == null) {
             return null;
         }
+        if (this.projectIdentifier == null || "".equals(this.projectIdentifier)) {
+            return  null;
+        }
+        if (this.projectKey == null || "".equals(this.projectKey)) {
+            return  null;
+        }
+
 
         ClientResponse clientResponse = null;
         Credentials credentials = new Credentials(baseUrl, projectIdentifier, projectKey, null);
@@ -63,13 +72,16 @@ public class Crowdin {
             }
             //LOGGER.info("Crowdin: add file '" + source.getName() + "': " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
             System.out.println("Crowdin: add file '" + source.getName() + "': " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
-            if (clientResponse.getStatus() == 400) {
+            if (clientResponse != null && clientResponse.getStatus() == 400) {
                 clientResponse = crowdinApiClient.updateFile(credentials, crowdinApiParametersBuilder);
                 if (clientResponse != null && clientResponse.getStatus() == 200) {
                     Utils.showInformationMessage("File '" + source.getName() + "' updated in Crowdin");
                 }
                 //LOGGER.info("Crowdin: update file '" + source.getName() + "': " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
                 System.out.println("Crowdin: update file '" + source.getName() + "': " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
+            }
+            if (clientResponse != null && clientResponse.getStatus() != 200 && clientResponse.getStatus() != 400) {
+                Utils.showInformationMessage("File '" + source.getName() + "' isn't uploaded in Crowdin");
             }
         } catch (Exception e) {
             e.printStackTrace();

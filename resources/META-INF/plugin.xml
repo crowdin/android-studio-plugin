@@ -1,17 +1,32 @@
 <idea-plugin version="2">
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.0</version>
+  <version>0.5.2</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
       The plugin lets you integrate android project with Crowdin.
       It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
-    ]]></description>
+      To start using this plugin, create a file with project credentials named <strong>crowdin.properties</strong> in the root directory of the project.
+      <br/><code>
+        project-identifier=your-project-identifier<br/>
+        project-key=your-project-key
+      </code><br/>
+      Plugin will automatically find <strong>strings.xml</strong> file in the values directory and if renewed it will be uploaded to Crowdin instantly.
+      To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download</strong>. Translations will be exported to the <strong>Resources</strong> folder.
+      <br/><strong>Workflow</strong>
+      <ul>
+        <li>Install plugin via <a href= "https://plugins.jetbrains.com/idea/plugin/9463-crowdin">JetBrains Plugin repository</a></li>
+        <li>Plugin automatically detects the file with sources strings ("**/values/strings.xml"). If changed, the file will be updated in Crowdin itself</li>
+        <li>Source file can also be manually uploaded to Crowdin via menu <code>Tools > Crowdin > Upload</code> or just select <code>Upload to Crowdin</code> option using the Right Mouse clicking on the file</li>
+        <li>To download translations use menu <code>Tools > Crowdin > Download</code>. Translations will be exported to the resource folder (**/resources/values-uk/strings.xml, **/resources/values-fr/strings.xml, ...)</li>
+      </ul>
+      <strong>Seeking Assistance</strong>
+      Need help working with Crowdin CLI or have any questions? <a href="https://crowdin.com/contacts" target="_blank">Contact Customer Success Service</a>.
+]]></description>
 
   <change-notes><![CDATA[
-      Version 0.5.0
       <ul>
-        <li>Publish project BETA</li>
+        <li>Bug fixes</li>
       </ul>
     ]]>
   </change-notes>

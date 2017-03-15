@@ -1,5 +1,6 @@
 package com.crowdin.utils;
 
+import com.crowdin.command.Crowdin;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -11,6 +12,8 @@ import git4idea.repo.GitRepository;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,6 +24,8 @@ import java.util.Properties;
  * Created by ihor on 1/24/17.
  */
 public class Utils {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 
     public static final String PROPERTIES_FILE = "crowdin.properties";
 
@@ -45,6 +50,11 @@ public class Utils {
         String value = null;
         try {
             VirtualFile crowdinProperties = baseDir.findChild(PROPERTIES_FILE);
+            if (crowdinProperties == null) {
+                showInformationMessage("File '" + PROPERTIES_FILE + "' with Crowdin plugin configuration doesn't exist in project root directory");
+                LOGGER.info("File '" + PROPERTIES_FILE + "' with Crowdin plugin configuration doesn't exist in project root directory");
+                return "";
+            }
             InputStream in = new FileInputStream(crowdinProperties.getCanonicalPath());
             properties.load(in);
             in.close();
@@ -53,6 +63,9 @@ public class Utils {
         }
         if (properties != null && properties.get(key) != null) {
             value = properties.get(key).toString();
+        } else {
+            showInformationMessage("Check does property '" + key + "' exist in your configuration file '" + PROPERTIES_FILE + "'");
+            LOGGER.info("Check does property '" + key + "' exist in your configuration file '" + PROPERTIES_FILE + "'");
         }
         return value;
     }
@@ -93,6 +106,7 @@ public class Utils {
             zipFile.extractAll(archive.getParent());
             Utils.showInformationMessage("Translations successfully downloaded");
         } catch (ZipException e) {
+            Utils.showInformationMessage("Downloading translations failed");
             e.printStackTrace();
         }
     }
@@ -107,6 +121,9 @@ public class Utils {
             branchName = localBranch.getName();
         } catch (NullPointerException e) {
             e.getMessage();
+        }
+        if (branchName == null) {
+            branchName = "";
         }
         return branchName;
     }
