@@ -9,6 +9,7 @@ import com.crowdin.utils.Utils;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.sun.jersey.api.client.ClientResponse;
+import org.apache.http.HttpHeaders;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ public class Crowdin {
     public static final String CROWDIN_PROJECT_IDENTIFIER = "project-identifier";
 
     public static final String CROWDIN_PROJECT_KEY = "project-key";
+
+    public static final String USER_AGENT_ANDROID_STUDIO_PLUGIN = "android-studio-plugin";
 
     private String baseUrl;
 
@@ -59,6 +62,7 @@ public class Crowdin {
         CrowdinApiParametersBuilder crowdinApiParametersBuilder = new CrowdinApiParametersBuilder();
         CrowdinApiClient crowdinApiClient = new Crwdn();
         crowdinApiParametersBuilder.json()
+                .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                 .files(source.getCanonicalPath())
                 .exportPatterns("strings.xml", "/values-%two_letters_code%/%original_file_name%");
         String createdBranch = this.createBranch(branch);
@@ -94,7 +98,8 @@ public class Crowdin {
         Credentials credentials = new Credentials(baseUrl, projectIdentifier, projectKey, null);
         CrowdinApiParametersBuilder crowdinApiParametersBuilder = new CrowdinApiParametersBuilder();
         CrowdinApiClient crowdinApiClient = new Crwdn();
-        crowdinApiParametersBuilder.json();
+        crowdinApiParametersBuilder.json()
+                .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN);
         if (branch != null && !"master".equals(branch) && !branch.isEmpty()) {
             crowdinApiParametersBuilder.branch(branch);
         }
@@ -115,6 +120,7 @@ public class Crowdin {
         CrowdinApiParametersBuilder crowdinApiParametersBuilder = new CrowdinApiParametersBuilder();
         CrowdinApiClient crowdinApiClient = new Crwdn();
         crowdinApiParametersBuilder.json()
+                .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                 .downloadPackage("all")
                 .destinationFolder(sourceFile.getParent().getParent().getCanonicalPath() + "/");
         if (branch != null && !branch.isEmpty()) {
@@ -143,6 +149,7 @@ public class Crowdin {
 
         if (branch != null && !branch.isEmpty()) {
             crowdinApiParametersBuilder.json()
+                    .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                     .name(branch)
                     .isBranch(true);
             try {

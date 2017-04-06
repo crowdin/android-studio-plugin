@@ -1,6 +1,5 @@
 package com.crowdin.utils;
 
-import com.crowdin.command.Crowdin;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -112,14 +111,14 @@ public class Utils {
     }
 
     public static String getCurrentBranch(@NotNull final Project project) {
-        GitRepository repository = null;
-        GitLocalBranch localBranch = null;
+        GitRepository repository;
+        GitLocalBranch localBranch;
         String branchName = "";
         try {
             repository = GitBranchUtil.getCurrentRepository(project);
             localBranch = repository.getCurrentBranch();
             branchName = localBranch.getName();
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             e.getMessage();
         }
         if (branchName == null) {
