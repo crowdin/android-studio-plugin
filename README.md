@@ -22,10 +22,13 @@ To download translations from Crowdin, choose in menu: `Tools > Crowdin > Downlo
 ### Change log
 **Version 0.5.3**
 + Added new header for requests
+
 **Version 0.5.2**
 + Bug fixes
+
 **Version 0.5.1**
 + Updated documentation
+
 **Version 0.5.0**
 + Published plugin
 
