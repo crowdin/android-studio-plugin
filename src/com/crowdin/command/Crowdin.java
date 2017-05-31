@@ -100,7 +100,7 @@ public class Crowdin {
         CrowdinApiClient crowdinApiClient = new Crwdn();
         crowdinApiParametersBuilder.json()
                 .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN);
-        if (branch != null && !"master".equals(branch) && !branch.isEmpty()) {
+        if (branch != null && !branch.isEmpty()) {
             crowdinApiParametersBuilder.branch(branch);
         }
         try {

@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.3</version>
+  <version>0.5.4</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
       The plugin lets you integrate android project with Crowdin.
@@ -26,7 +26,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>Added new header for requests</li>
+        <li>Bug fixes</li>
       </ul>
     ]]>
   </change-notes>
