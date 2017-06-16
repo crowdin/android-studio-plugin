@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -69,6 +71,23 @@ public class Utils {
         return value;
     }
 
+    public static List<String> getSourcesList(String sources) {
+        List<String> result = new LinkedList<>();
+        if (sources == null || sources.isEmpty()) {
+            return result;
+        }
+        String[] sourceNodes = sources.trim().split(",");
+        for (String src : sourceNodes) {
+            if (src != null && !src.isEmpty()) {
+                result.add(src.trim());
+            }
+        }
+        if (!result.contains("strings.xml")) {
+            result.add("strings.xml");
+        }
+        return result;
+    }
+
     public static void showInformationMessage(String message) {
         ApplicationManager.getApplication().invokeLater(() -> {
             Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(message, NotificationType.INFORMATION);
@@ -77,16 +96,17 @@ public class Utils {
         });
     }
 
-    public static VirtualFile getSourceFile(VirtualFile baseDir) {
+    public static VirtualFile getSourceFile(VirtualFile baseDir, String fileName) {
+        fileName = (fileName != null && !fileName.isEmpty()) ? fileName : FILE_NAME;
         VirtualFile[] children = baseDir.getChildren();
         for (VirtualFile v : children) {
             if (v.isDirectory()) {
-                VirtualFile vf = Utils.getSourceFile(v);
+                VirtualFile vf = Utils.getSourceFile(v, fileName);
                 if (vf != null) {
                     return vf;
                 }
             } else {
-                if (FILE_NAME.equals(v.getName()) && PARENT_FOLDER_NAME.equals(v.getParent().getName())) {
+                if (fileName.equals(v.getName()) && PARENT_FOLDER_NAME.equals(v.getParent().getName())) {
                     return v;
                 }
             }

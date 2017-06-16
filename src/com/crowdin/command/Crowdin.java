@@ -6,7 +6,6 @@ import com.crowdin.client.CrowdinApiClient;
 import com.crowdin.exceptions.EmptyParameterException;
 import com.crowdin.parameters.CrowdinApiParametersBuilder;
 import com.crowdin.utils.Utils;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.http.HttpHeaders;
@@ -55,7 +54,6 @@ public class Crowdin {
         if (this.projectKey == null || "".equals(this.projectKey)) {
             return  null;
         }
-
 
         ClientResponse clientResponse = null;
         Credentials credentials = new Credentials(baseUrl, projectIdentifier, projectKey, null);
@@ -146,7 +144,6 @@ public class Crowdin {
         Credentials credentials = new Credentials(baseUrl, projectIdentifier, projectKey, null);
         CrowdinApiParametersBuilder crowdinApiParametersBuilder = new CrowdinApiParametersBuilder();
         CrowdinApiClient crowdinApiClient = new Crwdn();
-
         if (branch != null && !branch.isEmpty()) {
             crowdinApiParametersBuilder.json()
                     .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)

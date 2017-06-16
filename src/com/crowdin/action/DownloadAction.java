@@ -18,7 +18,7 @@ public class DownloadAction extends AnAction {
     public void actionPerformed(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        VirtualFile source = Utils.getSourceFile(virtualFile);
+        VirtualFile source = Utils.getSourceFile(virtualFile, null);
         Crowdin crowdin = new Crowdin();
         String branch = Utils.getCurrentBranch(project);
         ClientResponse exportTranslations = crowdin.exportTranslations(branch);

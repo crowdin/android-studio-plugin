@@ -6,8 +6,9 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.sun.jersey.api.client.ClientResponse;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * Created by ihor on 1/10/17.
@@ -18,13 +19,19 @@ public class UploadAction extends AnAction {
         super("UploadAction");
     }
 
+    public static final String PROPERTY_SOURCES = "sources";
+
     @Override
     public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        VirtualFile source = Utils.getSourceFile(virtualFile);
+        String sourcesProp = Utils.getPropertyValue(PROPERTY_SOURCES);
+        List<String> sourcesList = Utils.getSourcesList(sourcesProp);
         Crowdin crowdin = new Crowdin();
-        String branch = Utils.getCurrentBranch(project);
-        ClientResponse clientResponse = crowdin.uploadFile(source, branch);
+        for (String src : sourcesList) {
+            VirtualFile source = Utils.getSourceFile(virtualFile, src);
+            String branch = Utils.getCurrentBranch(project);
+            crowdin.uploadFile(source, branch);
+        }
     }
 }

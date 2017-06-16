@@ -48,9 +48,11 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
     public void before(List<? extends VFileEvent> events) {}
 
     public void after(List<? extends VFileEvent> events) {
+        String sources = Utils.getPropertyValue("sources");
+        List<String> sourcesList = Utils.getSourcesList(sources);
         for (VFileEvent e : events) {
             VirtualFile virtualFile = e.getFile();
-            if (virtualFile != null && SOURCE_FILE_DEFAULT.equals(virtualFile.getName()) && SOURCE_FOLDER_DEFAULT.equals(virtualFile.getParent().getName())) {
+            if (virtualFile != null && sourcesList.contains(virtualFile.getName()) && SOURCE_FOLDER_DEFAULT.equals(virtualFile.getParent().getName())) {
                 Project[] projects = ProjectManager.getInstance().getOpenProjects();
                 Project project = null;
                 if (projects.length == 1) {

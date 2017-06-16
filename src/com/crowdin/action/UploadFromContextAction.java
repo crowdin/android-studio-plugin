@@ -10,6 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.sun.jersey.api.client.ClientResponse;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Created by ihor on 1/27/17.
  */
@@ -20,32 +22,28 @@ public class UploadFromContextAction extends AnAction {
         Crowdin crowdin = new Crowdin();
         Project project = anActionEvent.getProject();
         String branch = Utils.getCurrentBranch(project);
-        ClientResponse clientResponse = crowdin.uploadFile(file, branch);
+        crowdin.uploadFile(file, branch);
     }
 
     @Override
     public void update(AnActionEvent e) {
-
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-
-        boolean isStringXML = isStringXml(file);
-        e.getPresentation().setEnabled(isStringXML);
-        e.getPresentation().setVisible(isStringXML);
+        boolean isSourceFile = isSourceFile(file);
+        e.getPresentation().setEnabled(isSourceFile);
+        e.getPresentation().setVisible(isSourceFile);
     }
 
-    private static boolean isStringXml(@Nullable VirtualFile file) {
+    private static boolean isSourceFile(@Nullable VirtualFile file) {
+        String sources = Utils.getPropertyValue("sources");
+        List<String> sourcesList = Utils.getSourcesList(sources);
         if (file == null) {
             return false;
         }
-        if (!"strings.xml".equals(file.getName())) {
-            return false;
+        for (String src : sourcesList) {
+            if (src.equals(file.getName()) && file.getParent() != null && "values".equals(file.getParent().getName())) {
+                return true;
+            }
         }
-        if (file.getParent() == null) {
-            return false;
-        }
-        if (!"values".equals(file.getParent().getName())) {
-            return false;
-        }
-        return true;
+        return false;
     }
 }
