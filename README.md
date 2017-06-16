@@ -10,6 +10,11 @@ project-key=your-project-key
 ```
 
 Plugin will automatically find `strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
+If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
+
+```
+sources=file1.xml, file2.xml
+```
 
 To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download`. Translations will be exported to the `Resources` folder.
 
