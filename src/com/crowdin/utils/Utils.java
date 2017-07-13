@@ -38,7 +38,7 @@ public class Utils {
             new NotificationGroup("Crowdin",
                     NotificationDisplayType.BALLOON, true);
 
-    public static String getPropertyValue(String key) {
+    public static String getPropertyValue(String key, boolean isOptional) {
         if (key == null) {
             return "";
         }
@@ -64,7 +64,7 @@ public class Utils {
         }
         if (properties != null && properties.get(key) != null) {
             value = properties.get(key).toString();
-        } else {
+        } else if (!isOptional) {
             showInformationMessage("Check does property '" + key + "' exist in your configuration file '" + PROPERTIES_FILE + "'");
             LOGGER.info("Check does property '" + key + "' exist in your configuration file '" + PROPERTIES_FILE + "'");
         }
@@ -74,6 +74,7 @@ public class Utils {
     public static List<String> getSourcesList(String sources) {
         List<String> result = new LinkedList<>();
         if (sources == null || sources.isEmpty()) {
+            result.add("strings.xml");
             return result;
         }
         String[] sourceNodes = sources.trim().split(",");
@@ -81,9 +82,6 @@ public class Utils {
             if (src != null && !src.isEmpty()) {
                 result.add(src.trim());
             }
-        }
-        if (!result.contains("strings.xml")) {
-            result.add("strings.xml");
         }
         return result;
     }

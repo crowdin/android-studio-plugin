@@ -18,6 +18,7 @@ import java.util.List;
 public class UploadFromContextAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
+
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Crowdin crowdin = new Crowdin();
         Project project = anActionEvent.getProject();
@@ -34,7 +35,7 @@ public class UploadFromContextAction extends AnAction {
     }
 
     private static boolean isSourceFile(@Nullable VirtualFile file) {
-        String sources = Utils.getPropertyValue("sources");
+        String sources = Utils.getPropertyValue("sources", true);
         List<String> sourcesList = Utils.getSourcesList(sources);
         if (file == null) {
             return false;

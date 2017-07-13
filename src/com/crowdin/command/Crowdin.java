@@ -38,9 +38,9 @@ public class Crowdin {
 
     public Crowdin() {
         this.baseUrl = "https://api.crowdin.com/api/";
-        this.projectIdentifier = Utils.getPropertyValue(CROWDIN_PROJECT_IDENTIFIER);
+        this.projectIdentifier = Utils.getPropertyValue(CROWDIN_PROJECT_IDENTIFIER, false);
         if (!"".equals(this.projectIdentifier)) {
-            this.projectKey = Utils.getPropertyValue(CROWDIN_PROJECT_KEY);
+            this.projectKey = Utils.getPropertyValue(CROWDIN_PROJECT_KEY, false);
         }
     }
 
@@ -62,7 +62,7 @@ public class Crowdin {
         crowdinApiParametersBuilder.json()
                 .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                 .files(source.getCanonicalPath())
-                .exportPatterns("strings.xml", "/values-%two_letters_code%/%original_file_name%");
+                .exportPatterns(source.getName(), "/values-%two_letters_code%/%original_file_name%");
         String createdBranch = this.createBranch(branch);
         if (createdBranch != null) {
             crowdinApiParametersBuilder.branch(createdBranch);

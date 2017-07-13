@@ -25,7 +25,7 @@ public class UploadAction extends AnAction {
     public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        String sourcesProp = Utils.getPropertyValue(PROPERTY_SOURCES);
+        String sourcesProp = Utils.getPropertyValue(PROPERTY_SOURCES, true);
         List<String> sourcesList = Utils.getSourcesList(sourcesProp);
         Crowdin crowdin = new Crowdin();
         for (String src : sourcesList) {

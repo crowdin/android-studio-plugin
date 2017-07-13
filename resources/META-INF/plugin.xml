@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.5</version>
+  <version>0.5.6</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
       The plugin lets you integrate android project with Crowdin.
@@ -12,6 +12,10 @@
         project-key=your-project-key
       </code><br/>
       Plugin will automatically find <strong>strings.xml</strong> file in the values directory and if renewed it will be uploaded to Crowdin instantly.
+      If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
+      <br/><code>
+        sources=file1.xml, file2.xml
+      </code><br/>
       To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download</strong>. Translations will be exported to the <strong>Resources</strong> folder.
       <br/><strong>Workflow</strong>
       <ul>
@@ -26,7 +30,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>A new possibility to customize source files.</li>
+        <li>Bugs fixed</li>
       </ul>
     ]]>
   </change-notes>
