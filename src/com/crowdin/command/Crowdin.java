@@ -62,7 +62,7 @@ public class Crowdin {
         crowdinApiParametersBuilder.json()
                 .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                 .files(source.getCanonicalPath())
-                .exportPatterns(source.getName(), "/values-%two_letters_code%/%original_file_name%");
+                .exportPatterns(source.getName(), "/values-%locale%/%original_file_name%");
         String createdBranch = this.createBranch(branch);
         if (createdBranch != null) {
             crowdinApiParametersBuilder.branch(createdBranch);

@@ -7,8 +7,12 @@ package com.crowdin.action;
         import com.intellij.openapi.project.Project;
         import com.intellij.openapi.vfs.VirtualFile;
         import com.sun.jersey.api.client.ClientResponse;
+        import org.json.JSONArray;
+        import org.json.JSONObject;
 
         import java.io.File;
+        import java.util.HashMap;
+        import java.util.Map;
 
 /**
  * Created by ihor on 1/24/17.
@@ -22,8 +26,9 @@ public class DownloadAction extends AnAction {
         Crowdin crowdin = new Crowdin();
         String branch = Utils.getCurrentBranch(project);
         ClientResponse exportTranslations = crowdin.exportTranslations(branch);
+        Map<String, String> mapping = Utils.getMapping();
         File downloadTranslations = crowdin.downloadTranslations(source, branch);
-        Utils.extractTranslations(downloadTranslations);
+        Utils.extractTranslations(downloadTranslations, mapping);
         if (downloadTranslations.delete()) {
             System.out.println("all.zip was deleted");
         } else {

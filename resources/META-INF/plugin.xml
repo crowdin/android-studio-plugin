@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.6</version>
+  <version>0.5.7</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
       The plugin lets you integrate android project with Crowdin.
@@ -30,7 +30,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>Bugs fixed</li>
+        <li>Added languages mapping</li>
       </ul>
     ]]>
   </change-notes>
