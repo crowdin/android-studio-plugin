@@ -1,6 +1,5 @@
 package com.crowdin.utils;
 
-import com.crowdin.command.Crowdin;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -11,19 +10,16 @@ import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
-import net.lingala.zip4j.model.UnzipParameters;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by ihor on 1/24/17.
@@ -116,7 +112,7 @@ public class Utils {
         return null;
     }
 
-    public static void extractTranslations(File archive, Map<String, String> mapping) {
+    public static void extractTranslations(File archive) {
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(archive);
@@ -125,22 +121,7 @@ public class Utils {
         }
 
         try {
-            List<FileHeader> fileHeaders = zipFile.getFileHeaders();
-            for (FileHeader header : fileHeaders) {
-                if (!header.isDirectory()) {
-                    boolean isMapped = false;
-                    for (Map.Entry<String, String> entry: mapping.entrySet()) {
-                        if (header.getFileName().startsWith("values-" + entry.getKey())) {
-                            isMapped = true;
-                            zipFile.extractFile(header, archive.getParent(), null, header.getFileName().replace(entry.getKey(), entry.getValue()));
-                            break;
-                        }
-                    }
-                    if (!isMapped) {
-                        zipFile.extractFile(header, archive.getParent());
-                    }
-                }
-            }
+            zipFile.extractAll(archive.getParent());
             Utils.showInformationMessage("Translations successfully downloaded");
         } catch (ZipException e) {
             Utils.showInformationMessage("Downloading translations failed");
@@ -163,16 +144,5 @@ public class Utils {
             branchName = "";
         }
         return branchName;
-    }
-
-    public static Map<String, String> getMapping() {
-        Map<String, String> mapping = new HashMap<>();
-        Yaml yaml = new Yaml();
-        InputStream inputStream = Utils.class.getResourceAsStream("/mapping.yml");
-        if (inputStream == null) {
-            return mapping;
-        }
-        mapping = (HashMap<String, String>) yaml.load(inputStream);
-        return mapping;
     }
 }
