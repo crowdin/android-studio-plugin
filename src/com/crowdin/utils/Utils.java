@@ -1,5 +1,6 @@
 package com.crowdin.utils;
 
+import com.crowdin.command.Crowdin;
 import com.intellij.notification.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
@@ -130,6 +131,12 @@ public class Utils {
     }
 
     public static String getCurrentBranch(@NotNull final Project project) {
+        String disableBranches = Utils.getPropertyValue(Crowdin.CROWDIN_DISABLE_BRANCHES, true);
+
+        if(disableBranches != null && disableBranches.equals("true")) {
+            return "";
+        }
+
         GitRepository repository;
         GitLocalBranch localBranch;
         String branchName = "";

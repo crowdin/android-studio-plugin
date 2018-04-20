@@ -28,6 +28,8 @@ public class Crowdin {
 
     public static final String CROWDIN_PROJECT_KEY = "project-key";
 
+    public static final String CROWDIN_DISABLE_BRANCHES = "disable-branches";
+
     public static final String USER_AGENT_ANDROID_STUDIO_PLUGIN = "android-studio-plugin";
 
     private String baseUrl;

@@ -16,6 +16,13 @@ If you have more source files or the source file's name is other than `strings.x
 sources=file1.xml, file2.xml
 ```
 
+For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin. 
+If you do not use branches feature in Crowdin, add `disable-branches=true` parameter into the configuration file.
+
+```
+disable-branches=true
+```
+
 To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download`. Translations will be exported to the `Resources` folder.
 
 ### Workflow
@@ -25,6 +32,9 @@ To download translations from Crowdin, choose in menu: `Tools > Crowdin > Downlo
 * To download translations use menu `Tools > Crowdin > Download`. Translations will be exported to the resource folder (\*\*/resources/values-uk/strings.xml, \*\*/resources/values-fr/strings.xml, ...)
 
 ### Change log
+**Version 0.5.9**
++ Add `disable-branches` parameter
+
 **Version 0.5.8**
 + Updated languages mapping
 

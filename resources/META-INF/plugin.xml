@@ -1,9 +1,10 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.8</version>
+  <version>0.5.9</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
+      <p>
       The plugin lets you integrate android project with Crowdin.
       It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
       To start using this plugin, create a file with project credentials named <strong>crowdin.properties</strong> in the root directory of the project.
@@ -11,11 +12,21 @@
         project-identifier=your-project-identifier<br/>
         project-key=your-project-key
       </code><br/>
+      </p>
+      <p>
       Plugin will automatically find <strong>strings.xml</strong> file in the values directory and if renewed it will be uploaded to Crowdin instantly.
       If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
       <br/><code>
         sources=file1.xml, file2.xml
       </code><br/>
+      </p>
+      <p>
+      For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin.
+      If you do not use branches feature in Crowdin, add `disable-branches=true` parameter into the configuration file.
+      <br/><code>
+        disable-branches=true
+      </code><br/>
+      <p>
       To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download</strong>. Translations will be exported to the <strong>Resources</strong> folder.
       <br/><strong>Workflow</strong>
       <ul>
@@ -30,7 +41,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>Updated languages mapping</li>
+        <li>Add <code>disable-branches</code> parameter</li>
       </ul>
     ]]>
   </change-notes>
