@@ -17,10 +17,15 @@ public class CrowdinStartupActivity implements StartupActivity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrowdinStartupActivity.class);
 
+    public static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
+
     @Override
     public void runActivity(@NotNull Project project) {
-        FileChangeListener fileChangeListener = new FileChangeListener();
-        fileChangeListener.initComponent();
+        String autoUploadProp = Utils.getPropertyValue(PROPERTY_AUTO_UPLOAD, true);
+        if (autoUploadProp != "false") {
+            FileChangeListener fileChangeListener = new FileChangeListener();
+            fileChangeListener.initComponent();
+        }
         LOGGER.info("on");
     }
 }
