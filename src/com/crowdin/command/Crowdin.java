@@ -28,6 +28,8 @@ public class Crowdin {
 
     public static final String CROWDIN_PROJECT_KEY = "project-key";
 
+    public static final String CROWDIN_DISABLE_BRANCHING = "disable-branching";
+
     public static final String USER_AGENT_ANDROID_STUDIO_PLUGIN = "android-studio-plugin";
 
     private String baseUrl;
@@ -36,12 +38,15 @@ public class Crowdin {
 
     private String projectKey;
 
+    private String disableBranching;
+
     public Crowdin() {
         this.baseUrl = "https://api.crowdin.com/api/";
         this.projectIdentifier = Utils.getPropertyValue(CROWDIN_PROJECT_IDENTIFIER, false);
         if (!"".equals(this.projectIdentifier)) {
             this.projectKey = Utils.getPropertyValue(CROWDIN_PROJECT_KEY, false);
         }
+        this.disableBranching= Utils.getPropertyValue(CROWDIN_DISABLE_BRANCHING, true);
     }
 
     public ClientResponse uploadFile(VirtualFile source, String branch) {
@@ -64,7 +69,7 @@ public class Crowdin {
                 .files(source.getCanonicalPath())
                 .exportPatterns(source.getName(), "/values-%android_code%/%original_file_name%");
         String createdBranch = this.createBranch(branch);
-        if (createdBranch != null) {
+        if (disableBranching != "true" && createdBranch != null) {
             crowdinApiParametersBuilder.branch(createdBranch);
         }
         try {
@@ -98,7 +103,7 @@ public class Crowdin {
         CrowdinApiClient crowdinApiClient = new Crwdn();
         crowdinApiParametersBuilder.json()
                 .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN);
-        if (branch != null && !branch.isEmpty()) {
+        if (disableBranching != "true" && branch != null && !branch.isEmpty()) {
             crowdinApiParametersBuilder.branch(branch);
         }
         try {
@@ -121,7 +126,7 @@ public class Crowdin {
                 .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
                 .downloadPackage("all")
                 .destinationFolder(sourceFile.getParent().getParent().getCanonicalPath() + "/");
-        if (branch != null && !branch.isEmpty()) {
+        if (disableBranching != "true" && branch != null && !branch.isEmpty()) {
             crowdinApiParametersBuilder.branch(branch);
         }
         try {
