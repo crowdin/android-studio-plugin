@@ -27,6 +27,12 @@
         disable-branches=true
       </code><br/>
       <p>
+      Add `auto-upload=false` to prevent automatic file upload to Crowdin.
+      <br/><code>
+        auto-upload=false
+      </code><br/>
+      </p>
+      <p>
       To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download</strong>. Translations will be exported to the <strong>Resources</strong> folder.
       <br/><strong>Workflow</strong>
       <ul>
@@ -42,6 +48,7 @@
   <change-notes><![CDATA[
       <ul>
         <li>Add <code>disable-branches</code> parameter</li>
+        <li>Add <code>auto-upload</code> parameter</li>
       </ul>
     ]]>
   </change-notes>

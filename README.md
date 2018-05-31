@@ -23,6 +23,12 @@ If you do not use branches feature in Crowdin, add `disable-branches=true` param
 disable-branches=true
 ```
 
+Add `auto-upload=false` to prevent automatic file upload to Crowdin.
+
+```
+auto-upload=false
+```
+
 To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download`. Translations will be exported to the `Resources` folder.
 
 ### Workflow
@@ -34,6 +40,7 @@ To download translations from Crowdin, choose in menu: `Tools > Crowdin > Downlo
 ### Change log
 **Version 0.5.9**
 + Add `disable-branches` parameter
++ Add `auto-upload` parameter
 
 **Version 0.5.8**
 + Updated languages mapping
@@ -74,5 +81,5 @@ Need help working with Crowdin CLI or have any questions? <a href="https://crowd
 
 ### License and Author
 Author: Ihor Popyk (ihor.popyk@crowdin.com)
-Copyright: 2017 crowdin.com
+Copyright: 2018 crowdin.com
 This project is licensed under the MIT license, a copy of which can be found in the LICENSE file.
