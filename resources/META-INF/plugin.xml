@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>0.5.9</version>
+  <version>0.5.10</version>
   <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
   <description><![CDATA[
       <p>
@@ -47,8 +47,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>Add <code>disable-branches</code> parameter</li>
-        <li>Add <code>auto-upload</code> parameter</li>
+        <li>Fix bug with disabling auto-upload</li>
       </ul>
     ]]>
   </change-notes>
