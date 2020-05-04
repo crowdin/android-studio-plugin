@@ -1,0 +1,76 @@
+<idea-plugin>
+  <id>com.crowdin.crowdin-idea</id>
+  <name>Crowdin</name>
+  <version>0.5.10</version>
+  <vendor email="ihor.popyk@crowdin.com" url="http://www.crowdin.com">Crowdin</vendor>
+  <description><![CDATA[
+      <p>
+      The plugin lets you integrate android project with Crowdin.
+      It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
+      To start using this plugin, create a file with project credentials named <strong>crowdin.properties</strong> in the root directory of the project.
+      <br/><code>
+        project-identifier=your-project-identifier<br/>
+        project-key=your-project-key
+      </code><br/>
+      </p>
+      <p>
+      Plugin will automatically find <strong>strings.xml</strong> file in the values directory and if renewed it will be uploaded to Crowdin instantly.
+      If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
+      <br/><code>
+        sources=file1.xml, file2.xml
+      </code><br/>
+      </p>
+      <p>
+      For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin.
+      If you do not use branches feature in Crowdin, add `disable-branches=true` parameter into the configuration file.
+      <br/><code>
+        disable-branches=true
+      </code><br/>
+      <p>
+      Add `auto-upload=false` to prevent automatic file upload to Crowdin.
+      <br/><code>
+        auto-upload=false
+      </code><br/>
+      </p>
+      <p>
+      To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download</strong>. Translations will be exported to the <strong>Resources</strong> folder.
+      <br/><strong>Workflow</strong>
+      <ul>
+        <li>Install plugin via <a href= "https://plugins.jetbrains.com/idea/plugin/9463-crowdin">JetBrains Plugin repository</a></li>
+        <li>Plugin automatically detects the file with sources strings ("**/values/strings.xml"). If changed, the file will be updated in Crowdin itself</li>
+        <li>Source file can also be manually uploaded to Crowdin via menu <code>Tools > Crowdin > Upload</code> or just select <code>Upload to Crowdin</code> option using the Right Mouse clicking on the file</li>
+        <li>To download translations use menu <code>Tools > Crowdin > Download</code>. Translations will be exported to the resource folder (**/resources/values-uk/strings.xml, **/resources/values-fr/strings.xml, ...)</li>
+      </ul>
+      <strong>Seeking Assistance</strong>
+      Need help working with Crowdin CLI or have any questions? <a href="https://crowdin.com/contacts" target="_blank">Contact Customer Success Service</a>.
+]]></description>
+
+  <change-notes><![CDATA[
+      <ul>
+        <li>Fix bug with disabling auto-upload</li>
+      </ul>
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="141.*"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"></postStartupActivity>
+  </extensions>
+
+  <actions>
+
+    <action id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this 'strings.xml' to Crowdin">
+      <add-to-group group-id="ProjectViewPopupMenu" />
+    </action>
+
+    <group id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
+      <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
+      <action id="Crowdin.UplaodSource" class="com.crowdin.action.UploadAction" text="Upload" description="Upload Source File" />
+      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download" description="Download Translations" />
+    </group>
+
+  </actions>
+  <depends>com.intellij.modules.vcs</depends>
+  <depends>Git4Idea</depends>
+</idea-plugin>
