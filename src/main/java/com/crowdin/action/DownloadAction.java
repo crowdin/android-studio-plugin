@@ -1,6 +1,6 @@
 package com.crowdin.action;
 
-        import com.crowdin.command.Crowdin;
+import com.crowdin.command.Crowdin;
 import com.crowdin.utils.Utils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -20,7 +20,6 @@ public class DownloadAction extends AnAction {
         VirtualFile source = Utils.getSourceFile(virtualFile, null);
         Crowdin crowdin = new Crowdin();
         String branch = Utils.getCurrentBranch(project);
-        crowdin.exportTranslations(branch);
         File downloadTranslations = crowdin.downloadTranslations(source, branch);
         Utils.extractTranslations(downloadTranslations);
         if (downloadTranslations.delete()) {

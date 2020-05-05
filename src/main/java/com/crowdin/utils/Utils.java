@@ -1,7 +1,11 @@
 package com.crowdin.utils;
 
 import com.crowdin.command.Crowdin;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationDisplayType;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -21,6 +25,7 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 /**
  * Created by ihor on 1/24/17.
@@ -95,6 +100,14 @@ public class Utils {
         });
     }
 
+    public static void showErrorMessage(String message) {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(message, NotificationType.ERROR);
+            Project[] projects = ProjectManager.getInstance().getOpenProjects();
+            Notifications.Bus.notify(notification, projects[0]);
+        });
+    }
+
     public static VirtualFile getSourceFile(VirtualFile baseDir, String fileName) {
         fileName = (fileName != null && !fileName.isEmpty()) ? fileName : FILE_NAME;
         VirtualFile[] children = baseDir.getChildren();
@@ -151,5 +164,19 @@ public class Utils {
             branchName = "";
         }
         return branchName;
+    }
+
+    public static <T> T retry(Callable<T> func, int retries) throws Exception {
+        for (int i = 0; i < retries; i++) {
+            try {
+                return func.call();
+            } catch (Exception e) {
+                if (i + i == retries) {
+                    throw e;
+                }
+                Thread.sleep(100);
+            }
+        }
+        return null;
     }
 }
