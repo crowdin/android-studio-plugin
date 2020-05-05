@@ -3,6 +3,10 @@ package com.crowdin.command;
 import com.crowdin.client.Client;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
+import com.crowdin.client.core.http.impl.http.ApacheHttpClient;
+import com.crowdin.client.core.http.impl.json.JacksonJsonTransformer;
+import com.crowdin.client.core.model.ClientConfig;
+import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
@@ -17,6 +21,7 @@ import com.crowdin.utils.Utils;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -86,7 +91,12 @@ public class Crowdin {
 
         this.errorMessage = errorMessage;
         if (this.errorMessage == null) {
-            this.client = new Client(new com.crowdin.client.core.model.Credentials(apiToken1, organization));
+            Credentials credentials = new Credentials(apiToken1, organization);
+            ClientConfig clientConfig = ClientConfig.builder()
+                    .userAgent("android-studio-plugin")
+                    .httpClient(new ApacheHttpClient(credentials, new JacksonJsonTransformer(), Collections.emptyMap()))
+                    .build();
+            this.client = new Client(credentials, clientConfig);
         } else {
             Utils.showErrorMessage(this.errorMessage);
             this.client = null;
