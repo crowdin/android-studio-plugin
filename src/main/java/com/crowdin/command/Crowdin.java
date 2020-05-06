@@ -7,6 +7,7 @@ import com.crowdin.client.core.http.impl.http.ApacheHttpClient;
 import com.crowdin.client.core.http.impl.json.JacksonJsonTransformer;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
+import com.crowdin.client.core.model.DownloadLink;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
@@ -17,10 +18,16 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.storage.model.Storage;
+import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
+import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.utils.Utils;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,26 +79,13 @@ public class Crowdin {
         }
 
         String baseUrl = Utils.getPropertyValue(BASE_URL, false);
-        String organization;
-        if (!"".equals(baseUrl)) {
-            if ((baseUrl.endsWith(".crowdin.com") || baseUrl.endsWith(".crowdin.com/")) && baseUrl.startsWith("https://")) {
-                //enterprise
-                organization = baseUrl.substring(8).split(".crowdin.com")[0];
-            } else if (baseUrl.startsWith("https://crowdin.com")) {
-                //standard
-                organization = null;
-            } else {
-                organization = null;
-                //unknown url
-                errorMessage = "Invalid base url";
-            }
-        } else {
-            organization = null;
+        if ("".equals(baseUrl)) {
+            baseUrl = null;
         }
 
         this.errorMessage = errorMessage;
         if (this.errorMessage == null) {
-            Credentials credentials = new Credentials(apiToken1, organization);
+            Credentials credentials = new Credentials(apiToken1, null, baseUrl);
             ClientConfig clientConfig = ClientConfig.builder()
                     .userAgent("android-studio-plugin")
                     .httpClient(new ApacheHttpClient(credentials, new JacksonJsonTransformer(), Collections.emptyMap()))
@@ -167,7 +161,7 @@ public class Crowdin {
                 this.client.getSourceFilesApi().addFile(this.projectIdentifier, request);
             }
         } catch (Exception e) {
-            Utils.showErrorMessage(this.errorMessage);
+            Utils.showErrorMessage(this.getErrorMessage(e));
         }
     }
 
@@ -175,27 +169,32 @@ public class Crowdin {
         if (this.errorMessage != null) {
             return null;
         }
-        //TODO re-implement
-//        ClientResponse clientResponse;
-//        Credentials credentials = new Credentials(baseUrl, projectIdentifier, projectKey, null);
-//        CrowdinApiParametersBuilder crowdinApiParametersBuilder = new CrowdinApiParametersBuilder();
-//        CrowdinApiClient crowdinApiClient = new Crwdn();
-//        crowdinApiParametersBuilder.json()
-//                .headers(HttpHeaders.USER_AGENT, USER_AGENT_ANDROID_STUDIO_PLUGIN)
-//                .downloadPackage("all")
-//                .destinationFolder(sourceFile.getParent().getParent().getCanonicalPath() + "/");
-//        if (branch != null && !branch.isEmpty()) {
-//            crowdinApiParametersBuilder.branch(branch);
-//        }
-//        try {
-//            clientResponse = crowdinApiClient.downloadTranslations(credentials, crowdinApiParametersBuilder);
-//            //LOGGER.info("Crowdin: export translations " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
-//            System.out.println("Crowdin: download translations " + clientResponse.getStatus() + " " + clientResponse.getStatusInfo());
-//            System.out.println(clientResponse.getEntity(String.class));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        return new File(sourceFile.getParent().getParent().getCanonicalPath() + "/all.zip");
+        try {
+            Long branchId = this.getOrCreateBranch(branch);
+
+            BuildProjectTranslationRequest buildProjectTranslationRequest = new BuildProjectTranslationRequest();
+            buildProjectTranslationRequest.setBranchId(branchId);
+            ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectIdentifier, buildProjectTranslationRequest);
+            Long buildId = projectBuildResponseObject.getData().getId();
+
+            boolean finished = false;
+            while (!finished) {
+                ResponseObject<ProjectBuild> projectBuildStatusResponseObject = this.client.getTranslationsApi().checkBuildStatus(this.projectIdentifier, buildId);
+                finished = projectBuildStatusResponseObject.getData().getStatus().equalsIgnoreCase("finished");
+            }
+
+            ResponseObject<DownloadLink> downloadLinkResponseObject = this.client.getTranslationsApi().downloadProjectTranslations(this.projectIdentifier, buildId);
+            String link = downloadLinkResponseObject.getData().getUrl();
+
+            File file = new File(sourceFile.getParent().getParent().getCanonicalPath() + "/all.zip");
+            try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(link).openStream()); FileOutputStream fos = new FileOutputStream(file)) {
+                fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            }
+            return file;
+        } catch (Exception e) {
+            Utils.showErrorMessage(this.getErrorMessage(e));
+            return null;
+        }
     }
 
     private Long getOrCreateBranch(String name) {

@@ -127,6 +127,9 @@ public class Utils {
     }
 
     public static void extractTranslations(File archive) {
+        if (archive == null) {
+            return;
+        }
         ZipFile zipFile = null;
         try {
             zipFile = new ZipFile(archive);
