@@ -1,7 +1,9 @@
 package com.crowdin.action;
 
-import com.crowdin.command.Crowdin;
-import com.crowdin.utils.Utils;
+import com.crowdin.client.Crowdin;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.GitUtil;
+import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -9,6 +11,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+
+import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 
 /**
  * Created by ihor on 1/10/17.
@@ -19,18 +23,16 @@ public class UploadAction extends AnAction {
         super("UploadAction");
     }
 
-    public static final String PROPERTY_SOURCES = "sources";
-
     @Override
     public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        String sourcesProp = Utils.getPropertyValue(PROPERTY_SOURCES, true);
-        List<String> sourcesList = Utils.getSourcesList(sourcesProp);
+        String sourcesProp = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+        List<String> sourcesList = FileUtil.getSourcesList(sourcesProp);
         Crowdin crowdin = new Crowdin();
         for (String src : sourcesList) {
-            VirtualFile source = Utils.getSourceFile(virtualFile, src);
-            String branch = Utils.getCurrentBranch(project);
+            VirtualFile source = FileUtil.getSourceFile(virtualFile, src);
+            String branch = GitUtil.getCurrentBranch(project);
             crowdin.uploadFile(source, branch);
         }
     }

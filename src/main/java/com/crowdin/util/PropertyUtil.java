@@ -1,0 +1,48 @@
+package com.crowdin.util;
+
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.vfs.VirtualFile;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class PropertyUtil {
+
+    public static final String PROPERTIES_FILE = "crowdin.properties";
+
+    public static final String PROPERTY_SOURCES = "sources";
+    public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
+
+    public static String getPropertyValue(String key) {
+        if (key == null) {
+            return "";
+        }
+        Properties properties = new Properties();
+        String value = null;
+        try {
+            VirtualFile crowdinProperties = getCrowdinPropertyFile();
+            if (crowdinProperties == null) {
+                return "";
+            }
+            InputStream in = new FileInputStream(crowdinProperties.getCanonicalPath());
+            properties.load(in);
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (properties.get(key) != null) {
+            value = properties.get(key).toString();
+        }
+        return value;
+    }
+
+    public static VirtualFile getCrowdinPropertyFile() {
+        VirtualFile baseDir = ProjectManager.getInstance().getOpenProjects()[0].getBaseDir();
+        if (baseDir == null || !baseDir.isDirectory()) {
+            System.out.println("Base dir not exist");
+            return null;
+        }
+        return baseDir.findChild(PROPERTIES_FILE);
+    }
+}

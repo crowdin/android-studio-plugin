@@ -1,6 +1,5 @@
-package com.crowdin.command;
+package com.crowdin.client;
 
-import com.crowdin.client.Client;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.http.impl.http.ApacheHttpClient;
@@ -20,7 +19,8 @@ import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.storage.model.Storage;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
-import com.crowdin.utils.Utils;
+import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.RetryUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.io.File;
@@ -33,72 +33,35 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by ihor on 1/24/17.
- */
 public class Crowdin {
 
-    private static final String PROJECT_ID = "project_id";
+    private final Long projectId;
 
-    private static final String API_TOKEN = "api_token";
-
-    private static final String BASE_URL = "base_url";
-
-    public static final String CROWDIN_DISABLE_BRANCHES = "disable-branches";
-
-    private final Long projectIdentifier;
-
-    private final String errorMessage;
+    private final boolean invalidConfiguration;
 
     private final com.crowdin.client.Client client;
 
     public Crowdin() {
-        String errorMessage = null;
-        String projectIdentifier = Utils.getPropertyValue(PROJECT_ID, false);
-        Long projectId;
-        if (!"".equals(projectIdentifier)) {
-            try {
-                projectId = Long.valueOf(projectIdentifier);
-            } catch (NumberFormatException e) {
-                projectId = null;
-                errorMessage = "Invalid project id";
-            }
+        CrowdinClientProperties crowdinClientProperties = CrowdinClientProperties.load();
+        if (crowdinClientProperties.getErrorMessage() != null) {
+            this.projectId = null;
+            this.client = null;
+            this.invalidConfiguration = true;
+            NotificationUtil.showErrorMessage(crowdinClientProperties.getErrorMessage());
         } else {
-            errorMessage = "Project id is empty";
-            projectId = null;
-        }
-        this.projectIdentifier = projectId;
-
-        String apiToken = Utils.getPropertyValue(API_TOKEN, false);
-        String apiToken1;
-        if (!"".equals(apiToken)) {
-            apiToken1 = apiToken;
-        } else {
-            errorMessage = "Api token is empty";
-            apiToken1 = null;
-        }
-
-        String baseUrl = Utils.getPropertyValue(BASE_URL, false);
-        if ("".equals(baseUrl)) {
-            baseUrl = null;
-        }
-
-        this.errorMessage = errorMessage;
-        if (this.errorMessage == null) {
-            Credentials credentials = new Credentials(apiToken1, null, baseUrl);
+            this.invalidConfiguration = false;
+            this.projectId = crowdinClientProperties.getProjectId();
+            Credentials credentials = new Credentials(crowdinClientProperties.getToken(), null, crowdinClientProperties.getBaseUrl());
             ClientConfig clientConfig = ClientConfig.builder()
                     .userAgent("android-studio-plugin")
                     .httpClient(new ApacheHttpClient(credentials, new JacksonJsonTransformer(), Collections.emptyMap()))
                     .build();
             this.client = new Client(credentials, clientConfig);
-        } else {
-            Utils.showErrorMessage(this.errorMessage);
-            this.client = null;
         }
     }
 
     public void uploadFile(VirtualFile source, String branch) {
-        if (source == null || this.errorMessage != null) {
+        if (source == null || this.invalidConfiguration) {
             return;
         }
 
@@ -120,7 +83,7 @@ public class Crowdin {
                         request.setBranchId(branchId);
                         request.setDirectoryId(parentId);
                         request.setName(folder);
-                        ResponseObject<Directory> directoryResponseObject = this.client.getSourceFilesApi().addDirectory(this.projectIdentifier, request);
+                        ResponseObject<Directory> directoryResponseObject = this.client.getSourceFilesApi().addDirectory(this.projectId, request);
                         parentId = directoryResponseObject.getData().getId();
                     }
                 } catch (Exception error) {
@@ -133,7 +96,7 @@ public class Crowdin {
 
             ResponseObject<Storage> storageResponseObject = this.client.getStorageApi().addStorage(source.getName(), source.getInputStream());
             Long storageId = storageResponseObject.getData().getId();
-            ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectIdentifier, null, parentId, null, 500, null);
+            ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectId, null, parentId, null, 500, null);
             ResponseObject<com.crowdin.client.sourcefiles.model.File> foundFile = fileResponseList.getData().stream()
                     .filter(f -> {
                         if (branchId != null) {
@@ -149,7 +112,7 @@ public class Crowdin {
                 request.setStorageId(storageId);
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
-                this.client.getSourceFilesApi().updateOrRestoreFile(this.projectIdentifier, foundFile.getData().getId(), request);
+                this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
@@ -158,15 +121,15 @@ public class Crowdin {
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 request.setExportOptions(generalFileExportOptions);
-                this.client.getSourceFilesApi().addFile(this.projectIdentifier, request);
+                this.client.getSourceFilesApi().addFile(this.projectId, request);
             }
         } catch (Exception e) {
-            Utils.showErrorMessage(this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.getErrorMessage(e));
         }
     }
 
     public File downloadTranslations(VirtualFile sourceFile, String branch) {
-        if (this.errorMessage != null) {
+        if (this.invalidConfiguration) {
             return null;
         }
         try {
@@ -174,16 +137,16 @@ public class Crowdin {
 
             BuildProjectTranslationRequest buildProjectTranslationRequest = new BuildProjectTranslationRequest();
             buildProjectTranslationRequest.setBranchId(branchId);
-            ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectIdentifier, buildProjectTranslationRequest);
+            ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectId, buildProjectTranslationRequest);
             Long buildId = projectBuildResponseObject.getData().getId();
 
             boolean finished = false;
             while (!finished) {
-                ResponseObject<ProjectBuild> projectBuildStatusResponseObject = this.client.getTranslationsApi().checkBuildStatus(this.projectIdentifier, buildId);
+                ResponseObject<ProjectBuild> projectBuildStatusResponseObject = this.client.getTranslationsApi().checkBuildStatus(this.projectId, buildId);
                 finished = projectBuildStatusResponseObject.getData().getStatus().equalsIgnoreCase("finished");
             }
 
-            ResponseObject<DownloadLink> downloadLinkResponseObject = this.client.getTranslationsApi().downloadProjectTranslations(this.projectIdentifier, buildId);
+            ResponseObject<DownloadLink> downloadLinkResponseObject = this.client.getTranslationsApi().downloadProjectTranslations(this.projectId, buildId);
             String link = downloadLinkResponseObject.getData().getUrl();
 
             File file = new File(sourceFile.getParent().getParent().getCanonicalPath() + "/all.zip");
@@ -192,15 +155,16 @@ public class Crowdin {
             }
             return file;
         } catch (Exception e) {
-            Utils.showErrorMessage(this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.getErrorMessage(e));
             return null;
         }
     }
 
+
     private Long getOrCreateBranch(String name) {
         if (name != null && name.length() > 0) {
             try {
-                List<ResponseObject<Branch>> branches = this.client.getSourceFilesApi().listBranches(this.projectIdentifier, name, 500, null).getData();
+                List<ResponseObject<Branch>> branches = this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null).getData();
                 Branch foundBranch = branches.stream()
                         .filter(e -> e.getData().getName().equalsIgnoreCase(name))
                         .map(ResponseObject::getData)
@@ -210,7 +174,7 @@ public class Crowdin {
                 } else {
                     AddBranchRequest request = new AddBranchRequest();
                     request.setName(name);
-                    ResponseObject<Branch> responseObject = this.client.getSourceFilesApi().addBranch(this.projectIdentifier, request);
+                    ResponseObject<Branch> responseObject = this.client.getSourceFilesApi().addBranch(this.projectId, request);
                     return responseObject.getData().getId();
                 }
             } catch (Exception e) {
@@ -220,7 +184,7 @@ public class Crowdin {
                     }
                     return this.waitAndFindBranch(name);
                 } catch (Exception error) {
-                    String msg = "Failed to create/find branch for project " + this.projectIdentifier + ". " + this.getErrorMessage(error);
+                    String msg = "Failed to create/find branch for project " + this.projectId + ". " + this.getErrorMessage(error);
                     throw new Error(msg);
                 }
             }
@@ -263,8 +227,8 @@ public class Crowdin {
     }
 
     private Long waitAndFindBranch(String name) throws Exception {
-        return Utils.retry(() -> {
-            ResponseList<Branch> branchResponseList = this.client.getSourceFilesApi().listBranches(this.projectIdentifier, name, 500, null);
+        return RetryUtil.retry(() -> {
+            ResponseList<Branch> branchResponseList = this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null);
             ResponseObject<Branch> branchResponseObject = branchResponseList.getData().stream()
                     .filter(branch -> branch.getData().getName().equalsIgnoreCase(name))
                     .findFirst().orElse(null);
@@ -273,22 +237,22 @@ public class Crowdin {
             } else {
                 throw new Exception("Could not find branch " + name + "in Crowdin response");
             }
-        }, 3);
+        });
     }
 
     private Long waitAndFindDirectory(String name, Long parent, Long branchId) throws Exception {
-        return Utils.retry(() -> {
+        return RetryUtil.retry(() -> {
             Long directory = this.findDirectory(name, parent, branchId);
             if (directory != null) {
                 return directory;
             } else {
                 throw new Exception("Could not find directory " + name + "in Crowdin response");
             }
-        }, 3);
+        });
     }
 
     private Long findDirectory(String name, Long parent, Long branchId) {
-        ResponseList<Directory> directoryResponseList = this.client.getSourceFilesApi().listDirectories(this.projectIdentifier, null, parent, null, 500, null);
+        ResponseList<Directory> directoryResponseList = this.client.getSourceFilesApi().listDirectories(this.projectId, null, parent, null, 500, null);
         ResponseObject<Directory> foundDir = directoryResponseList.getData()
                 .stream()
                 .filter(dir -> {

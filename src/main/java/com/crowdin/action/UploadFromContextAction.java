@@ -1,7 +1,9 @@
 package com.crowdin.action;
 
-import com.crowdin.command.Crowdin;
-import com.crowdin.utils.Utils;
+import com.crowdin.client.Crowdin;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.GitUtil;
+import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -10,6 +12,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+
+import static com.crowdin.util.FileUtil.PARENT_FOLDER_NAME;
+import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 
 /**
  * Created by ihor on 1/27/17.
@@ -21,7 +26,7 @@ public class UploadFromContextAction extends AnAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Crowdin crowdin = new Crowdin();
         Project project = anActionEvent.getProject();
-        String branch = Utils.getCurrentBranch(project);
+        String branch = GitUtil.getCurrentBranch(project);
         crowdin.uploadFile(file, branch);
     }
 
@@ -34,13 +39,13 @@ public class UploadFromContextAction extends AnAction {
     }
 
     private static boolean isSourceFile(@Nullable VirtualFile file) {
-        String sources = Utils.getPropertyValue("sources", true);
-        List<String> sourcesList = Utils.getSourcesList(sources);
+        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+        List<String> sourcesList = FileUtil.getSourcesList(sources);
         if (file == null) {
             return false;
         }
         for (String src : sourcesList) {
-            if (src.equals(file.getName()) && file.getParent() != null && "values".equals(file.getParent().getName())) {
+            if (src.equals(file.getName()) && file.getParent() != null && PARENT_FOLDER_NAME.equals(file.getParent().getName())) {
                 return true;
             }
         }

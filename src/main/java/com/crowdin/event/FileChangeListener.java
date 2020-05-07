@@ -1,12 +1,13 @@
 package com.crowdin.event;
 
-import com.crowdin.command.Crowdin;
-import com.crowdin.utils.Utils;
+import com.crowdin.client.Crowdin;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.GitUtil;
+import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.Queryable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -16,14 +17,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import static com.crowdin.util.FileUtil.PARENT_FOLDER_NAME;
+import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
+
 /**
  * Created by ihor on 1/20/17.
  */
 public class FileChangeListener implements ApplicationComponent, BulkFileListener {
-
-    public static final String SOURCE_FILE_DEFAULT = "strings.xml";
-
-    public static final String SOURCE_FOLDER_DEFAULT = "values";
 
     private final MessageBusConnection connection;
 
@@ -45,14 +45,15 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
         connection.disconnect();
     }
 
-    public void before(List<? extends VFileEvent> events) {}
+    public void before(List<? extends VFileEvent> events) {
+    }
 
     public void after(List<? extends VFileEvent> events) {
-        String sources = Utils.getPropertyValue("sources", true);
-        List<String> sourcesList = Utils.getSourcesList(sources);
+        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+        List<String> sourcesList = FileUtil.getSourcesList(sources);
         for (VFileEvent e : events) {
             VirtualFile virtualFile = e.getFile();
-            if (virtualFile != null && sourcesList.contains(virtualFile.getName()) && SOURCE_FOLDER_DEFAULT.equals(virtualFile.getParent().getName())) {
+            if (virtualFile != null && sourcesList.contains(virtualFile.getName()) && PARENT_FOLDER_NAME.equals(virtualFile.getParent().getName())) {
                 Project[] projects = ProjectManager.getInstance().getOpenProjects();
                 Project project = null;
                 if (projects.length == 1) {
@@ -60,7 +61,7 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
                 }
                 System.out.println("Changed file " + virtualFile.getCanonicalPath());
                 Crowdin crowdin = new Crowdin();
-                String branch = Utils.getCurrentBranch(project);
+                String branch = GitUtil.getCurrentBranch(project);
                 crowdin.uploadFile(virtualFile, branch);
             }
         }
