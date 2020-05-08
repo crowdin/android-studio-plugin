@@ -26,6 +26,7 @@ import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 public class FileChangeListener implements ApplicationComponent, BulkFileListener {
 
     private final MessageBusConnection connection;
+    private final Project project;
 
     @NotNull
     @Override
@@ -33,7 +34,8 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
         return "Crowdin";
     }
 
-    public FileChangeListener() {
+    public FileChangeListener(Project project) {
+        this.project = project;
         connection = ApplicationManager.getApplication().getMessageBus().connect();
     }
 
@@ -49,7 +51,7 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
     }
 
     public void after(List<? extends VFileEvent> events) {
-        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, this.project);
         List<String> sourcesList = FileUtil.getSourcesList(sources);
         for (VFileEvent e : events) {
             VirtualFile virtualFile = e.getFile();
@@ -60,7 +62,7 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
                     project = projects[0];
                 }
                 System.out.println("Changed file " + virtualFile.getCanonicalPath());
-                Crowdin crowdin = new Crowdin();
+                Crowdin crowdin = new Crowdin(this.project);
                 String branch = GitUtil.getCurrentBranch(project);
                 crowdin.uploadFile(virtualFile, branch);
             }

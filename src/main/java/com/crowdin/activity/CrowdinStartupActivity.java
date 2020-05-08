@@ -20,18 +20,18 @@ public class CrowdinStartupActivity implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD);
+        String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD, project);
 
         if (autoUploadProp != null && autoUploadProp.equals("false")) {
             return;
         }
 
-        FileChangeListener fileChangeListener = new FileChangeListener();
+        FileChangeListener fileChangeListener = new FileChangeListener(project);
         fileChangeListener.initComponent();
 
         LOGGER.info("on");
 
         //config validation
-        new Crowdin();
+        new Crowdin(project);
     }
 }

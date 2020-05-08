@@ -20,7 +20,7 @@ public class DownloadAction extends AnAction {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
         VirtualFile source = FileUtil.getSourceFile(virtualFile, null);
-        Crowdin crowdin = new Crowdin();
+        Crowdin crowdin = new Crowdin(project);
         String branch = GitUtil.getCurrentBranch(project);
         File downloadTranslations = crowdin.downloadTranslations(source, branch);
         this.extractTranslations(downloadTranslations);

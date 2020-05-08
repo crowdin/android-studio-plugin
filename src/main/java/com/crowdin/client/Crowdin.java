@@ -10,7 +10,6 @@ import com.crowdin.client.core.model.DownloadLink;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
-import com.crowdin.client.sourcefiles.model.AddDirectoryRequest;
 import com.crowdin.client.sourcefiles.model.AddFileRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
@@ -21,7 +20,11 @@ import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.RetryUtil;
+import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,7 +34,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Crowdin {
 
@@ -41,8 +43,8 @@ public class Crowdin {
 
     private final com.crowdin.client.Client client;
 
-    public Crowdin() {
-        CrowdinClientProperties crowdinClientProperties = CrowdinClientProperties.load();
+    public Crowdin(@NotNull Project project) {
+        CrowdinClientProperties crowdinClientProperties = CrowdinClientProperties.load(project);
         if (crowdinClientProperties.getErrorMessage() != null) {
             this.projectId = null;
             this.client = null;
@@ -53,7 +55,7 @@ public class Crowdin {
             this.projectId = crowdinClientProperties.getProjectId();
             Credentials credentials = new Credentials(crowdinClientProperties.getToken(), null, crowdinClientProperties.getBaseUrl());
             ClientConfig clientConfig = ClientConfig.builder()
-                    .userAgent("android-studio-plugin")
+                    .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId("com.crowdin.crowdin-idea")).getVersion())
                     .httpClient(new ApacheHttpClient(credentials, new JacksonJsonTransformer(), Collections.emptyMap()))
                     .build();
             this.client = new Client(credentials, clientConfig);
@@ -68,43 +70,10 @@ public class Crowdin {
         try {
             Long branchId = this.getOrCreateBranch(branch);
 
-            List<String> folders = Stream.of(source.getCanonicalPath().split(File.separator))
-                    .filter(p -> p.length() > 0)
-                    .collect(Collectors.toList());
-            Long parentId = null;
-            for (int i = 0; i < folders.size() - 1; i++) {
-                String folder = folders.get(i);
-                try {
-                    Long directory = this.findDirectory(folder, parentId, branchId);
-                    if (directory != null) {
-                        parentId = directory;
-                    } else {
-                        AddDirectoryRequest request = new AddDirectoryRequest();
-                        request.setBranchId(branchId);
-                        request.setDirectoryId(parentId);
-                        request.setName(folder);
-                        ResponseObject<Directory> directoryResponseObject = this.client.getSourceFilesApi().addDirectory(this.projectId, request);
-                        parentId = directoryResponseObject.getData().getId();
-                    }
-                } catch (Exception error) {
-                    if (!this.concurrentIssue(error)) {
-                        throw error;
-                    }
-                    parentId = this.waitAndFindDirectory(folder, parentId, branchId);
-                }
-            }
-
             ResponseObject<Storage> storageResponseObject = this.client.getStorageApi().addStorage(source.getName(), source.getInputStream());
             Long storageId = storageResponseObject.getData().getId();
-            ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectId, null, parentId, null, 500, null);
+            ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectId, branchId, null, null, 500, null);
             ResponseObject<com.crowdin.client.sourcefiles.model.File> foundFile = fileResponseList.getData().stream()
-                    .filter(f -> {
-                        if (branchId != null) {
-                            return f.getData().getBranchId().equals(branchId);
-                        } else {
-                            return f.getData().getBranchId() == null;
-                        }
-                    })
                     .filter(f -> f.getData().getName().equals(source.getName()))
                     .findFirst().orElse(null);
             if (foundFile != null) {
@@ -116,7 +85,6 @@ public class Crowdin {
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
-                request.setDirectoryId(parentId);
                 request.setName(source.getName());
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");

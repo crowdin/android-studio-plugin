@@ -24,7 +24,7 @@ public class UploadFromContextAction extends AnAction {
     public void actionPerformed(AnActionEvent anActionEvent) {
 
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
-        Crowdin crowdin = new Crowdin();
+        Crowdin crowdin = new Crowdin(anActionEvent.getProject());
         Project project = anActionEvent.getProject();
         String branch = GitUtil.getCurrentBranch(project);
         crowdin.uploadFile(file, branch);
@@ -33,13 +33,13 @@ public class UploadFromContextAction extends AnAction {
     @Override
     public void update(AnActionEvent e) {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-        boolean isSourceFile = isSourceFile(file);
+        boolean isSourceFile = this.isSourceFile(file, e.getProject());
         e.getPresentation().setEnabled(isSourceFile);
         e.getPresentation().setVisible(isSourceFile);
     }
 
-    private static boolean isSourceFile(@Nullable VirtualFile file) {
-        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+    private boolean isSourceFile(@Nullable VirtualFile file, @Nullable Project project) {
+        String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, project);
         List<String> sourcesList = FileUtil.getSourcesList(sources);
         if (file == null) {
             return false;

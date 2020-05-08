@@ -1,6 +1,6 @@
 package com.crowdin.util;
 
-import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.io.FileInputStream;
@@ -14,14 +14,14 @@ public class PropertyUtil {
     public static final String PROPERTY_SOURCES = "sources";
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
 
-    public static String getPropertyValue(String key) {
+    public static String getPropertyValue(String key, Project project) {
         if (key == null) {
             return "";
         }
         Properties properties = new Properties();
         String value = null;
         try {
-            VirtualFile crowdinProperties = getCrowdinPropertyFile();
+            VirtualFile crowdinProperties = getCrowdinPropertyFile(project);
             if (crowdinProperties == null) {
                 return "";
             }
@@ -37,8 +37,8 @@ public class PropertyUtil {
         return value;
     }
 
-    public static VirtualFile getCrowdinPropertyFile() {
-        VirtualFile baseDir = ProjectManager.getInstance().getOpenProjects()[0].getBaseDir();
+    public static VirtualFile getCrowdinPropertyFile(Project project) {
+        VirtualFile baseDir = project.getBaseDir();
         if (baseDir == null || !baseDir.isDirectory()) {
             System.out.println("Base dir not exist");
             return null;

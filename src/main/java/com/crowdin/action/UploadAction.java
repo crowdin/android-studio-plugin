@@ -27,9 +27,9 @@ public class UploadAction extends AnAction {
     public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        String sourcesProp = PropertyUtil.getPropertyValue(PROPERTY_SOURCES);
+        String sourcesProp = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, project);
         List<String> sourcesList = FileUtil.getSourcesList(sourcesProp);
-        Crowdin crowdin = new Crowdin();
+        Crowdin crowdin = new Crowdin(project);
         for (String src : sourcesList) {
             VirtualFile source = FileUtil.getSourceFile(virtualFile, src);
             String branch = GitUtil.getCurrentBranch(project);
