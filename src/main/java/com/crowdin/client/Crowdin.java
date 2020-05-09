@@ -12,7 +12,6 @@ import com.crowdin.client.core.model.ResponseObject;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.AddFileRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.storage.model.Storage;
@@ -208,34 +207,4 @@ public class Crowdin {
         });
     }
 
-    private Long waitAndFindDirectory(String name, Long parent, Long branchId) throws Exception {
-        return RetryUtil.retry(() -> {
-            Long directory = this.findDirectory(name, parent, branchId);
-            if (directory != null) {
-                return directory;
-            } else {
-                throw new Exception("Could not find directory " + name + "in Crowdin response");
-            }
-        });
-    }
-
-    private Long findDirectory(String name, Long parent, Long branchId) {
-        ResponseList<Directory> directoryResponseList = this.client.getSourceFilesApi().listDirectories(this.projectId, null, parent, null, 500, null);
-        ResponseObject<Directory> foundDir = directoryResponseList.getData()
-                .stream()
-                .filter(dir -> {
-                    if (branchId == null) {
-                        return dir.getData().getBranchId() == null;
-                    } else {
-                        return dir.getData().getBranchId().equals(branchId);
-                    }
-                })
-                .filter(dir -> dir.getData().getName().equalsIgnoreCase(name))
-                .findFirst().orElse(null);
-        if (foundDir != null) {
-            return foundDir.getData().getId();
-        } else {
-            return null;
-        }
-    }
 }
