@@ -2,8 +2,6 @@ package com.crowdin.client;
 
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
-import com.crowdin.client.core.http.impl.http.ApacheHttpClient;
-import com.crowdin.client.core.http.impl.json.JacksonJsonTransformer;
 import com.crowdin.client.core.model.ClientConfig;
 import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.DownloadLink;
@@ -15,7 +13,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.storage.model.Storage;
-import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
+import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.RetryUtil;
@@ -30,7 +28,6 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,7 +53,6 @@ public class Crowdin {
             Credentials credentials = new Credentials(crowdinClientProperties.getToken(), null, crowdinClientProperties.getBaseUrl());
             ClientConfig clientConfig = ClientConfig.builder()
                     .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId("com.crowdin.crowdin-idea")).getVersion())
-                    .httpClient(new ApacheHttpClient(credentials, new JacksonJsonTransformer(), Collections.emptyMap()))
                     .build();
             this.client = new Client(credentials, clientConfig);
         }
@@ -109,7 +105,7 @@ public class Crowdin {
             }
             Long branchId = foundBranch.get().getId();
 
-            BuildProjectTranslationRequest buildProjectTranslationRequest = new BuildProjectTranslationRequest();
+            CrowdinTranslationCreateProjectBuildForm buildProjectTranslationRequest = new CrowdinTranslationCreateProjectBuildForm();
             buildProjectTranslationRequest.setBranchId(branchId);
             ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectId, buildProjectTranslationRequest);
             Long buildId = projectBuildResponseObject.getData().getId();
