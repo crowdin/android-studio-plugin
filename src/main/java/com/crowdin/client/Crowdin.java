@@ -32,6 +32,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Crowdin {
@@ -85,6 +86,7 @@ public class Crowdin {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
                 request.setName(source.getName());
+                request.setBranchId(branchId);
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 request.setExportOptions(generalFileExportOptions);
@@ -100,7 +102,12 @@ public class Crowdin {
             return null;
         }
         try {
-            Long branchId = this.getOrCreateBranch(branch);
+            Optional<Branch> foundBranch = this.getBranch(branch);
+            if (!foundBranch.isPresent()) {
+                NotificationUtil.showWarningMessage("Branch " + branch + " does not exists in Crowdin");
+                return null;
+            }
+            Long branchId = foundBranch.get().getId();
 
             BuildProjectTranslationRequest buildProjectTranslationRequest = new BuildProjectTranslationRequest();
             buildProjectTranslationRequest.setBranchId(branchId);
@@ -131,11 +138,7 @@ public class Crowdin {
     private Long getOrCreateBranch(String name) {
         if (name != null && name.length() > 0) {
             try {
-                List<ResponseObject<Branch>> branches = this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null).getData();
-                Branch foundBranch = branches.stream()
-                        .filter(e -> e.getData().getName().equalsIgnoreCase(name))
-                        .map(ResponseObject::getData)
-                        .findFirst().orElse(null);
+                Branch foundBranch = this.getBranch(name).orElse(null);
                 if (foundBranch != null) {
                     return foundBranch.getId();
                 } else {
@@ -157,6 +160,14 @@ public class Crowdin {
             }
         }
         return null;
+    }
+
+    private Optional<Branch> getBranch(String name) {
+        List<ResponseObject<Branch>> branches = this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null).getData();
+        return branches.stream()
+                .filter(e -> e.getData().getName().equalsIgnoreCase(name))
+                .map(ResponseObject::getData)
+                .findFirst();
     }
 
     private String getErrorMessage(Exception e) {

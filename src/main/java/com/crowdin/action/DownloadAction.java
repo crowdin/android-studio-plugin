@@ -23,11 +23,13 @@ public class DownloadAction extends AnAction {
         Crowdin crowdin = new Crowdin(project);
         String branch = GitUtil.getCurrentBranch(project);
         File downloadTranslations = crowdin.downloadTranslations(source, branch);
-        this.extractTranslations(downloadTranslations);
-        if (downloadTranslations.delete()) {
-            System.out.println("all.zip was deleted");
-        } else {
-            System.out.println("all.zip wasn't deleted");
+        if (downloadTranslations != null) {
+            this.extractTranslations(downloadTranslations);
+            if (downloadTranslations.delete()) {
+                System.out.println("all.zip was deleted");
+            } else {
+                System.out.println("all.zip wasn't deleted");
+            }
         }
     }
 
