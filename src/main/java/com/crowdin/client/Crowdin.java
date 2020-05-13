@@ -151,7 +151,7 @@ public class Crowdin {
                     return this.waitAndFindBranch(name);
                 } catch (Exception error) {
                     String msg = "Failed to create/find branch for project " + this.projectId + ". " + this.getErrorMessage(error);
-                    throw new Error(msg);
+                    throw new RuntimeException(msg);
                 }
             }
         }
