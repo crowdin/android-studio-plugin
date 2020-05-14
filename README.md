@@ -1,94 +1,87 @@
-## Crowdin AndroidStudio Plugin
+[<p align="center"><img src="https://support.crowdin.com/assets/logos/crowdin-dark-symbol.png" data-canonical-src="https://support.crowdin.com/assets/logos/crowdin-dark-symbol.png" width="200" height="200" align="center"/></p>](https://crowdin.com)
+
+# Crowdin Android Studio Plugin
 
 The plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
 
-To start using this plugin, create a file with project credentials named **crowdin.properties** in the root directory of the project.
+## Getting started
 
-```
+* Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
+* Plugin automatically detects the file with sources strings (`\*\*/values/strings.xml`). If changed, the file will be updated in Crowdin itself.
+* Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
+* To download translations use menu `Tools > Crowdin > Download`. Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
+
+---
+
+:bookmark_tabs: For version *0.5.x* see the [branch 0.5.x](https://github.com/crowdin/android-studio-plugin/tree/0.5.x). Please note that these versions are no longer supported.
+
+:exclamation: Migration from version *0.5.x* to *1.x.x* requires changes in your *crowdin.properties* file.
+
+---
+
+## Configuration
+
+To start using this plugin, create a file with project credentials named *crowdin.properties* in the root directory of the project.
+
+```ini
 project_id=your-project-identifier
 api_token=your-api-token
 ```
 
-If you are using enterprise Crowdin, you also need to specify base url:
+`project_id` - This is a project *numeric id*
 
-```
+`api_token` - This is a *personal access token*. Can be generated in your *Account Settings*
+
+If you are using Crowdin Enterprise, you also need to specify `base_url`:
+
+```ini
 base_url=https://{organization-name}.crowdin.com
 ```
 
 Plugin will automatically find `strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
 If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
 
-```
+```ini
 sources=file1.xml, file2.xml
 ```
 
-For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin. 
-If you do not use branches feature in Crowdin, add `disable-branches=true` parameter into the configuration file.
+For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin.
+If you do not use branches feature in Crowdin, use `disable-branches` parameter:
 
-```
+```ini
 disable-branches=true
 ```
 
-Add `auto-upload=false` to prevent automatic file upload to Crowdin.
+To prevent automatic file upload to Crowdin use `auto-upload`:
 
-```
+```ini
 auto-upload=false
 ```
 
 To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download`. Translations will be exported to the `Resources` folder.
 
-### Workflow
-* Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
-* Plugin automatically detects the file with sources strings ("\*\*/values/strings.xml"). If changed, the file will be updated in Crowdin itself.
-* Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
-* To download translations use menu `Tools > Crowdin > Download`. Translations will be exported to the resource folder (\*\*/resources/values-uk/strings.xml, \*\*/resources/values-fr/strings.xml, ...)
+## Seeking Assistance
 
-### Change log
-**Version 0.5.10**
-+ Fix bug with disabling auto-upload
+If you find any problems or would like to suggest a feature, please read the [How can I contribute](/CONTRIBUTING.md#how-can-i-contribute) section in our contributing guidelines.
 
-**Version 0.5.9**
-+ Add `disable-branches` parameter
-+ Add `auto-upload` parameter
+Need help working with Crowdin Android Studio Plugin or have any questions? [Contact](https://crowdin.com/contacts) Customer Success Service.
 
-**Version 0.5.8**
-+ Updated languages mapping
+## Contributing
 
-**Version 0.5.7**
-+ Added languages mapping
+If you want to contribute please read the [Contributing](/CONTRIBUTING.md) guidelines.
 
-**Version 0.5.6**
-+ Bug fixes
+## Authors
 
-**Version 0.5.5**
-+ A new possibility to customize source files
+* Ihor Popyk (ihor.popyk@crowdin.com)
+* Yevheniy Oliynyk (evgen41293@gmail.com)
 
-**Version 0.5.4**
-+ Bug fixes
+## License
+<pre>
+The Crowdin Android Studio Plugin is licensed under the MIT License. 
+See the LICENSE.md file distributed with this work for additional 
+information regarding copyright ownership.
 
-**Version 0.5.3**
-+ Added new header for requests
-
-**Version 0.5.2**
-+ Bug fixes
-
-**Version 0.5.1**
-+ Updated documentation
-
-**Version 0.5.0**
-+ Published plugin
-
-### Seeking Assistance
-Need help working with Crowdin CLI or have any questions? <a href="https://crowdin.com/contacts" target="_blank">Contact Customer Success Service</a>.
-
-### Contributing
-1. Fork it
-2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Added some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create new Pull Request
-
-### License and Author
-Author: Ihor Popyk (ihor.popyk@crowdin.com)
-Copyright: 2018 crowdin.com
-This project is licensed under the MIT license, a copy of which can be found in the LICENSE file.
+Except as contained in the LICENSE file, the name(s) of the above copyright
+holders shall not be used in advertising or otherwise to promote the sale,
+use or other dealings in this Software without prior written authorization.
+</pre>
