@@ -66,8 +66,8 @@
 
     <group id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
-      <action id="Crowdin.UplaodSource" class="com.crowdin.action.UploadAction" text="Upload" description="Upload Source File" />
-      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download" description="Download Translations" />
+      <action id="Crowdin.UplaodSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
+      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download Translations" description="Download Translations" />
     </group>
 
   </actions>

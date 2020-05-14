@@ -19,10 +19,6 @@ import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
  */
 @SuppressWarnings("ALL")
 public class UploadAction extends AnAction {
-    public UploadAction() {
-        super("UploadAction");
-    }
-
     @Override
     public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();

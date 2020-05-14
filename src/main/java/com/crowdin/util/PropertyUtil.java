@@ -19,7 +19,6 @@ public class PropertyUtil {
             return "";
         }
         Properties properties = new Properties();
-        String value = null;
         try {
             VirtualFile crowdinProperties = getCrowdinPropertyFile(project);
             if (crowdinProperties == null) {
@@ -32,9 +31,10 @@ public class PropertyUtil {
             e.printStackTrace();
         }
         if (properties.get(key) != null) {
-            value = properties.get(key).toString();
+            return properties.get(key).toString();
+        } else {
+            return "";
         }
-        return value;
     }
 
     public static VirtualFile getCrowdinPropertyFile(Project project) {

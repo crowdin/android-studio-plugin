@@ -7,9 +7,9 @@ import static com.crowdin.util.PropertyUtil.PROPERTIES_FILE;
 
 class CrowdinClientProperties {
 
-    private static final String PROJECT_ID = "project_id";
-    private static final String API_TOKEN = "api_token";
-    private static final String BASE_URL = "base_url";
+    private static final String PROJECT_ID = "project-id";
+    private static final String API_TOKEN = "api-token";
+    private static final String BASE_URL = "base-url";
 
     private Long projectId;
     private String token;
@@ -29,10 +29,10 @@ class CrowdinClientProperties {
             try {
                 projectId = Long.valueOf(projectIdentifier);
             } catch (NumberFormatException e) {
-                crowdinClientProperties.errorMessage = "Invalid project id";
+                crowdinClientProperties.errorMessage = "Project id is not a number in crowdin.properties";
             }
         } else {
-            crowdinClientProperties.errorMessage = "Project id is empty";
+            crowdinClientProperties.errorMessage = "Missing \"project_id\" property in crowdin.properties";
         }
         if (crowdinClientProperties.errorMessage != null) {
             return crowdinClientProperties;
@@ -42,7 +42,7 @@ class CrowdinClientProperties {
         String apiToken = PropertyUtil.getPropertyValue(API_TOKEN, project);
         crowdinClientProperties.token = apiToken;
         if ("".equals(apiToken)) {
-            crowdinClientProperties.errorMessage = "Api token is empty";
+            crowdinClientProperties.errorMessage = "Missing \"api_token\" property in crowdin.properties";
             return crowdinClientProperties;
         }
 
