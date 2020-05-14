@@ -32,7 +32,7 @@ class CrowdinClientProperties {
                 crowdinClientProperties.errorMessage = "Project id is not a number in crowdin.properties";
             }
         } else {
-            crowdinClientProperties.errorMessage = "Missing \"project_id\" property in crowdin.properties";
+            crowdinClientProperties.errorMessage = "Missing \"project-id\" property in crowdin.properties";
         }
         if (crowdinClientProperties.errorMessage != null) {
             return crowdinClientProperties;
@@ -42,7 +42,7 @@ class CrowdinClientProperties {
         String apiToken = PropertyUtil.getPropertyValue(API_TOKEN, project);
         crowdinClientProperties.token = apiToken;
         if ("".equals(apiToken)) {
-            crowdinClientProperties.errorMessage = "Missing \"api_token\" property in crowdin.properties";
+            crowdinClientProperties.errorMessage = "Missing \"api-token\" property in crowdin.properties";
             return crowdinClientProperties;
         }
 
