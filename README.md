@@ -20,6 +20,8 @@ The plugin lets you integrate android project with Crowdin. It enables you to up
 
 :bookmark_tabs: For version *0.5.x* see the [branch 0.5.x](https://github.com/crowdin/android-studio-plugin/tree/0.5.x). Please note that these versions are no longer supported.
 
+:notebook: Complete list of changes: [CHANGELOG.md](/CHANGELOG.md)
+
 :exclamation: Migration from version *0.5.x* to *1.x.x* requires changes in your *crowdin.properties* file.
 
 ---
