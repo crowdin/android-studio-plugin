@@ -10,6 +10,7 @@ trigger:
       - CHANGELOG.md
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
+      - LICENSE
 
 pool:
   vmImage: 'ubuntu-latest'
