@@ -4,6 +4,11 @@
 
 The plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
 
+## Status
+
+[![Build Status](https://dev.azure.com/crowdin/Android%20Studio%20Plugin/_apis/build/status/Build?branchName=master&cacheSeconds=1000)](https://dev.azure.com/crowdin/Android%20Studio%20Plugin/_build/latest?definitionId=23&branchName=master)
+[![GitHub](https://img.shields.io/github/license/crowdin/android-studio-plugin?cacheSeconds=50000)](https://github.com/crowdin/android-studio-plugin/blob/master/LICENSE)
+
 ## Getting started
 
 * Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
