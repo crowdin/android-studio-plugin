@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '0.5.10'
+version '1.0.0'
 
 sourceCompatibility = 1.8
 
@@ -27,8 +27,11 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+      - Updated: Migrated project to gradle-based intellij plugin<br>
+      - Updated: API v2 Support<br>
+      - Updated: Notifications improve<br>
+      - Updated: Refactoring and fixes<br>
+      - Fixed: <code>auto-upload</code> disabling"""
 }
 
 wrapper {
