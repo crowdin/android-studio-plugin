@@ -80,6 +80,7 @@ public class Crowdin {
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
+                NotificationUtil.showInformationMessage("File '" + source.getName() + "' updated in Crowdin");
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
@@ -89,6 +90,7 @@ public class Crowdin {
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 request.setExportOptions(generalFileExportOptions);
                 this.client.getSourceFilesApi().addFile(this.projectId, request);
+                NotificationUtil.showInformationMessage("File '" + source.getName() + "' added to Crowdin");
             }
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(this.getErrorMessage(e));
