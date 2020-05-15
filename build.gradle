@@ -23,6 +23,7 @@ dependencies {
 intellij {
     version '2019.2.3'
     plugins 'git4idea'
+    updateSinceUntilBuild false
 }
 patchPluginXml {
     changeNotes """

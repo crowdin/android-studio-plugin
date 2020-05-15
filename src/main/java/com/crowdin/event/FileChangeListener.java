@@ -25,6 +25,8 @@ import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
  */
 public class FileChangeListener implements ApplicationComponent, BulkFileListener {
 
+    private static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
+
     private final MessageBusConnection connection;
     private final Project project;
 
@@ -51,6 +53,9 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
     }
 
     public void after(List<? extends VFileEvent> events) {
+        if (this.autoUploadOff()) {
+            return;
+        }
         String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, this.project);
         List<String> sourcesList = FileUtil.getSourcesList(sources);
         for (VFileEvent e : events) {
@@ -67,5 +72,10 @@ public class FileChangeListener implements ApplicationComponent, BulkFileListene
                 crowdin.uploadFile(virtualFile, branch);
             }
         }
+    }
+
+    private boolean autoUploadOff() {
+        String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD, this.project);
+        return autoUploadProp != null && autoUploadProp.equals("false");
     }
 }

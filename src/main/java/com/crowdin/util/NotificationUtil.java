@@ -15,29 +15,28 @@ public final class NotificationUtil {
             new NotificationGroup("Crowdin",
                     NotificationDisplayType.BALLOON, true);
 
+
+    private static final String TITLE = "Crowdin";
+
     private NotificationUtil() {
         throw new UnsupportedOperationException();
     }
 
     public static void showInformationMessage(String message) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(message, NotificationType.INFORMATION);
-            Project[] projects = ProjectManager.getInstance().getOpenProjects();
-            Notifications.Bus.notify(notification, projects[0]);
-        });
+        showMessage(message, NotificationType.INFORMATION);
     }
 
     public static void showErrorMessage(String message) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-            Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(message, NotificationType.ERROR);
-            Project[] projects = ProjectManager.getInstance().getOpenProjects();
-            Notifications.Bus.notify(notification, projects[0]);
-        });
+        showMessage(message, NotificationType.ERROR);
     }
 
     public static void showWarningMessage(String message) {
+        showMessage(message, NotificationType.WARNING);
+    }
+
+    private static void showMessage(String message, NotificationType type) {
         ApplicationManager.getApplication().invokeLater(() -> {
-            Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(message, NotificationType.WARNING);
+            Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(TITLE, message, type, null);
             Project[] projects = ProjectManager.getInstance().getOpenProjects();
             Notifications.Bus.notify(notification, projects[0]);
         });

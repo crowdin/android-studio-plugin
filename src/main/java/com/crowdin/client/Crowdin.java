@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 
 public class Crowdin {
 
+    private static final String PLUGIN_ID = "com.crowdin.crowdin-idea";
+
     private final Long projectId;
 
     private final boolean invalidConfiguration;
@@ -52,7 +54,7 @@ public class Crowdin {
             this.projectId = crowdinClientProperties.getProjectId();
             Credentials credentials = new Credentials(crowdinClientProperties.getToken(), null, crowdinClientProperties.getBaseUrl());
             ClientConfig clientConfig = ClientConfig.builder()
-                    .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId("com.crowdin.crowdin-idea")).getVersion())
+                    .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion())
                     .build();
             this.client = new Client(credentials, clientConfig);
         }
@@ -78,6 +80,7 @@ public class Crowdin {
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
+                NotificationUtil.showInformationMessage("File '" + source.getName() + "' updated in Crowdin");
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
@@ -87,6 +90,7 @@ public class Crowdin {
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 request.setExportOptions(generalFileExportOptions);
                 this.client.getSourceFilesApi().addFile(this.projectId, request);
+                NotificationUtil.showInformationMessage("File '" + source.getName() + "' added to Crowdin");
             }
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(this.getErrorMessage(e));
@@ -150,6 +154,9 @@ public class Crowdin {
                     }
                     return this.waitAndFindBranch(name);
                 } catch (Exception error) {
+                    if (this.customMessage(error)) {
+                        throw new RuntimeException(this.getErrorMessage(error));
+                    }
                     String msg = "Failed to create/find branch for project " + this.projectId + ". " + this.getErrorMessage(error);
                     throw new RuntimeException(msg);
                 }
@@ -168,7 +175,12 @@ public class Crowdin {
 
     private String getErrorMessage(Exception e) {
         if (e instanceof HttpException) {
-            return ((HttpException) e).getError().getMessage();
+            HttpException ex = (HttpException) e;
+            if (ex.getError().getCode().equalsIgnoreCase("401")) {
+                return "Unable to authorize. Please, use another Personal Access Token and try again.";
+            } else {
+                return ex.getError().getMessage();
+            }
         } else if (e instanceof HttpBadRequestException) {
             return ((HttpBadRequestException) e).getErrors().stream()
                     .map(er -> {
@@ -212,6 +224,16 @@ public class Crowdin {
                 throw new Exception("Could not find branch " + name + "in Crowdin response");
             }
         });
+    }
+
+    private boolean customMessage(Exception e) {
+        if (e instanceof HttpException) {
+            HttpException ex = (HttpException) e;
+            if (ex.getError().getCode().equalsIgnoreCase("401")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -31,18 +31,18 @@ The plugin lets you integrate android project with Crowdin. It enables you to up
 To start using this plugin, create a file with project credentials named *crowdin.properties* in the root directory of the project.
 
 ```ini
-project_id=your-project-identifier
-api_token=your-api-token
+project-id=your-project-identifier
+api-token=your-api-token
 ```
 
-`project_id` - This is a project *numeric id*
+`project-id` - This is a project *numeric id*
 
-`api_token` - This is a *personal access token*. Can be generated in your *Account Settings*
+`api-token` - This is a *personal access token*. Can be generated in your *Account Settings*
 
-If you are using Crowdin Enterprise, you also need to specify `base_url`:
+If you are using Crowdin Enterprise, you also need to specify `base-url`:
 
 ```ini
-base_url=https://{organization-name}.crowdin.com
+base-url=https://{organization-name}.crowdin.com
 ```
 
 Plugin will automatically find `strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
