@@ -30,7 +30,7 @@ steps:
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '**/$(Build.SourcesDirectory)/build/distributions/*.zip'
+    contents: '$(Build.SourcesDirectory)/build/distributions/*.zip'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
   inputs:
