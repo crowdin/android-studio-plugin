@@ -1,10 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [1.0.0][TBA]
+## [1.0.0]
 - Updated: Migrated project to gradle-based intellij plugin
 - Updated: API v2 Support
+- Updated: Notifications improve
 - Updated: Refactoring and fixes
+- Fixed: `auto-upload` disabling
 
 ## [0.5.10]
 - Fix bug with disabling auto-upload
