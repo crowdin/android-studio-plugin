@@ -29,10 +29,13 @@ steps:
     tasks: 'build buildPlugin'
 - task: CopyFiles@2
   inputs:
+    displayName: "Copy build to Artifact staging directory"
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: '$(Build.SourcesDirectory)/build/distributions/*.zip'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
+    flattenFolders: true
 - task: PublishBuildArtifacts@1
+  DisplayName: "Publish build artifacts"
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)/build/distributions/*.zip'
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: build
