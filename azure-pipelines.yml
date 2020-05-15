@@ -28,14 +28,24 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build buildPlugin'
 - task: CopyFiles@2
-  displayName: "Copy build to Artifact staging directory"
+  displayName: 'Copy build to Artifact staging directory'
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: '$(Build.SourcesDirectory)/build/distributions/*.zip'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
     flattenFolders: true
 - task: PublishBuildArtifacts@1
-  displayName: "Publish build artifacts"
+  displayName: 'Publish build artifacts'
   inputs:
     pathToPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: build
+- task: GithubRelease@0
+  displayName: 'Add assets to GitHub Release'
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  inputs:
+    gitHubConnection: crowdin
+    repositoryName: crowdin/android-studio-plugin
+    action: edit
+    target: '$(Build.SourceVersion)'
+    assets: '$(Build.ArtifactStagingDirectory)/build/*.zip*'
+    assetUploadMode: 'replace'
