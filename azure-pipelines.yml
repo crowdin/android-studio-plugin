@@ -4,6 +4,10 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
 trigger:
+  branches:
+    include:
+      - refs/heads/*
+      - refs/tags/*
   paths:
     exclude:
       - README.md
@@ -27,3 +31,15 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build buildPlugin'
+- task: CopyFiles@2
+  displayName: 'Copy build to Artifact staging directory'
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '$(Build.SourcesDirectory)/build/distributions/*.zip'
+    targetFolder: '$(Build.ArtifactStagingDirectory)'
+    flattenFolders: true
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish build artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: build
