@@ -13,8 +13,8 @@ The plugin lets you integrate android project with Crowdin. It enables you to up
 
 * Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
 * Plugin automatically detects the file with sources strings (`\*\*/values/strings.xml`). If changed, the file will be updated in Crowdin itself.
-* Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
-* To download translations use menu `Tools > Crowdin > Download`. Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
+* Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload Sources` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
+* To download translations use menu `Tools > Crowdin > Download Translations`. Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
 
 ---
 
@@ -65,7 +65,7 @@ To prevent automatic file upload to Crowdin use `auto-upload`:
 auto-upload=false
 ```
 
-To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download`. Translations will be exported to the `Resources` folder.
+To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download Translations`. Translations will be exported to the `Resources` folder.
 
 ## Seeking Assistance
 
