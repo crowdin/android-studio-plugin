@@ -12,9 +12,14 @@
       <code>
         project-id=your-project-numeric-id<br/>
         api-token=your-api-token<br/>
-        base-url=your-base-url # For Crowdin Enterprise only. https://{organization-name}.crowdin.com
       </code>
       <br/>
+      If you are using Crowdin Enterprise, you also need to specify <em>base-url</em>:
+      <br/><br/>
+      <code>
+        base-url=https://{organization-name}.crowdin.com
+      </code>
+      <br/><br/>
       <ul>
         <li>Plugin will automatically find localization files in the values directory and if renewed it will be uploaded to Crowdin instantly.</li>
         <li>To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download Translations</strong>. Translations will be exported to the <strong>Resources</strong> folder.</li>
