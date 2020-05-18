@@ -144,7 +144,7 @@ public class Crowdin {
         }
     }
 
-    public List<String> getSupportedLanguageAndroidCodes() {
+    public List<Language> getSupportedLanguages() {
         if (this.invalidConfiguration) {
             return null;
         }
@@ -153,7 +153,6 @@ public class Crowdin {
                 .getData()
                 .stream()
                 .map(ResponseObject::getData)
-                .map(Language::getAndroidCode)
                 .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e));

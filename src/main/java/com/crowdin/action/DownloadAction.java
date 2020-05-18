@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.languages.model.Language;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
@@ -15,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -42,7 +42,10 @@ public class DownloadAction extends AnAction {
                     .map(path -> StringUtils.removeStart(path, tempDir))
                     .collect(Collectors.toList());
 
-            List<String> androidCodes = crowdin.getSupportedLanguageAndroidCodes();
+            List<String> androidCodes = crowdin.getSupportedLanguages()
+                .stream()
+                .map(Language::getAndroidCode)
+                .collect(Collectors.toList());
             List<String> sortedFiles = filterFiles(files, androidCodes);
             sortedFiles.forEach(filePath -> {
                 File fromFile = new File(tempDir + filePath);
