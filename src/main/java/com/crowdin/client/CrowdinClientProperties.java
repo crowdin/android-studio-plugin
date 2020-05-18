@@ -3,6 +3,8 @@ package com.crowdin.client;
 import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.project.Project;
 
+import java.util.regex.Pattern;
+
 import static com.crowdin.util.PropertyUtil.PROPERTIES_FILE;
 
 class CrowdinClientProperties {
@@ -10,6 +12,8 @@ class CrowdinClientProperties {
     private static final String PROJECT_ID = "project-id";
     private static final String API_TOKEN = "api-token";
     private static final String BASE_URL = "base-url";
+
+    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https|http)://(.+\\.)?crowdin\\.com/?$");
 
     private Long projectId;
     private String token;
@@ -49,6 +53,11 @@ class CrowdinClientProperties {
         String baseUrl = PropertyUtil.getPropertyValue(BASE_URL, project);
         if ("".equals(baseUrl)) {
             baseUrl = null;
+        } else {
+            if (!isBaseUrlValid(baseUrl)) {
+                crowdinClientProperties.errorMessage = "Invalid \"base-url\" property in crowdin.properties. The expected format is 'https://crowdin.com' or 'https://{domain_name}.crowdin.com'";
+                return crowdinClientProperties;
+            }
         }
         crowdinClientProperties.baseUrl = baseUrl;
 
@@ -69,5 +78,9 @@ class CrowdinClientProperties {
 
     public String getErrorMessage() {
         return errorMessage;
+    }
+
+    private static boolean isBaseUrlValid(String baseUrl) {
+        return BASE_URL_PATTERN.matcher(baseUrl).matches();
     }
 }

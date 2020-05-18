@@ -39,17 +39,20 @@ public class Crowdin {
 
     private final Long projectId;
 
+    private final Project project;
+
     private final boolean invalidConfiguration;
 
     private final com.crowdin.client.Client client;
 
     public Crowdin(@NotNull Project project) {
+        this.project = project;
         CrowdinClientProperties crowdinClientProperties = CrowdinClientProperties.load(project);
         if (crowdinClientProperties.getErrorMessage() != null) {
             this.projectId = null;
             this.client = null;
             this.invalidConfiguration = true;
-            NotificationUtil.showErrorMessage(crowdinClientProperties.getErrorMessage());
+            NotificationUtil.showErrorMessage(this.project, crowdinClientProperties.getErrorMessage());
         } else {
             this.invalidConfiguration = false;
             this.projectId = crowdinClientProperties.getProjectId();
@@ -88,7 +91,7 @@ public class Crowdin {
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
-                NotificationUtil.showInformationMessage("File '" + source.getName() + "' updated in Crowdin");
+                NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' updated in Crowdin");
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
@@ -98,10 +101,10 @@ public class Crowdin {
                 generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
                 request.setExportOptions(generalFileExportOptions);
                 this.client.getSourceFilesApi().addFile(this.projectId, request);
-                NotificationUtil.showInformationMessage("File '" + source.getName() + "' added to Crowdin");
+                NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' added to Crowdin");
             }
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.project, this.getErrorMessage(e));
         }
     }
 
@@ -114,7 +117,7 @@ public class Crowdin {
             if (branch != null && branch.length() > 0) {
                 Optional<Branch> foundBranch = this.getBranch(branch);
                 if (!foundBranch.isPresent()) {
-                    NotificationUtil.showWarningMessage("Branch " + branch + " does not exists in Crowdin");
+                    NotificationUtil.showWarningMessage(this.project, "Branch " + branch + " does not exists in Crowdin");
                     return null;
                 }
                 branchId = foundBranch.get().getId();
@@ -139,7 +142,7 @@ public class Crowdin {
             }
             return file;
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.project, this.getErrorMessage(e));
             return null;
         }
     }
