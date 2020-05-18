@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 public class DownloadAction extends AnAction {
 
+    private static final Pattern TRANSLATION_PATTERN = Pattern.compile("[\\\\\\\\\\/]?values-([a-zA-Z-]+)[\\\\\\\\\\/]([^\\\\\\\\|^\\/]+)$");
+
     @Override
     public void actionPerformed(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
@@ -35,7 +37,7 @@ public class DownloadAction extends AnAction {
         if (downloadTranslations != null) {
             String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime() + File.separator;
             this.extractTranslations(downloadTranslations, tempDir);
-            List<String> files = walkDir(Paths.get(tempDir)).stream()
+            List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
                     .map(File::getAbsolutePath)
                     .map(path -> StringUtils.removeStart(path, tempDir))
                     .collect(Collectors.toList());
@@ -84,22 +86,10 @@ public class DownloadAction extends AnAction {
         }
     }
 
-    private List<File> walkDir(Path dir) {
-        try {
-            return java.nio.file.Files.walk(dir)
-                .filter(java.nio.file.Files::isRegularFile)
-                .map(Path::toFile)
-                .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private List<String> filterFiles(List<String> files, List<String> androidCodes) {
-        Pattern pattern = Pattern.compile("[\\\\\\\\\\/]?values-([a-zA-Z-]+)[\\\\\\\\\\/]([^\\\\\\\\|^\\/]+)$");
         return files.stream()
             .filter(file -> {
-                Matcher matcher = pattern.matcher(file);
+                Matcher matcher = TRANSLATION_PATTERN.matcher(file);
                 return (matcher.matches() && androidCodes.contains(matcher.group(1)));
             })
             .collect(Collectors.toList());
