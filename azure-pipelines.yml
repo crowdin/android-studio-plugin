@@ -30,7 +30,7 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
-    tasks: 'build buildPlugin'
+    tasks: 'build buildPlugin verifyPlugin'
 - task: CopyFiles@2
   displayName: 'Copy build to Artifact staging directory'
   inputs:
