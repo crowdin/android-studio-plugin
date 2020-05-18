@@ -72,6 +72,13 @@ public class Crowdin {
             Long storageId = storageResponseObject.getData().getId();
             ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectId, branchId, null, null, 500, null);
             ResponseObject<com.crowdin.client.sourcefiles.model.File> foundFile = fileResponseList.getData().stream()
+                    .filter(f -> {
+                        if (branchId != null) {
+                            return f.getData().getBranchId().equals(branchId);
+                        } else {
+                            return f.getData().getBranchId() == null;
+                        }
+                    })
                     .filter(f -> f.getData().getName().equals(source.getName()))
                     .findFirst().orElse(null);
             if (foundFile != null) {
@@ -102,13 +109,15 @@ public class Crowdin {
             return null;
         }
         try {
-            Optional<Branch> foundBranch = this.getBranch(branch);
-            if (!foundBranch.isPresent()) {
-                NotificationUtil.showWarningMessage("Branch " + branch + " does not exists in Crowdin");
-                return null;
+            Long branchId = null;
+            if (branch != null && branch.length() > 0) {
+                Optional<Branch> foundBranch = this.getBranch(branch);
+                if (!foundBranch.isPresent()) {
+                    NotificationUtil.showWarningMessage("Branch " + branch + " does not exists in Crowdin");
+                    return null;
+                }
+                branchId = foundBranch.get().getId();
             }
-            Long branchId = foundBranch.get().getId();
-
             CrowdinTranslationCreateProjectBuildForm buildProjectTranslationRequest = new CrowdinTranslationCreateProjectBuildForm();
             buildProjectTranslationRequest.setBranchId(branchId);
             ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectId, buildProjectTranslationRequest);
