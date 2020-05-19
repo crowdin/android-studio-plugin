@@ -68,3 +68,27 @@ Before sending your pull requests, make sure you followed the list below:
 
 - Include unit tests when you contribute new features, as they help to a) prove that your code works correctly, and b) guard against future breaking changes to lower the maintenance cost.
 - Bug fixes also generally require unit tests, because the presence of bugs usually indicates insufficient test coverage.
+
+#### How to run and test plugin?
+
+**Building:**
+
+```console
+./gradlew buildPlugin
+```
+
+The build will be located in `build/distringutions/` folder.
+
+**Verifying:**
+
+```console
+./gradlew verifyPlugin
+```
+
+**Running in IDE:**
+
+```console
+./gradlew runIde
+```
+
+This command will start a test IDE ready for use with plugin installed.
