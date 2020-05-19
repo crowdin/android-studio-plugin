@@ -7,7 +7,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 
 public final class NotificationUtil {
 
@@ -22,23 +21,22 @@ public final class NotificationUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static void showInformationMessage(String message) {
-        showMessage(message, NotificationType.INFORMATION);
+    public static void showInformationMessage(Project project, String message) {
+        showMessage(project, message, NotificationType.INFORMATION);
     }
 
-    public static void showErrorMessage(String message) {
-        showMessage(message, NotificationType.ERROR);
+    public static void showErrorMessage(Project project, String message) {
+        showMessage(project, message, NotificationType.ERROR);
     }
 
-    public static void showWarningMessage(String message) {
-        showMessage(message, NotificationType.WARNING);
+    public static void showWarningMessage(Project project, String message) {
+        showMessage(project, message, NotificationType.WARNING);
     }
 
-    private static void showMessage(String message, NotificationType type) {
+    private static void showMessage(Project project, String message, NotificationType type) {
         ApplicationManager.getApplication().invokeLater(() -> {
             Notification notification = GROUP_DISPLAY_ID_INFO.createNotification(TITLE, message, type, null);
-            Project[] projects = ProjectManager.getInstance().getOpenProjects();
-            Notifications.Bus.notify(notification, projects[0]);
+            Notifications.Bus.notify(notification, project);
         });
     }
 }

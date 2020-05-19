@@ -36,7 +36,7 @@ public class DownloadAction extends AnAction {
         File downloadTranslations = crowdin.downloadTranslations(source, branch);
         if (downloadTranslations != null) {
             String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime() + File.separator;
-            this.extractTranslations(downloadTranslations, tempDir);
+            this.extractTranslations(project, downloadTranslations, tempDir);
             List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
                     .map(File::getAbsolutePath)
                     .map(path -> StringUtils.removeStart(path, tempDir))
@@ -52,7 +52,7 @@ public class DownloadAction extends AnAction {
                 File toFile = new File(downloadTranslations.getParent() + File.separator + filePath);
                 toFile.getParentFile().mkdirs();
                 if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
-                    NotificationUtil.showWarningMessage("Failed to extract file '" + toFile + "'.");
+                    NotificationUtil.showWarningMessage(project, "Failed to extract file '" + toFile + "'.");
                 }
             });
             if (downloadTranslations.delete()) {
@@ -66,11 +66,11 @@ public class DownloadAction extends AnAction {
                 e.printStackTrace();
             }
             virtualFile.refresh(true, true);
-            NotificationUtil.showInformationMessage("Translations successfully downloaded");
+            NotificationUtil.showInformationMessage(project, "Translations successfully downloaded");
         }
     }
 
-    private void extractTranslations(File archive, String dirPath) {
+    private void extractTranslations(Project project, File archive, String dirPath) {
         if (archive == null) {
             return;
         }
@@ -84,7 +84,7 @@ public class DownloadAction extends AnAction {
         try {
             zipFile.extractAll(dirPath);
         } catch (ZipException e) {
-            NotificationUtil.showInformationMessage("Downloading translations failed");
+            NotificationUtil.showInformationMessage(project, "Downloading translations failed");
             e.printStackTrace();
         }
     }
