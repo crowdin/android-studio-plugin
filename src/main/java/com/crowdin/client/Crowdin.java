@@ -7,6 +7,7 @@ import com.crowdin.client.core.model.Credentials;
 import com.crowdin.client.core.model.DownloadLink;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.AddFileRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
@@ -143,6 +144,20 @@ public class Crowdin {
         }
     }
 
+    public List<Language> getSupportedLanguages() {
+        if (this.invalidConfiguration) {
+            return null;
+        }
+        try {
+            return client.getLanguagesApi().listSupportedLanguages(500, 0)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
 
     private Long getOrCreateBranch(String name) {
         if (name != null && name.length() > 0) {
