@@ -27,10 +27,8 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -202,9 +200,11 @@ public class Crowdin {
 
     public Map<Long, Directory> getDirectories(Long branchId) {
         try {
-            return this.client.getSourceFilesApi()
-                .listDirectories(this.projectId, null, null, null, 500, 0)
-                .getData()
+            return executeRequestFullList((limit, offset) ->
+                    this.client.getSourceFilesApi()
+                        .listDirectories(this.projectId, branchId, null, null, limit, offset)
+                        .getData()
+                )
                 .stream()
                 .map(ResponseObject::getData)
                 .filter(dir -> Objects.equals(dir.getBranchId(), branchId))
@@ -216,9 +216,11 @@ public class Crowdin {
 
     public List<com.crowdin.client.sourcefiles.model.File> getFiles(Long branchId) {
         try {
-            return this.client.getSourceFilesApi()
-                .listFiles(this.projectId, branchId, null, null, 500, 0)
-                .getData()
+            return executeRequestFullList((limit, offset) ->
+                    this.client.getSourceFilesApi()
+                        .listFiles(this.projectId, branchId, null, null, 500, 0)
+                        .getData()
+                )
                 .stream()
                 .map(ResponseObject::getData)
                 .filter(file -> Objects.equals(file.getBranchId(), branchId))
@@ -226,6 +228,23 @@ public class Crowdin {
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e));
         }
+    }
+
+    /**
+     * @param request represents function that downloads list of models and has two args (limit, offset)
+     * @param <T> represents model
+     * @return list of models accumulated from request function
+     */
+    private static <T> List<T> executeRequestFullList(BiFunction<Integer, Integer, List<T>> request) {
+        List<T> models = new ArrayList<>();
+        long counter;
+        int limit = 500;
+        do {
+            List<T> responseModels = request.apply(limit, models.size());
+            models.addAll(responseModels);
+            counter = responseModels.size();
+        } while (counter == limit);
+        return models;
     }
 
     private Long getOrCreateBranch(String name) {
