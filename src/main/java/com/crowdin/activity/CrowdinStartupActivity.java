@@ -11,9 +11,7 @@ public class CrowdinStartupActivity implements StartupActivity {
 
     @Override
     public void runActivity(@NotNull Project project) {
-        System.out.println("On");
         new FileChangeListener(project);
-        System.out.println(project);
         if (PropertyUtil.getCrowdinPropertyFile(project) != null) {
             //config validation
             new Crowdin(project);
