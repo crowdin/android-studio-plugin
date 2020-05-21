@@ -5,7 +5,6 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,12 +21,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class DownloadAction extends AnAction {
+public class DownloadAction extends BackgroundAction {
 
     private static final Pattern TRANSLATION_PATTERN = Pattern.compile("[\\\\\\\\\\/]?values-([a-zA-Z-]+)[\\\\\\\\\\/]([^\\\\\\\\|^\\/]+)$");
 
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
+    public void performInBackground(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
         VirtualFile source = FileUtil.getSourceFile(virtualFile, null);
@@ -43,9 +42,9 @@ public class DownloadAction extends AnAction {
                     .collect(Collectors.toList());
 
             List<String> androidCodes = crowdin.getSupportedLanguages()
-                .stream()
-                .map(Language::getAndroidCode)
-                .collect(Collectors.toList());
+                    .stream()
+                    .map(Language::getAndroidCode)
+                    .collect(Collectors.toList());
             List<String> sortedFiles = filterFiles(files, androidCodes);
             sortedFiles.forEach(filePath -> {
                 File fromFile = new File(tempDir + filePath);
@@ -70,6 +69,11 @@ public class DownloadAction extends AnAction {
         }
     }
 
+    @Override
+    String loadingText(AnActionEvent e) {
+        return "Downloading Translations";
+    }
+
     private void extractTranslations(Project project, File archive, String dirPath) {
         if (archive == null) {
             return;
@@ -91,10 +95,10 @@ public class DownloadAction extends AnAction {
 
     private List<String> filterFiles(List<String> files, List<String> androidCodes) {
         return files.stream()
-            .filter(file -> {
-                Matcher matcher = TRANSLATION_PATTERN.matcher(file);
-                return (matcher.matches() && androidCodes.contains(matcher.group(1)));
-            })
-            .collect(Collectors.toList());
+                .filter(file -> {
+                    Matcher matcher = TRANSLATION_PATTERN.matcher(file);
+                    return (matcher.matches() && androidCodes.contains(matcher.group(1)));
+                })
+                .collect(Collectors.toList());
     }
 }
