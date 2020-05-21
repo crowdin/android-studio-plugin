@@ -8,14 +8,11 @@ import com.crowdin.client.core.model.DownloadLink;
 import com.crowdin.client.core.model.ResponseList;
 import com.crowdin.client.core.model.ResponseObject;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.client.sourcefiles.model.AddBranchRequest;
-import com.crowdin.client.sourcefiles.model.AddFileRequest;
-import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
-import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
+import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.storage.model.Storage;
 import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.ProjectBuild;
+import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.RetryUtil;
 import com.intellij.ide.plugins.PluginManager;
@@ -25,12 +22,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Crowdin {
@@ -108,6 +107,43 @@ public class Crowdin {
         }
     }
 
+    public com.crowdin.client.projectsgroups.model.Project getProject() {
+        if (this.invalidConfiguration) {
+            return null;
+        }
+        try {
+            return this.client.getProjectsGroupsApi()
+                .getProject(this.projectId)
+                .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public List<Language> getProjectLanguages() {
+        com.crowdin.client.projectsgroups.model.Project crowdinProject = this.getProject();
+        return this.getSupportedLanguages()
+            .stream()
+            .filter(lang -> crowdinProject.getTargetLanguageIds().contains(lang.getId()))
+            .collect(Collectors.toList());
+    }
+
+    public void uploadTranslationFile(File translationFile, Long sourceId, String languageId) {
+        if (this.invalidConfiguration) {
+            return;
+        }
+        try {
+            UploadTranslationsRequest request = new UploadTranslationsRequest();
+            request.setFileId(sourceId);
+            Long storageId = client.getStorageApi()
+                .addStorage(translationFile.getName(), new FileInputStream(translationFile)).getData().getId();
+            request.setStorageId(storageId);
+            client.getTranslationsApi().uploadTranslations(this.projectId, languageId, request);
+        } catch (Exception e) {
+            NotificationUtil.showErrorMessage(this.project, "Failed to upload translation file: " + this.getErrorMessage(e));
+        }
+    }
+
     public File downloadTranslations(VirtualFile sourceFile, String branch) {
         if (this.invalidConfiguration) {
             return null;
@@ -162,6 +198,55 @@ public class Crowdin {
         }
     }
 
+    public Map<Long, Directory> getDirectories(Long branchId) {
+        try {
+            return executeRequestFullList((limit, offset) ->
+                    this.client.getSourceFilesApi()
+                        .listDirectories(this.projectId, branchId, null, null, limit, offset)
+                        .getData()
+                )
+                .stream()
+                .map(ResponseObject::getData)
+                .filter(dir -> Objects.equals(dir.getBranchId(), branchId))
+                .collect(Collectors.toMap(Directory::getId, Function.identity()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public List<com.crowdin.client.sourcefiles.model.File> getFiles(Long branchId) {
+        try {
+            return executeRequestFullList((limit, offset) ->
+                    this.client.getSourceFilesApi()
+                        .listFiles(this.projectId, branchId, null, null, 500, 0)
+                        .getData()
+                )
+                .stream()
+                .map(ResponseObject::getData)
+                .filter(file -> Objects.equals(file.getBranchId(), branchId))
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    /**
+     * @param request represents function that downloads list of models and has two args (limit, offset)
+     * @param <T> represents model
+     * @return list of models accumulated from request function
+     */
+    private static <T> List<T> executeRequestFullList(BiFunction<Integer, Integer, List<T>> request) {
+        List<T> models = new ArrayList<>();
+        long counter;
+        int limit = 500;
+        do {
+            List<T> responseModels = request.apply(limit, models.size());
+            models.addAll(responseModels);
+            counter = responseModels.size();
+        } while (counter == limit);
+        return models;
+    }
+
     private Long getOrCreateBranch(String name) {
         if (name != null && name.length() > 0) {
             try {
@@ -192,7 +277,7 @@ public class Crowdin {
         return null;
     }
 
-    private Optional<Branch> getBranch(String name) {
+    public Optional<Branch> getBranch(String name) {
         List<ResponseObject<Branch>> branches = this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null).getData();
         return branches.stream()
                 .filter(e -> e.getData().getName().equalsIgnoreCase(name))
