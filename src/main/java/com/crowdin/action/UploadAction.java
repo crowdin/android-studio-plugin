@@ -4,7 +4,6 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.PropertyUtil;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -18,9 +17,9 @@ import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
  * Created by ihor on 1/10/17.
  */
 @SuppressWarnings("ALL")
-public class UploadAction extends AnAction {
+public class UploadAction extends BackgroundAction {
     @Override
-    public void actionPerformed(@NotNull final AnActionEvent anActionEvent) {
+    public void performInBackground(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
         String sourcesProp = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, project);
@@ -31,5 +30,10 @@ public class UploadAction extends AnAction {
             String branch = GitUtil.getCurrentBranch(project);
             crowdin.uploadFile(source, branch);
         }
+    }
+
+    @Override
+    String loadingText(AnActionEvent e) {
+        return "Uploading Sources";
     }
 }

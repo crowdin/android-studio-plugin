@@ -4,7 +4,6 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.PropertyUtil;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
@@ -19,9 +18,9 @@ import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 /**
  * Created by ihor on 1/27/17.
  */
-public class UploadFromContextAction extends AnAction {
+public class UploadFromContextAction extends BackgroundAction {
     @Override
-    public void actionPerformed(AnActionEvent anActionEvent) {
+    public void performInBackground(AnActionEvent anActionEvent) {
 
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Crowdin crowdin = new Crowdin(anActionEvent.getProject());
@@ -50,5 +49,10 @@ public class UploadFromContextAction extends AnAction {
             }
         }
         return false;
+    }
+
+    @Override
+    String loadingText(AnActionEvent e) {
+        return "Uploading " + CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName();
     }
 }
