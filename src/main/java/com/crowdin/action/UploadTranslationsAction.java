@@ -21,12 +21,12 @@ import java.util.Map;
 
 import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 
-public class UploadTranslationsAction extends AnAction {
+public class UploadTranslationsAction extends BackgroundAction {
 
     private static final String PATTERN = "/values-%android_code%/%original_file_name%";
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void performInBackground(@NotNull AnActionEvent e) {
         Project project = e.getProject();
         VirtualFile root = project.getBaseDir();
         String sourcesProp = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, project);
@@ -66,5 +66,10 @@ public class UploadTranslationsAction extends AnAction {
             }
         }
         NotificationUtil.showInformationMessage(project, "Uploaded " + uploadedFilesCounter + " files");
+    }
+
+    @Override
+    String loadingText(AnActionEvent e) {
+        return "Uploading Translations";
     }
 }
