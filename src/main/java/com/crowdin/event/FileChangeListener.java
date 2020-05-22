@@ -10,6 +10,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -37,7 +38,11 @@ public class FileChangeListener implements Disposable, BulkFileListener {
     }
 
     public void after(List<? extends VFileEvent> events) {
-        if (this.autoUploadOff()) {
+        ProjectFileIndex instance = ProjectFileIndex.getInstance(this.project);
+        List<? extends VFileEvent> interestedFiles = events.stream()
+                .filter(f -> f.getFile() != null && instance.isInContent(f.getFile()))
+                .collect(Collectors.toList());
+        if (interestedFiles.size() == 0 || this.autoUploadOff()) {
             return;
         }
 
@@ -65,7 +70,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
     private boolean autoUploadOff() {
         String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD, this.project);
-        return autoUploadProp != null && autoUploadProp.equals("false");
+        return PropertyUtil.getCrowdinPropertyFile(this.project) == null || (autoUploadProp != null && autoUploadProp.equals("false"));
     }
 
     private boolean isSourceFile(VirtualFile virtualFile, List<String> sourcesList) {
