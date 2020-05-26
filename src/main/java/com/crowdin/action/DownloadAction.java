@@ -1,10 +1,13 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProperties;
+import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.PlaceholderUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,44 +32,63 @@ public class DownloadAction extends BackgroundAction {
     public void performInBackground(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile virtualFile = project.getBaseDir();
-        VirtualFile source = FileUtil.getSourceFile(virtualFile, null);
-        Crowdin crowdin = new Crowdin(project);
-        String branch = GitUtil.getCurrentBranch(project);
-        File downloadTranslations = crowdin.downloadTranslations(source, branch);
-        if (downloadTranslations != null) {
-            String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime() + File.separator;
-            this.extractTranslations(project, downloadTranslations, tempDir);
-            List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
-                    .map(File::getAbsolutePath)
-                    .map(path -> StringUtils.removeStart(path, tempDir))
-                    .collect(Collectors.toList());
-
-            List<String> androidCodes = crowdin.getSupportedLanguages()
-                    .stream()
-                    .map(Language::getAndroidCode)
-                    .collect(Collectors.toList());
-            List<String> sortedFiles = filterFiles(files, androidCodes);
-            sortedFiles.forEach(filePath -> {
-                File fromFile = new File(tempDir + filePath);
-                File toFile = new File(downloadTranslations.getParent() + File.separator + filePath);
-                toFile.getParentFile().mkdirs();
-                if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
-                    NotificationUtil.showWarningMessage(project, "Failed to extract file '" + toFile + "'.");
-                }
-            });
-            if (downloadTranslations.delete()) {
-                System.out.println("all.zip was deleted");
-            } else {
-                System.out.println("all.zip wasn't deleted");
-            }
-            try {
-                FileUtils.deleteDirectory(new File(tempDir));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            virtualFile.refresh(true, true);
-            NotificationUtil.showInformationMessage(project, "Translations successfully downloaded");
+        CrowdinProperties properties;
+        try {
+            properties = CrowdinPropertiesLoader.load(project);
+        } catch (Exception e) {
+            NotificationUtil.showErrorMessage(project, e.getMessage());
+            return;
         }
+        Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+        String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+
+        File downloadTranslations = crowdin.downloadTranslations(virtualFile, branch);
+        if (downloadTranslations == null) {
+            return;
+        }
+        String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime() + File.separator;
+        this.extractTranslations(project, downloadTranslations, tempDir);
+        List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
+            .map(File::getAbsolutePath)
+            .map(path -> StringUtils.removeStart(path, tempDir))
+            .collect(Collectors.toList());
+
+        List<Language> projectLangs = crowdin.getProjectLanguages();
+
+        properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
+            List<VirtualFile> sources = FileUtil.getSourceFilesRec(virtualFile, sourcePattern);
+            sources.forEach(source -> {
+                VirtualFile parent = FileUtil.getBaseDir(source, sourcePattern);
+                String pattern1 = PlaceholderUtil.replaceFilePlaceholders(
+                    translationPattern,
+                    StringUtils.removeStart(source.getPath(), virtualFile.getPath()));
+                projectLangs.forEach(projectLanguage -> {
+                    String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, projectLanguage);
+                    pattern2 = StringUtils.removeStart(pattern2, "/");
+                    if (!files.contains(pattern2)) {
+                        return;
+                    }
+                    File fromFile = new File(tempDir + pattern2);
+                    File toFile = new File(parent.getPath() + File.separator + pattern2);
+                    toFile.getParentFile().mkdirs();
+                    if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
+                        NotificationUtil.showWarningMessage(project, "Failed to extract file '" + toFile + "'.");
+                    }
+                });
+            });
+        });
+        if (downloadTranslations.delete()) {
+            System.out.println("all.zip was deleted");
+        } else {
+            System.out.println("all.zip wasn't deleted");
+        }
+        try {
+            FileUtils.deleteDirectory(new File(tempDir));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        virtualFile.refresh(true, true);
+        NotificationUtil.showInformationMessage(project, "Translations successfully downloaded");
     }
 
     @Override
@@ -91,14 +113,5 @@ public class DownloadAction extends BackgroundAction {
             NotificationUtil.showInformationMessage(project, "Downloading translations failed");
             e.printStackTrace();
         }
-    }
-
-    private List<String> filterFiles(List<String> files, List<String> androidCodes) {
-        return files.stream()
-                .filter(file -> {
-                    Matcher matcher = TRANSLATION_PATTERN.matcher(file);
-                    return (matcher.matches() && androidCodes.contains(matcher.group(1)));
-                })
-                .collect(Collectors.toList());
     }
 }

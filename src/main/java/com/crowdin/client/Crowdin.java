@@ -2,11 +2,7 @@ package com.crowdin.client;
 
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
-import com.crowdin.client.core.model.ClientConfig;
-import com.crowdin.client.core.model.Credentials;
-import com.crowdin.client.core.model.DownloadLink;
-import com.crowdin.client.core.model.ResponseList;
-import com.crowdin.client.core.model.ResponseObject;
+import com.crowdin.client.core.model.*;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.storage.model.Storage;
@@ -40,34 +36,19 @@ public class Crowdin {
 
     private final Project project;
 
-    private final boolean invalidConfiguration;
-
     private final com.crowdin.client.Client client;
 
-    public Crowdin(@NotNull Project project) {
+    public Crowdin(@NotNull Project project, Long projectId, String apiToken, String baseUrl) {
         this.project = project;
-        CrowdinClientProperties crowdinClientProperties = CrowdinClientProperties.load(project);
-        if (crowdinClientProperties.getErrorMessage() != null) {
-            this.projectId = null;
-            this.client = null;
-            this.invalidConfiguration = true;
-            NotificationUtil.showErrorMessage(this.project, crowdinClientProperties.getErrorMessage());
-        } else {
-            this.invalidConfiguration = false;
-            this.projectId = crowdinClientProperties.getProjectId();
-            Credentials credentials = new Credentials(crowdinClientProperties.getToken(), null, crowdinClientProperties.getBaseUrl());
+            this.projectId = projectId;
+            Credentials credentials = new Credentials(apiToken, null, baseUrl);
             ClientConfig clientConfig = ClientConfig.builder()
                     .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion())
                     .build();
             this.client = new Client(credentials, clientConfig);
-        }
     }
 
-    public void uploadFile(VirtualFile source, String branch) {
-        if (source == null || this.invalidConfiguration) {
-            return;
-        }
-
+    public void uploadFile(VirtualFile source, String translationPattern, String branch) {
         try {
             Long branchId = this.getOrCreateBranch(branch);
 
@@ -97,7 +78,7 @@ public class Crowdin {
                 request.setName(source.getName());
                 request.setBranchId(branchId);
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
-                generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
+                generalFileExportOptions.setExportPattern(translationPattern);
                 request.setExportOptions(generalFileExportOptions);
                 this.client.getSourceFilesApi().addFile(this.projectId, request);
                 NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' added to Crowdin");
@@ -108,9 +89,6 @@ public class Crowdin {
     }
 
     public com.crowdin.client.projectsgroups.model.Project getProject() {
-        if (this.invalidConfiguration) {
-            return null;
-        }
         try {
             return this.client.getProjectsGroupsApi()
                 .getProject(this.projectId)
@@ -128,10 +106,7 @@ public class Crowdin {
             .collect(Collectors.toList());
     }
 
-    public void uploadTranslationFile(File translationFile, Long sourceId, String languageId) {
-        if (this.invalidConfiguration) {
-            return;
-        }
+    public boolean uploadTranslationFile(File translationFile, Long sourceId, String languageId) {
         try {
             UploadTranslationsRequest request = new UploadTranslationsRequest();
             request.setFileId(sourceId);
@@ -139,15 +114,14 @@ public class Crowdin {
                 .addStorage(translationFile.getName(), new FileInputStream(translationFile)).getData().getId();
             request.setStorageId(storageId);
             client.getTranslationsApi().uploadTranslations(this.projectId, languageId, request);
+            return true;
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.project, "Failed to upload translation file: " + this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.project, "Failed to upload translation file '" + translationFile.getName() + "' for language '" + languageId +"': " + this.getErrorMessage(e));
+            return false;
         }
     }
 
-    public File downloadTranslations(VirtualFile sourceFile, String branch) {
-        if (this.invalidConfiguration) {
-            return null;
-        }
+    public File downloadTranslations(VirtualFile baseDir, String branch) {
         try {
             Long branchId = null;
             if (branch != null && branch.length() > 0) {
@@ -172,7 +146,7 @@ public class Crowdin {
             ResponseObject<DownloadLink> downloadLinkResponseObject = this.client.getTranslationsApi().downloadProjectTranslations(this.projectId, buildId);
             String link = downloadLinkResponseObject.getData().getUrl();
 
-            File file = new File(sourceFile.getParent().getParent().getCanonicalPath() + "/all.zip");
+            File file = new File(baseDir.getCanonicalPath() + "/all.zip");
             try (ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(link).openStream()); FileOutputStream fos = new FileOutputStream(file)) {
                 fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             }
@@ -184,9 +158,6 @@ public class Crowdin {
     }
 
     public List<Language> getSupportedLanguages() {
-        if (this.invalidConfiguration) {
-            return null;
-        }
         try {
             return client.getLanguagesApi().listSupportedLanguages(500, 0)
                 .getData()

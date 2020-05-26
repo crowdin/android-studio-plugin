@@ -1,6 +1,8 @@
 package com.crowdin.event;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProperties;
+import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.PropertyUtil;
@@ -20,9 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.crowdin.util.FileUtil.PARENT_FOLDER_NAME;
-import static com.crowdin.util.PropertyUtil.PROPERTY_SOURCES;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
 
@@ -52,20 +51,28 @@ public class FileChangeListener implements Disposable, BulkFileListener {
         ProgressManager.getInstance().run(new Task.Backgroundable(this.project, "Crowdin") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                String sources = PropertyUtil.getPropertyValue(PROPERTY_SOURCES, project);
-                List<String> sourcesList = FileUtil.getSourcesList(sources);
-                String branch = GitUtil.getCurrentBranch(project);
-                Crowdin crowdin = new Crowdin(project);
+                CrowdinProperties properties;
+                try {
+                    properties = CrowdinPropertiesLoader.load(project);
+                } catch (Exception e) {
+                    return;
+                }
+                String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+                Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+                List<VirtualFile> filesList = properties.getSourcesWithPatterns().keySet()
+                    .stream()
+                    .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
+                    .collect(Collectors.toList());
                 List<VirtualFile> files = events.stream()
                         .map(VFileEvent::getFile)
-                        .filter(file -> isSourceFile(file, sourcesList))
+                        .filter(file -> file != null && filesList.contains(file))
                         .collect(Collectors.toList());
                 if (files.size() > 0) {
                     String text = files.stream()
                             .map(VirtualFile::getName)
                             .collect(Collectors.joining(",", "Uploading ", " file" + (files.size() == 1 ? "" : "s")));
                     indicator.setText(text);
-                    files.forEach(file -> crowdin.uploadFile(file, branch));
+                    files.forEach(file -> crowdin.uploadFile(file, "/values-%android_code%/%original_file_name%", branch));
                 }
             }
         });
@@ -74,12 +81,6 @@ public class FileChangeListener implements Disposable, BulkFileListener {
     private boolean autoUploadOff() {
         String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD, this.project);
         return PropertyUtil.getCrowdinPropertyFile(this.project) == null || (autoUploadProp != null && autoUploadProp.equals("false"));
-    }
-
-    private boolean isSourceFile(VirtualFile virtualFile, List<String> sourcesList) {
-        return virtualFile != null
-                && sourcesList.contains(virtualFile.getName())
-                && PARENT_FOLDER_NAME.equals(virtualFile.getParent().getName());
     }
 
     @Override

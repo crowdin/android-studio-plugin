@@ -13,12 +13,6 @@ public final class GitUtil {
     }
 
     public static String getCurrentBranch(@NotNull final Project project) {
-        String disableBranches = PropertyUtil.getPropertyValue(PropertyUtil.PROPERTY_DISABLE_BRANCHES, project);
-
-        if (disableBranches != null && disableBranches.equals("true")) {
-            return "";
-        }
-
         GitRepository repository;
         GitLocalBranch localBranch;
         String branchName = "";
