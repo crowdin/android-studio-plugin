@@ -26,8 +26,6 @@ import java.util.stream.Collectors;
 
 public class DownloadAction extends BackgroundAction {
 
-    private static final Pattern TRANSLATION_PATTERN = Pattern.compile("[\\\\\\\\\\/]?values-([a-zA-Z-]+)[\\\\\\\\\\/]([^\\\\\\\\|^\\/]+)$");
-
     @Override
     public void performInBackground(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
@@ -59,17 +57,17 @@ public class DownloadAction extends BackgroundAction {
             List<VirtualFile> sources = FileUtil.getSourceFilesRec(virtualFile, sourcePattern);
             sources.forEach(source -> {
                 VirtualFile parent = FileUtil.getBaseDir(source, sourcePattern);
-                String pattern1 = PlaceholderUtil.replaceFilePlaceholders(
+                String basePattern = PlaceholderUtil.replaceFilePlaceholders(
                     translationPattern,
                     StringUtils.removeStart(source.getPath(), virtualFile.getPath()));
                 projectLangs.forEach(projectLanguage -> {
-                    String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, projectLanguage);
-                    pattern2 = StringUtils.removeStart(pattern2, "/");
-                    if (!files.contains(pattern2)) {
+                    String languageBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, projectLanguage);
+                    languageBasedPattern = StringUtils.removeStart(languageBasedPattern, "/");
+                    if (!files.contains(languageBasedPattern)) {
                         return;
                     }
-                    File fromFile = new File(tempDir + pattern2);
-                    File toFile = new File(parent.getPath() + File.separator + pattern2);
+                    File fromFile = new File(tempDir + languageBasedPattern);
+                    File toFile = new File(parent.getPath() + File.separator + languageBasedPattern);
                     toFile.getParentFile().mkdirs();
                     if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
                         NotificationUtil.showWarningMessage(project, "Failed to extract file '" + toFile + "'.");

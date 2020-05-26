@@ -6,27 +6,12 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.crowdin.Constants.*;
 
 public class CrowdinPropertiesLoader {
 
-    private static final String PROPERTIES_FILE = "crowdin.properties";
-
-    private static final String PROPERTY_SOURCES = "sources";
-    private static final String PROPERTY_FILES_SOURCES_PATTERN = "files.%ssource";
-    private static final String PROPERTY_FILES_TRANSLATIONS_PATTERN = "files.%stranslation";
-    private static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
-
-    private static final String STANDARD_SOURCE_PATH = "values/";
-    private static final String STANDARD_SOURCE_NAME = "strings.xml";
-    private static final String STANDARD_TRANSLATION_PATTERN = "/values-%android_code%/%original_file_name%";
-
-    private static final String PROJECT_ID = "project-id";
-    private static final String API_TOKEN = "api-token";
-    private static final String BASE_URL = "base-url";
-
-    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https|http)://(.+\\.)?crowdin\\.com/?$");
 
     public static CrowdinProperties load(Project project) {
         Properties properties = PropertyUtil.getProperties(project);
@@ -86,7 +71,7 @@ public class CrowdinPropertiesLoader {
         Map<String, String> values = getSourcesList(properties);
         values.putAll(getSourcesWithTranslations(properties, errors));
         if (values.isEmpty()) {
-            values.put(STANDARD_SOURCE_PATH + STANDARD_SOURCE_NAME, STANDARD_TRANSLATION_PATTERN);
+            values.put(STANDARD_SOURCE_PATH + "/" + STANDARD_SOURCE_NAME, STANDARD_TRANSLATION_PATTERN);
         }
         return values;
     }
@@ -119,7 +104,7 @@ public class CrowdinPropertiesLoader {
         return Arrays.stream(sources.split(","))
             .map(String::trim)
             .filter(StringUtils::isNotEmpty)
-            .map(s -> STANDARD_SOURCE_PATH + s)
+            .map(s -> STANDARD_SOURCE_PATH + "/" + s)
             .collect(Collectors.toMap(Function.identity(), (s) -> STANDARD_TRANSLATION_PATTERN));
     }
 

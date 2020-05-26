@@ -28,6 +28,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
+
 public class Crowdin {
 
     private static final String PLUGIN_ID = "com.crowdin.crowdin-idea";
@@ -38,7 +40,7 @@ public class Crowdin {
 
     private final com.crowdin.client.Client client;
 
-    public Crowdin(@NotNull Project project, Long projectId, String apiToken, String baseUrl) {
+    public Crowdin(@NotNull Project project, @NotNull Long projectId, @NotNull String apiToken, @NotNull String baseUrl) {
         this.project = project;
             this.projectId = projectId;
             Credentials credentials = new Credentials(apiToken, null, baseUrl);
@@ -69,7 +71,7 @@ public class Crowdin {
                 UpdateFileRequest request = new UpdateFileRequest();
                 request.setStorageId(storageId);
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
-                generalFileExportOptions.setExportPattern("/values-%android_code%/%original_file_name%");
+                generalFileExportOptions.setExportPattern(STANDARD_TRANSLATION_PATTERN);
                 this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
                 NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' updated in Crowdin");
             } else {

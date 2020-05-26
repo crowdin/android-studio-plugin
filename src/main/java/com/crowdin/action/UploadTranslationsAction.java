@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,7 +55,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                     String pattern1 = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
                     for (Language lang : projectLanguages) {
                         String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, lang);
-                        java.io.File translationFile = new java.io.File(baseDir.getPath() + "/" + pattern2);
+                        java.io.File translationFile = Paths.get(baseDir.getPath(), pattern2).toFile();
                         if (!translationFile.exists()) {
                             continue;
                         }

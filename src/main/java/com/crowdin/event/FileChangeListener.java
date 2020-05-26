@@ -23,9 +23,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FileChangeListener implements Disposable, BulkFileListener {
+import static com.crowdin.Constants.PROPERTY_AUTO_UPLOAD;
+import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
-    private static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
+public class FileChangeListener implements Disposable, BulkFileListener {
 
     private final MessageBusConnection connection;
     private final Project project;
@@ -59,20 +60,20 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                 }
                 String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
                 Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-                List<VirtualFile> filesList = properties.getSourcesWithPatterns().keySet()
+                List<VirtualFile> allSources = properties.getSourcesWithPatterns().keySet()
                     .stream()
                     .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
                     .collect(Collectors.toList());
-                List<VirtualFile> files = events.stream()
+                List<VirtualFile> changedSources = events.stream()
                         .map(VFileEvent::getFile)
-                        .filter(file -> file != null && filesList.contains(file))
+                        .filter(file -> file != null && allSources.contains(file))
                         .collect(Collectors.toList());
-                if (files.size() > 0) {
-                    String text = files.stream()
+                if (changedSources.size() > 0) {
+                    String text = changedSources.stream()
                             .map(VirtualFile::getName)
-                            .collect(Collectors.joining(",", "Uploading ", " file" + (files.size() == 1 ? "" : "s")));
+                            .collect(Collectors.joining(",", "Uploading ", " file" + (changedSources.size() == 1 ? "" : "s")));
                     indicator.setText(text);
-                    files.forEach(file -> crowdin.uploadFile(file, "/values-%android_code%/%original_file_name%", branch));
+                    changedSources.forEach(file -> crowdin.uploadFile(file, STANDARD_TRANSLATION_PATTERN, branch));
                 }
             }
         });

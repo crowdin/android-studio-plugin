@@ -7,9 +7,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class PropertyUtil {
+import static com.crowdin.Constants.PROPERTIES_FILE;
 
-    public static final String PROPERTIES_FILE = "crowdin.properties";
+public class PropertyUtil {
 
     public static String getPropertyValue(String key, Project project) {
         if (key == null) {
