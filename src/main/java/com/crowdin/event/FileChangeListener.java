@@ -38,6 +38,9 @@ public class FileChangeListener implements Disposable, BulkFileListener {
     }
 
     public void after(List<? extends VFileEvent> events) {
+        if (this.project.isDisposed()) {
+            return;
+        }
         ProjectFileIndex instance = ProjectFileIndex.getInstance(this.project);
         List<? extends VFileEvent> interestedFiles = events.stream()
                 .filter(f -> f.getFile() != null && instance.isInContent(f.getFile()))
