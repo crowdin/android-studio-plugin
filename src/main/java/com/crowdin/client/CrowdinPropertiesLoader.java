@@ -78,7 +78,7 @@ public class CrowdinPropertiesLoader {
 
     private static Map<String, String> getSourcesWithTranslations(Properties properties, List<String> errors) {
         Map<String, String> values = new HashMap<>();
-        for (int i = 0; true; i++) {
+        for (int i = 0; i < 1000; i++) {
             String ident = (i == 0) ? "" : i + ".";
             String filesSource = String.format(PROPERTY_FILES_SOURCES_PATTERN, ident);
             String filesTranslation = String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident);
@@ -88,9 +88,6 @@ public class CrowdinPropertiesLoader {
                 errors.add("Missing '" + filesTranslation + "'.");
             } else if (properties.containsKey(filesTranslation)) {
                 errors.add("Missing '" + filesSource + "'.");
-
-            } else {
-                break;
             }
         }
         return values;
@@ -104,7 +101,7 @@ public class CrowdinPropertiesLoader {
         return Arrays.stream(sources.split(","))
             .map(String::trim)
             .filter(StringUtils::isNotEmpty)
-            .map(s -> STANDARD_SOURCE_PATH + "/" + s)
+            .map(s -> "**/" + STANDARD_SOURCE_PATH + "/" + s)
             .collect(Collectors.toMap(Function.identity(), (s) -> STANDARD_TRANSLATION_PATTERN));
     }
 
