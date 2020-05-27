@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.4.19'
+    id 'jacoco'
 }
 
 group 'com.crowdin.crowdin-idea'
@@ -44,4 +45,19 @@ patchPluginXml {
 
 wrapper {
     gradleVersion = '5.2.1'
+}
+
+jacoco {
+    toolVersion = "0.8.5"
+    reportsDir = file("$buildDir/reports")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled false
+        xml.destination file("${buildDir}/coverage.xml")
+    }
+
+    getExecutionData().setFrom("$buildDir/jacoco/test.exec")
 }
