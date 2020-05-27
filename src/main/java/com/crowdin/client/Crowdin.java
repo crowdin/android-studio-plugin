@@ -40,7 +40,7 @@ public class Crowdin {
 
     private final com.crowdin.client.Client client;
 
-    public Crowdin(@NotNull Project project, @NotNull Long projectId, @NotNull String apiToken, @NotNull String baseUrl) {
+    public Crowdin(@NotNull Project project, @NotNull Long projectId, @NotNull String apiToken, String baseUrl) {
         this.project = project;
             this.projectId = projectId;
             Credentials credentials = new Credentials(apiToken, null, baseUrl);
