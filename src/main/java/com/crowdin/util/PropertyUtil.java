@@ -43,6 +43,11 @@ public class PropertyUtil {
             System.out.println("Base dir not exist");
             return null;
         }
-        return baseDir.findChild(PROPERTIES_FILE);
+        VirtualFile child = baseDir.findChild(PROPERTIES_FILE);
+        if (child != null && child.exists()) {
+            return child;
+        } else {
+            return null;
+        }
     }
 }
