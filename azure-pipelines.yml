@@ -31,6 +31,12 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'build buildPlugin verifyPlugin'
+- script: |
+    ./gradlew build jacocoTestReport
+  displayName: 'Generating code coverage report'
+- bash: |
+    bash <(curl -s https://codecov.io/bash) -t $(CODECOV_TOKEN)
+  displayName: 'Upload coverage to codecov.io'
 - task: CopyFiles@2
   displayName: 'Copy build to Artifact staging directory'
   inputs:
