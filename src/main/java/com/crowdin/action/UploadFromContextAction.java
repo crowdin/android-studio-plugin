@@ -5,6 +5,7 @@ import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
+import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
@@ -21,19 +22,27 @@ import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 public class UploadFromContextAction extends BackgroundAction {
     @Override
     public void performInBackground(AnActionEvent anActionEvent) {
-
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Project project = anActionEvent.getProject();
-        CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
-        Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-        String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-        crowdin.uploadFile(file, STANDARD_TRANSLATION_PATTERN, branch);
+        try {
+            CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
+            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            crowdin.uploadFile(file, STANDARD_TRANSLATION_PATTERN, branch);
+        } catch (Exception e) {
+            NotificationUtil.showErrorMessage(project, e.getMessage());
+        }
     }
 
     @Override
     public void update(AnActionEvent e) {
         Project project = e.getProject();
-        CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
+        CrowdinProperties properties;
+        try {
+            properties = CrowdinPropertiesLoader.load(project);
+        } catch (Exception exception) {
+            return;
+        }
         List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
             .stream()
             .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
