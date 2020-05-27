@@ -52,10 +52,6 @@ public final class FileUtil {
                 } else if (!foundChild.isDirectory() && !isDir) {
                     files.add(foundChild);
                 }
-            } else {
-                for (VirtualFile child : root.getChildren()) {
-                    files.addAll(getSourceFilesRec(child, source));
-                }
             }
         }
         return files;

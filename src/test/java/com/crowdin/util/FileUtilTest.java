@@ -44,7 +44,7 @@ public class FileUtilTest extends BasePlatformTestCase {
     @MethodSource
     public void testGetSourceFilesRec(List<String> filesNeeded, String sourcePattern, List<String> expected) {
         VirtualFile root = myFixture.copyFileToProject(filesNeeded.get(0));
-        while (root.getParent() != null) {
+        while (root.getParent().getParent() != null) {
             root = root.getParent();
         }
         for (int i = 1; i < filesNeeded.size(); i++) {
@@ -75,7 +75,11 @@ public class FileUtilTest extends BasePlatformTestCase {
             arguments(
                 Arrays.asList("values/strings.xml", "values/strings2.xml"),
                 "values/*2.xml",
-                Arrays.asList(root + "values/strings2.xml"))
+                Arrays.asList(root + "values/strings2.xml")),
+            arguments(
+                Arrays.asList("values/strings.xml", "values/second/values/strings.xml"),
+                "values/strings.xml",
+                Arrays.asList(root + "values/strings.xml"))
         );
     }
 }
