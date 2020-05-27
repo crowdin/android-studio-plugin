@@ -41,7 +41,7 @@ public class CrowdinPropertiesLoader {
                 errors.add("Missing \"api-token\" property in crowdin.properties");
             }
             String propBaseUrl = properties.getProperty(BASE_URL);
-            if (StringUtils.isNotEmpty(propBaseUrl) && !isBaseUrlValid(propBaseUrl)) {
+            if (StringUtils.isNotEmpty(propBaseUrl)) {
                 if (isBaseUrlValid(propBaseUrl)) {
                     crowdinProperties.setBaseUrl(propBaseUrl);
                 } else {
