@@ -42,8 +42,6 @@ public final class FileUtil {
                     files.add(child);
                 } else if (child.isDirectory() && isDir && child.getName().matches(searchableRegex)) {
                     files.addAll(getSourceFilesRec(child, source.substring(sepIndex+1)));
-                } else if (child.isDirectory() && !isDir) {
-                    files.addAll(getSourceFilesRec(child, source));
                 }
             }
         } else {

@@ -15,6 +15,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,7 +71,7 @@ public class FileUtilTest extends BasePlatformTestCase {
             arguments(
                 Arrays.asList("values/strings.xml", "values/strings2.xml"),
                 "strings*.xml",
-                Arrays.asList(root + "values/strings.xml", root + "values/strings2.xml")),
+                new ArrayList<>()),
             arguments(
                 Arrays.asList("values/strings.xml", "values/strings2.xml"),
                 "values/*2.xml",
