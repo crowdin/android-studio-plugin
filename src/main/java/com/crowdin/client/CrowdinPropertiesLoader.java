@@ -105,7 +105,7 @@ public class CrowdinPropertiesLoader {
             .collect(Collectors.toMap(Function.identity(), (s) -> STANDARD_TRANSLATION_PATTERN));
     }
 
-    private static boolean isBaseUrlValid(String baseUrl) {
+    protected static boolean isBaseUrlValid(String baseUrl) {
         return BASE_URL_PATTERN.matcher(baseUrl).matches();
     }
 }

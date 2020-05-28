@@ -19,5 +19,5 @@ public final class Constants {
     public static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
 
-    public static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https|http)://(.+\\.)?crowdin\\.com/?$");
+    public static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 }

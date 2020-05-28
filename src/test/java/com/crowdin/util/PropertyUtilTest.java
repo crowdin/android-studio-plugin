@@ -31,14 +31,14 @@ public class PropertyUtilTest {
             arguments(
                 getProperties(new java.io.File(classLoader.getResource("properties/sources/one_source.properties").getFile())),
                 new HashMap<String, String>() {{
-                    put("values/strings.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings.xml", "/values-%android_code%/%original_file_name%");
                 }}),
             arguments(
                     getProperties(new java.io.File(classLoader.getResource("properties/sources/list_sources.properties").getFile())),
                 new HashMap<String, String>() {{
-                    put("values/strings.xml", "/values-%android_code%/%original_file_name%");
-                    put("values/strings1.xml", "/values-%android_code%/%original_file_name%");
-                    put("values/strings2.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings1.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings2.xml", "/values-%android_code%/%original_file_name%");
                 }}),
             arguments(
                     getProperties(new java.io.File(classLoader.getResource("properties/sources/sources_w_translations.properties").getFile())),
@@ -50,9 +50,9 @@ public class PropertyUtilTest {
             arguments(
                     getProperties(new java.io.File(classLoader.getResource("properties/sources/combined_sources.properties").getFile())),
                 new HashMap<String, String>() {{
-                    put("values/strings.xml", "/values-%android_code%/%original_file_name%");
-                    put("values/strings1.xml", "/values-%android_code%/%original_file_name%");
-                    put("values/strings2.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings1.xml", "/values-%android_code%/%original_file_name%");
+                    put("**/values/strings2.xml", "/values-%android_code%/%original_file_name%");
                     put("values/*.xml", "/values-%android_code%/%original_file_name%");
                     put("another/path/*.xml", "/another/path-%android_code%/%original_file_name%");
                     put("values2/*.xml", "/values2-%android_code%/%original_file_name%");
