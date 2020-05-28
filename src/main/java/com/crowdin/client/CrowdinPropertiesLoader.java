@@ -71,7 +71,7 @@ public class CrowdinPropertiesLoader {
         Map<String, String> values = getSourcesList(properties);
         values.putAll(getSourcesWithTranslations(properties, errors));
         if (values.isEmpty()) {
-            values.put(STANDARD_SOURCE_PATH + "/" + STANDARD_SOURCE_NAME, STANDARD_TRANSLATION_PATTERN);
+            values.put("**/" + STANDARD_SOURCE_PATH + "/" + STANDARD_SOURCE_NAME, STANDARD_TRANSLATION_PATTERN);
         }
         return values;
     }
