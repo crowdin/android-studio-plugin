@@ -13,7 +13,7 @@ class CrowdinClientProperties {
     private static final String API_TOKEN = "api-token";
     private static final String BASE_URL = "base-url";
 
-    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
+    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
     private Long projectId;
     private String token;

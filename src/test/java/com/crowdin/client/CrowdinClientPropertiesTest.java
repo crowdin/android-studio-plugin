@@ -14,6 +14,7 @@ public class CrowdinClientPropertiesTest {
         assertTrue(isBaseUrlValid("https://crowdin.com"));
         assertTrue(isBaseUrlValid("http://test.dev.crowdin.com"));
         assertTrue(isBaseUrlValid("http://my-organization.test.dev.crowdin.com"));
+        assertTrue(isBaseUrlValid("https://ti-it.crowdin.com"));
         assertFalse(isBaseUrlValid("http://my-organization.testdev.crowdin.com"));
         assertFalse(isBaseUrlValid("http://crowdin.com"));
         assertFalse(isBaseUrlValid("http://myorganization.crowdin.com"));
