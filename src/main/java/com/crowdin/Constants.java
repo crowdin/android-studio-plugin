@@ -1,5 +1,6 @@
 package com.crowdin;
 
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 public final class Constants {
@@ -20,4 +21,6 @@ public final class Constants {
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
 
     public static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
+
+    public static final ResourceBundle MESSAGES_BUNDLE = ResourceBundle.getBundle("messages/messages");
 }

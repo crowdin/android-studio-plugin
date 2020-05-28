@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+
 public class UploadTranslationsAction extends BackgroundAction {
 
     @Override
@@ -49,7 +51,7 @@ public class UploadTranslationsAction extends BackgroundAction {
 
                     File crowdinSource = filePaths.get(sourcePath);
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, "File '" + (branch != null ? branch + "/" : "") + sourcePath + "' is missing in the project. Run 'Upload' to upload the missing source");
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branch != null ? branch + "/" : "") + sourcePath));
                         return;
                     }
                     String pattern1 = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
@@ -66,7 +68,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                     }
                 });
             });
-            NotificationUtil.showInformationMessage(project, "Uploaded " + uploadedFilesCounter.get() + " files");
+            NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
         } catch (Exception exception) {
             NotificationUtil.showErrorMessage(project, exception.getMessage());
             return;
@@ -75,6 +77,6 @@ public class UploadTranslationsAction extends BackgroundAction {
 
     @Override
     String loadingText(AnActionEvent e) {
-        return "Uploading Translations";
+        return MESSAGES_BUNDLE.getString("labels.loading_text.upload_translations");
     }
 }

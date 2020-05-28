@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+
 /**
  * Created by ihor on 1/10/17.
  */
@@ -38,6 +40,6 @@ public class UploadAction extends BackgroundAction {
 
     @Override
     String loadingText(AnActionEvent e) {
-        return "Uploading Sources";
+        return MESSAGES_BUNDLE.getString("labels.loading_text.upload_sources");
     }
 }

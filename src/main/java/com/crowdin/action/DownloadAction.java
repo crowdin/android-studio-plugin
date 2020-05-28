@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class DownloadAction extends BackgroundAction {
 
@@ -72,7 +72,7 @@ public class DownloadAction extends BackgroundAction {
                     File toFile = new File(parent.getPath() + File.separator + languageBasedPattern);
                     toFile.getParentFile().mkdirs();
                     if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
-                        NotificationUtil.showWarningMessage(project, "Failed to extract file '" + toFile + "'.");
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.extract_file"), toFile));
                     }
                 });
             });
@@ -88,12 +88,12 @@ public class DownloadAction extends BackgroundAction {
             e.printStackTrace();
         }
         virtualFile.refresh(true, true);
-        NotificationUtil.showInformationMessage(project, "Translations successfully downloaded");
+        NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download"));
     }
 
     @Override
     String loadingText(AnActionEvent e) {
-        return "Downloading Translations";
+        return MESSAGES_BUNDLE.getString("labels.loading_text.download");
     }
 
     private void extractTranslations(Project project, File archive, String dirPath) {
@@ -110,7 +110,7 @@ public class DownloadAction extends BackgroundAction {
         try {
             zipFile.extractAll(dirPath);
         } catch (ZipException e) {
-            NotificationUtil.showInformationMessage(project, "Downloading translations failed");
+            NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("errors.extract_archive"));
             e.printStackTrace();
         }
     }
