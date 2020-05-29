@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.0.0'
+version '1.1.0'
 
 sourceCompatibility = 1.8
 
@@ -36,11 +36,13 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Updated: Migrated project to gradle-based intellij plugin<br>
-      - Updated: API v2 Support<br>
-      - Updated: Notifications improve<br>
-      - Updated: Refactoring and fixes<br>
-      - Fixed: <code>auto-upload</code> disabling"""
+      - Added: Upload Translations to Crowdin
+      - Added: Set custom directory to sources and translations files
+      - Added: Wrapped plugin actions into background tasks
+      - Added: Crowdin icon for menu
+      - Updated: Improved base path validation
+      - Fixed: Work in multiple projects
+      - Fixed: Removed error notification if project does not have crowdin property file"""
 }
 
 wrapper {

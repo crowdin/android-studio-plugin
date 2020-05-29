@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.1.0]
+- Added: Upload Translation to Crowdin
+- Added: Set custom directory to sources and translations files
+- Added: Wrapped plugin actions into background tasks
+- Added: Crowdin icon for menu
+- Updated: Improved base path validation
+- Fixed: Work in multiple projects
+- Fixed: Removed error notification if project does not have crowdin property file
+
 ## [1.0.0]
 - Updated: Migrated project to gradle-based intellij plugin
 - Updated: API v2 Support
