@@ -32,7 +32,7 @@ public class CrowdinPropertiesLoader {
                     errors.add("\"Project-id\" is not a number in crowdin.properties");
                 }
             } else {
-                errors.add("File '" + PROPERTIES_FILE + "' with Crowdin plugin configuration doesn't exist in project root directory");
+                errors.add("Missing \"project-id\" property in crowdin.properties");
             }
             String propApiToken = properties.getProperty(API_TOKEN);
             if (StringUtils.isNotEmpty(propApiToken)) {
