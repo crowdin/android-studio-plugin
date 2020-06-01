@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
@@ -28,7 +29,16 @@ public class UploadFromContextAction extends BackgroundAction {
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-            crowdin.uploadFile(file, STANDARD_TRANSLATION_PATTERN, branch);
+
+            Optional<String> sourcePattern = properties.getSourcesWithPatterns().keySet()
+                .stream()
+                .filter(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).contains(file))
+                .findAny();
+            if (sourcePattern.isPresent()) {
+                crowdin.uploadFile(file, properties.getSourcesWithPatterns().get(sourcePattern.get()), branch);
+            } else {
+                throw new RuntimeException("Unexpected error: couldn't find suitable source pattern");
+            }
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }

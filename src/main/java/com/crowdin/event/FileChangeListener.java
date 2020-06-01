@@ -20,11 +20,12 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.PROPERTY_AUTO_UPLOAD;
-import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
 
@@ -60,20 +61,23 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                 }
                 String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
                 Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-                List<VirtualFile> allSources = properties.getSourcesWithPatterns().keySet()
-                    .stream()
-                    .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
-                    .collect(Collectors.toList());
+                Map<VirtualFile, String> allSources = new HashMap<>();
+                properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
+                    List<VirtualFile> files = FileUtil.getSourceFilesRec(project.getBaseDir(), sourcePattern);
+                    files.forEach(f -> allSources.put(f, translationPattern));
+                });
                 List<VirtualFile> changedSources = events.stream()
                         .map(VFileEvent::getFile)
-                        .filter(file -> file != null && allSources.contains(file))
+                        .filter(file -> file != null && allSources.containsKey(file))
                         .collect(Collectors.toList());
                 if (changedSources.size() > 0) {
                     String text = changedSources.stream()
                             .map(VirtualFile::getName)
                             .collect(Collectors.joining(",", "Uploading ", " file" + (changedSources.size() == 1 ? "" : "s")));
                     indicator.setText(text);
-                    changedSources.forEach(file -> crowdin.uploadFile(file, STANDARD_TRANSLATION_PATTERN, branch));
+                    changedSources.forEach(file -> {
+                        crowdin.uploadFile(file, allSources.get(file), branch);
+                    });
                 }
             }
         });
