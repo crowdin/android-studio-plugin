@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -49,6 +50,7 @@ public class DownloadAction extends BackgroundAction {
         List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
             .map(File::getAbsolutePath)
             .map(path -> StringUtils.removeStart(path, tempDir))
+            .map(f -> f.replaceAll("[\\\\/]+", "/"))
             .collect(Collectors.toList());
 
         List<Language> projectLangs = crowdin.getProjectLanguages();

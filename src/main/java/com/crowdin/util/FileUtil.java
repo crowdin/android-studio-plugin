@@ -17,7 +17,11 @@ public final class FileUtil {
 
     public static VirtualFile getBaseDir(VirtualFile file, String relativePath) {
         VirtualFile dir = file;
-        for (int i = relativePath.split("[\\\\/]+").length; i > 0; i--) {
+        int depth = relativePath.replaceAll("^[\\\\/]?\\*\\*[\\\\/]?", "").split("[\\\\/]+").length;
+        for (int i = depth; i > 0; i--) {
+            if (dir.getParent() == null) {
+                break;
+            }
             dir = dir.getParent();
         }
         return dir;
