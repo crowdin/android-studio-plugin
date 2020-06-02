@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.PROPERTY_AUTO_UPLOAD;
+import static com.crowdin.Constants.*;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
 
@@ -73,8 +73,8 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                 if (changedSources.size() > 0) {
                     String text = changedSources.stream()
                             .map(VirtualFile::getName)
-                            .collect(Collectors.joining(",", "Uploading ", " file" + (changedSources.size() == 1 ? "" : "s")));
-                    indicator.setText(text);
+                            .collect(Collectors.joining(","));
+                    indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
                     changedSources.forEach(file -> {
                         crowdin.uploadFile(file, allSources.get(file), branch);
                     });

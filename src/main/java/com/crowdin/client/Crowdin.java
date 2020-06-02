@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
 import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
 public class Crowdin {
@@ -73,7 +74,7 @@ public class Crowdin {
                 GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
                 generalFileExportOptions.setExportPattern(STANDARD_TRANSLATION_PATTERN);
                 this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
-                NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' updated in Crowdin");
+                NotificationUtil.showInformationMessage(this.project, String.format(MESSAGES_BUNDLE.getString("messages.source_updated"), source.getName()));
             } else {
                 AddFileRequest request = new AddFileRequest();
                 request.setStorageId(storageId);
@@ -83,7 +84,7 @@ public class Crowdin {
                 generalFileExportOptions.setExportPattern(translationPattern);
                 request.setExportOptions(generalFileExportOptions);
                 this.client.getSourceFilesApi().addFile(this.projectId, request);
-                NotificationUtil.showInformationMessage(this.project, "File '" + source.getName() + "' added to Crowdin");
+                NotificationUtil.showInformationMessage(this.project, String.format(MESSAGES_BUNDLE.getString("messages.source_uploaded"), source.getName()));
             }
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(this.project, this.getErrorMessage(e));
@@ -118,7 +119,7 @@ public class Crowdin {
             client.getTranslationsApi().uploadTranslations(this.projectId, languageId, request);
             return true;
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.project, "Failed to upload translation file '" + translationFile.getName() + "' for language '" + languageId +"': " + this.getErrorMessage(e));
+            NotificationUtil.showErrorMessage(this.project, String.format(MESSAGES_BUNDLE.getString("errors.upload_source"), translationFile.getName(), languageId, this.getErrorMessage(e)));
             return false;
         }
     }
@@ -129,7 +130,7 @@ public class Crowdin {
             if (branch != null && branch.length() > 0) {
                 Optional<Branch> foundBranch = this.getBranch(branch);
                 if (!foundBranch.isPresent()) {
-                    NotificationUtil.showWarningMessage(this.project, "Branch " + branch + " does not exists in Crowdin");
+                    NotificationUtil.showWarningMessage(this.project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branch));
                     return null;
                 }
                 branchId = foundBranch.get().getId();
@@ -242,7 +243,7 @@ public class Crowdin {
                     if (this.customMessage(error)) {
                         throw new RuntimeException(this.getErrorMessage(error));
                     }
-                    String msg = "Failed to create/find branch for project " + this.projectId + ". " + this.getErrorMessage(error);
+                    String msg = String.format(MESSAGES_BUNDLE.getString("errors.create_or_find_branch"), name, this.projectId, this.getErrorMessage(error));
                     throw new RuntimeException(msg);
                 }
             }
@@ -262,7 +263,7 @@ public class Crowdin {
         if (e instanceof HttpException) {
             HttpException ex = (HttpException) e;
             if (ex.getError().getCode().equalsIgnoreCase("401")) {
-                return "Unable to authorize. Please, use another Personal Access Token and try again.";
+                return MESSAGES_BUNDLE.getString("errors.authorize");
             } else {
                 return ex.getError().getMessage();
             }
@@ -306,7 +307,7 @@ public class Crowdin {
             if (branchResponseObject != null) {
                 return branchResponseObject.getData().getId();
             } else {
-                throw new Exception("Could not find branch " + name + "in Crowdin response");
+                throw new Exception(String.format(MESSAGES_BUNDLE.getString("errors.find_branch"), name));
             }
         });
     }

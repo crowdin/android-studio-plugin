@@ -22,30 +22,30 @@ public class CrowdinPropertiesLoader {
         List<String> errors = new ArrayList<>();
         CrowdinProperties crowdinProperties = new CrowdinProperties();
         if (properties == null) {
-            errors.add("File '" + PROPERTIES_FILE + "' with Crowdin plugin configuration doesn't exist in project root directory");
+            errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_config_file"), PROPERTIES_FILE));
         } else {
             String propProjectId = properties.getProperty(PROJECT_ID);
             if (StringUtils.isNotEmpty(propProjectId)) {
                 try {
                     crowdinProperties.setProjectId(Long.valueOf(propProjectId));
                 } catch (NumberFormatException e) {
-                    errors.add("\"Project-id\" is not a number in crowdin.properties");
+                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.property_is_not_number"), PROJECT_ID));
                 }
             } else {
-                errors.add("Missing \"project-id\" property in crowdin.properties");
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROJECT_ID));
             }
             String propApiToken = properties.getProperty(API_TOKEN);
             if (StringUtils.isNotEmpty(propApiToken)) {
                 crowdinProperties.setApiToken(propApiToken);
             } else {
-                errors.add("Missing \"api-token\" property in crowdin.properties");
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), API_TOKEN));
             }
             String propBaseUrl = properties.getProperty(BASE_URL);
             if (StringUtils.isNotEmpty(propBaseUrl)) {
                 if (isBaseUrlValid(propBaseUrl)) {
                     crowdinProperties.setBaseUrl(propBaseUrl);
                 } else {
-                    errors.add("Invalid \"base-url\" property in crowdin.properties. The expected format is 'https://crowdin.com' or 'https://{domain_name}.crowdin.com'");
+                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_url_property"), BASE_URL));
                 }
             }
             String disabledBranches = properties.getProperty(PROPERTY_DISABLE_BRANCHES);
@@ -61,7 +61,7 @@ public class CrowdinPropertiesLoader {
 
         if (!errors.isEmpty()) {
             String errorsInOne = String.join("\n", errors);
-            throw new RuntimeException("Errors in configuration file:\n" + errorsInOne);
+            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + "\n" + errorsInOne);
         }
 
         return crowdinProperties;
@@ -85,9 +85,9 @@ public class CrowdinPropertiesLoader {
             if (properties.containsKey(filesSource) && properties.containsKey(filesTranslation)) {
                 values.put(StringUtils.removeStart(properties.getProperty(filesSource).replaceAll("[\\\\/]+", "/"), "/"), properties.getProperty(filesTranslation).replaceAll("[\\\\/]+", "/"));
             } else if (properties.containsKey(filesSource)) {
-                errors.add("Missing '" + filesTranslation + "'.");
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), filesTranslation));
             } else if (properties.containsKey(filesTranslation)) {
-                errors.add("Missing '" + filesSource + "'.");
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), filesSource));
             }
         }
         return values;

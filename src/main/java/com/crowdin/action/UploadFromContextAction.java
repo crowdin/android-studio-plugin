@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
 import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
 /**
@@ -65,6 +66,6 @@ public class UploadFromContextAction extends BackgroundAction {
 
     @Override
     String loadingText(AnActionEvent e) {
-        return "Uploading " + CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName();
+        return String.format(MESSAGES_BUNDLE.getString("labels.loading_text.upload_sources_from_context"), CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName());
     }
 }
