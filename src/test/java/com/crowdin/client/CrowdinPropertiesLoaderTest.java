@@ -2,11 +2,11 @@ package com.crowdin.client;
 
 import org.junit.jupiter.api.Test;
 
-import static com.crowdin.client.CrowdinClientProperties.isBaseUrlValid;
+import static com.crowdin.client.CrowdinPropertiesLoader.isBaseUrlValid;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class CrowdinClientPropertiesTest {
+public class CrowdinPropertiesLoaderTest {
 
     @Test
     public void isBaseUrlValidTest() {

@@ -7,34 +7,34 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
+import static com.crowdin.Constants.PROPERTIES_FILE;
+
 public class PropertyUtil {
-
-    public static final String PROPERTIES_FILE = "crowdin.properties";
-
-    public static final String PROPERTY_SOURCES = "sources";
-    public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
 
     public static String getPropertyValue(String key, Project project) {
         if (key == null) {
             return "";
         }
-        Properties properties = new Properties();
-        try {
-            VirtualFile crowdinProperties = getCrowdinPropertyFile(project);
-            if (crowdinProperties == null) {
-                return "";
-            }
-            InputStream in = new FileInputStream(crowdinProperties.getCanonicalPath());
-            properties.load(in);
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (properties.get(key) != null) {
+        Properties properties = getProperties(project);
+        if (properties != null && properties.get(key) != null) {
             return properties.get(key).toString();
         } else {
             return "";
         }
+    }
+
+    public static Properties getProperties(Project project) {
+        Properties properties = new Properties();
+        VirtualFile propertiesFile = getCrowdinPropertyFile(project);
+        if (propertiesFile == null) {
+            return null;
+        }
+        try (InputStream in = new FileInputStream(propertiesFile.getCanonicalPath())) {
+            properties.load(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return properties;
     }
 
     public static VirtualFile getCrowdinPropertyFile(Project project) {
