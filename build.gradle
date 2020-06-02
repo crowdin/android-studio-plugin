@@ -40,12 +40,12 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Added: Upload Translations to Crowdin
-      - Added: Set custom directory to sources and translations files
-      - Added: Wrapped plugin actions into background tasks
-      - Added: Crowdin icon for menu
-      - Updated: Improved base path validation
-      - Fixed: Work in multiple projects
+      - Added: Upload Translations to Crowdin<br>
+      - Added: Set custom directory to sources and translations files<br>
+      - Added: Wrapped plugin actions into background tasks<br>
+      - Added: Crowdin icon for menu<br>
+      - Updated: Improved base path validation<br>
+      - Fixed: Work in multiple projects<br>
       - Fixed: Removed error notification if project does not have crowdin property file"""
 }
 
