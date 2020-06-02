@@ -1,8 +1,8 @@
 [<p align="center"><img src="https://support.crowdin.com/assets/logos/crowdin-dark-symbol.png" data-canonical-src="https://support.crowdin.com/assets/logos/crowdin-dark-symbol.png" width="200" height="200" align="center"/></p>](https://crowdin.com)
 
-# Crowdin Android Studio Plugin
+# Crowdin Android Studio Plugin [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fgithub.com%2Fcrowdin%2Fandroid-studio-plugin&text=Manage%20and%20synchronize%20your%20localization%20resources%20with%20Crowdin%20project%20instantly%20from%20IDE)
 
-This plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
+This plugin lets you integrate Android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
 
 ## Status
 
