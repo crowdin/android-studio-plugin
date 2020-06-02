@@ -2,7 +2,7 @@
 
 # Crowdin Android Studio Plugin
 
-The plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
+This plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
 
 ## Status
 
@@ -17,9 +17,10 @@ The plugin lets you integrate android project with Crowdin. It enables you to up
 ## Getting started
 
 * Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
-* Plugin automatically detects the file with sources strings (`\*\*/values/strings.xml`). If changed, the file will be updated in Crowdin itself.
+* Plugin automatically detects the file with sources strings. If changed, the file will be updated in Crowdin itself.
 * Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload Sources` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
-* To download translations use menu `Tools > Crowdin > Download Translations`. Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
+* To upload translations use menu `Tools > Crowdin > Upload Translations`.
+* To download translations use menu `Tools > Crowdin > Download Translations`.
 
 ---
 
@@ -32,6 +33,8 @@ The plugin lets you integrate android project with Crowdin. It enables you to up
 ---
 
 ## Configuration
+
+### Credentials
 
 To start using this plugin, create a file with project credentials named *crowdin.properties* in the root directory of the project.
 
@@ -50,12 +53,34 @@ If you are using Crowdin Enterprise, you also need to specify `base-url`:
 base-url=https://{organization-name}.crowdin.com
 ```
 
-Plugin will automatically find `strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
+### Source files and translations
+
+Plugin will automatically find `\*\*/values/strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
 If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
 
 ```ini
 sources=file1.xml, file2.xml
 ```
+
+Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
+
+To set up your own sources and translations pattern use the following configuration in the `crowdin.properties` file:
+
+```ini
+files.source=/values/*.xml
+files.translation=/values-%android_code%/%original_file_name%
+
+files.1.source=/another/path/*.xml
+files.1.translation=/another/path-%android_code%/%original_file_name%
+
+...
+```
+
+See the [Placeholders](https://support.crowdin.com/configuration-file/#placeholders) article to put appropriate variables.
+
+**Note:** Currently `%original_path%` placeholder is not supported.
+
+### Additional options
 
 For Android Studio projects that use a git VCS, the plugin will automatically create corresponding branches in Crowdin.
 If you do not use branches feature in Crowdin, use `disable-branches` parameter:
@@ -69,8 +94,6 @@ To prevent automatic file upload to Crowdin use `auto-upload`:
 ```ini
 auto-upload=false
 ```
-
-To download translations from Crowdin, choose in menu: `Tools > Crowdin > Download Translations`. Translations will be exported to the `Resources` folder.
 
 ## Seeking Assistance
 
@@ -86,6 +109,7 @@ If you want to contribute please read the [Contributing](/CONTRIBUTING.md) guide
 
 * Ihor Popyk (ihor.popyk@crowdin.com)
 * Yevheniy Oliynyk (evgen41293@gmail.com)
+* Daniil Barabash (dbarabash42@gmail.com)
 
 ## License
 <pre>

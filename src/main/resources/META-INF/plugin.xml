@@ -1,12 +1,12 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <idea-version since-build="163.*"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[
       <p>
-      The plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.<br/>
+      This plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.<br/>
       <br/>
       To start using this plugin, create a file with project credentials named <strong>crowdin.properties</strong> in the root directory of the project.
       <br/><br/>
