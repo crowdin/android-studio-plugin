@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
@@ -32,14 +33,17 @@ public class UploadTranslationsAction extends BackgroundAction {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            List<Language> projectLanguages = crowdin.getProjectLanguages();
+            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
-            String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-            Long branchId = crowdin.getBranch(branch).map(Branch::getId).orElse(null);
+            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
-            List<com.crowdin.client.sourcefiles.model.File> files = crowdin.getFiles(branchId);
-            Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
-            Map<String, File> filePaths = CrowdinFileUtil.buildFilePaths(files, dirs);
+            Branch branch = crowdinProjectCache.getBranches().get(branchName);
+            if (branch == null) {
+                NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
+            }
+
+            Map<String, File> filePaths = crowdinProjectCache.getFiles().get(branch);
 
             AtomicInteger uploadedFilesCounter = new AtomicInteger(0);
 
@@ -51,11 +55,11 @@ public class UploadTranslationsAction extends BackgroundAction {
 
                     File crowdinSource = filePaths.get(sourcePath);
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branch != null ? branch + "/" : "") + sourcePath));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + sourcePath));
                         return;
                     }
                     String pattern1 = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
-                    for (Language lang : projectLanguages) {
+                    for (Language lang : crowdinProjectCache.getProjectLanguages()) {
                         String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, lang);
                         java.io.File translationFile = Paths.get(baseDir.getPath(), pattern2).toFile();
                         if (!translationFile.exists()) {

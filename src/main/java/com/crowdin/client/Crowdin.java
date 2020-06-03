@@ -259,6 +259,21 @@ public class Crowdin {
                 .findFirst();
     }
 
+    public Map<String, Branch> getBranches() {
+        try {
+            return executeRequestFullList((limit, offset) ->
+                this.client.getSourceFilesApi()
+                    .listBranches(this.projectId, null, limit, offset)
+                    .getData()
+            )
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toMap(Branch::getName, Function.identity()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
     private String getErrorMessage(Exception e) {
         if (e instanceof HttpException) {
             HttpException ex = (HttpException) e;

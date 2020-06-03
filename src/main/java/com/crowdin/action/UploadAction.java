@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.util.FileUtil;
@@ -33,6 +34,7 @@ public class UploadAction extends BackgroundAction {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(project.getBaseDir(), sourcePattern);
                 sources.forEach(sourceFile -> crowdin.uploadFile(sourceFile, translationPattern, branch));
             });
+            CrowdinProjectCacheProvider.outdateBranch(branch);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }

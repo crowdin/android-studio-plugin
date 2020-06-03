@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.util.FileUtil;
@@ -40,6 +41,7 @@ public class UploadFromContextAction extends BackgroundAction {
             } else {
                 throw new RuntimeException("Unexpected error: couldn't find suitable source pattern");
             }
+            CrowdinProjectCacheProvider.outdateBranch(branch);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
