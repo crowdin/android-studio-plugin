@@ -51,8 +51,8 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     File crowdinFile = crowdinProjectCache.getFiles().get(branch).get(sourcePath);
                     String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
-                        Path translationFile = Paths.get(baseDir.getPath(), langBasedPattern);
+                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                        Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
                         int compare = translationFile.compareTo(Paths.get(file.getPath()));
                         if (compare == 0) {
                             boolean uploaded = crowdin.uploadTranslationFile(translationFile.toFile(), crowdinFile.getId(), lang.getId());
@@ -96,10 +96,10 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             sources.forEach(s -> {
                 VirtualFile baseDir = FileUtil.getBaseDir(s, sourcePattern);
                 String sourcePath = s.getName();
-                String pattern1 = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
+                String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
                 for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                    String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, lang);
-                    Path translationFile = Paths.get(baseDir.getPath(), pattern2);
+                    String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                    Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
                     translations.add(translationFile);
                 }
             });

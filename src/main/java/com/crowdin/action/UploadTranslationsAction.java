@@ -58,10 +58,10 @@ public class UploadTranslationsAction extends BackgroundAction {
                         NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + sourcePath));
                         return;
                     }
-                    String pattern1 = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
+                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String pattern2 = PlaceholderUtil.replaceLanguagePlaceholders(pattern1, lang);
-                        java.io.File translationFile = Paths.get(baseDir.getPath(), pattern2).toFile();
+                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                        java.io.File translationFile = Paths.get(baseDir.getPath(), builtPattern).toFile();
                         if (!translationFile.exists()) {
                             continue;
                         }

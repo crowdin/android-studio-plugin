@@ -57,7 +57,7 @@ public class CrowdinProjectCacheProvider {
         return crowdinProjectCache;
     }
 
-    public static void outdateBranch(String branchName) {
+    public synchronized static void outdateBranch(String branchName) {
         outdated = true;
         outdatedBranches.add(branchName);
     }
