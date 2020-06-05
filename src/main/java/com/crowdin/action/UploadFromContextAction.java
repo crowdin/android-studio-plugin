@@ -50,20 +50,24 @@ public class UploadFromContextAction extends BackgroundAction {
     @Override
     public void update(AnActionEvent e) {
         Project project = e.getProject();
-        CrowdinProperties properties;
-        try {
-            properties = CrowdinPropertiesLoader.load(project);
-        } catch (Exception exception) {
-            return;
-        }
-        List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
-            .stream()
-            .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
-            .collect(Collectors.toList());
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-        boolean isSourceFile = files.contains(file);
-        e.getPresentation().setEnabled(isSourceFile);
-        e.getPresentation().setVisible(isSourceFile);
+        boolean isSourceFile = false;
+        try {
+            CrowdinProperties properties;
+            try {
+                properties = CrowdinPropertiesLoader.load(project);
+            } catch (Exception exception) {
+                return;
+            }
+            List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
+                .stream()
+                .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
+                .collect(Collectors.toList());
+            isSourceFile = files.contains(file);
+        } finally {
+            e.getPresentation().setEnabled(isSourceFile);
+            e.getPresentation().setVisible(isSourceFile);
+        }
     }
 
     @Override

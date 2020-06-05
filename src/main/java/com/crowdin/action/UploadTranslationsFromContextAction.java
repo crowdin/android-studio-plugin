@@ -75,39 +75,42 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
     public void update(AnActionEvent e) {
         Project project = e.getProject();
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-
-        CrowdinProperties properties;
+        boolean isTranslationFile = false;
         try {
-            properties = CrowdinPropertiesLoader.load(project);
-        } catch (Exception exception) {
-            return;
-        }
-        VirtualFile root = project.getBaseDir();
-        Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            CrowdinProperties properties;
+            try {
+                properties = CrowdinPropertiesLoader.load(project);
+            } catch (Exception exception) {
+                return;
+            }
+            VirtualFile root = project.getBaseDir();
+            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-        String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
-        CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
 
-        List<Path> translations = new ArrayList<>();
-        properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-            List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-            sources.forEach(s -> {
-                VirtualFile baseDir = FileUtil.getBaseDir(s, sourcePattern);
-                String sourcePath = s.getName();
-                String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
-                for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                    String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
-                    Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
-                    translations.add(translationFile);
-                }
+            List<Path> translations = new ArrayList<>();
+            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
+                List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
+                sources.forEach(s -> {
+                    VirtualFile baseDir = FileUtil.getBaseDir(s, sourcePattern);
+                    String sourcePath = s.getName();
+                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
+                    for (Language lang : crowdinProjectCache.getProjectLanguages()) {
+                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                        Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
+                        translations.add(translationFile);
+                    }
+                });
             });
-        });
-        Path filePath = Paths.get(file.getPath());
-        boolean isSourceFile = translations.contains(filePath);
-        e.getPresentation().setEnabled(isSourceFile);
-        e.getPresentation().setVisible(isSourceFile);
+            Path filePath = Paths.get(file.getPath());
+            isTranslationFile = translations.contains(filePath);
+        } finally {
+            e.getPresentation().setEnabled(isTranslationFile);
+            e.getPresentation().setVisible(isTranslationFile);
+        }
     }
 
     @Override

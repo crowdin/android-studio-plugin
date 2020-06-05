@@ -39,7 +39,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
-            if (branch == null) {
+            if ((branchName != null && !branchName.isEmpty()) && branch == null) {
                 NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
             }
 

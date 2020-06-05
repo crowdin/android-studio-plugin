@@ -44,13 +44,14 @@ public class CrowdinProjectCacheProvider {
         if (crowdinProjectCache.getFiles() == null) {
             crowdinProjectCache.setFiles(new HashMap<>());
         }
-        if (!crowdinProjectCache.getBranches().containsKey(branchName)) {
+        if ((branchName != null && !branchName.isEmpty()) && !crowdinProjectCache.getBranches().containsKey(branchName)) {
             return crowdinProjectCache;
         }
         Branch branch = crowdinProjectCache.getBranches().get(branchName);
         if (!crowdinProjectCache.getFiles().containsKey(branch) || outdatedBranches.contains(branchName) || update) {
-            List<com.crowdin.client.sourcefiles.model.File> files = crowdin.getFiles(branch.getId());
-            Map<Long, Directory> dirs = crowdin.getDirectories(branch.getId());
+            Long branchId = (branch != null) ? branch.getId() : null;
+            List<com.crowdin.client.sourcefiles.model.File> files = crowdin.getFiles(branchId);
+            Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
             crowdinProjectCache.getFiles().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
             outdatedBranches.remove(branchName);
         }
