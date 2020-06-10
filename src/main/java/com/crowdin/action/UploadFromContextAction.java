@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.util.FileUtil;
@@ -40,6 +41,7 @@ public class UploadFromContextAction extends BackgroundAction {
             } else {
                 throw new RuntimeException("Unexpected error: couldn't find suitable source pattern");
             }
+            CrowdinProjectCacheProvider.outdateBranch(branch);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
@@ -48,20 +50,22 @@ public class UploadFromContextAction extends BackgroundAction {
     @Override
     public void update(AnActionEvent e) {
         Project project = e.getProject();
-        CrowdinProperties properties;
-        try {
-            properties = CrowdinPropertiesLoader.load(project);
-        } catch (Exception exception) {
-            return;
-        }
-        List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
-            .stream()
-            .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
-            .collect(Collectors.toList());
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-        boolean isSourceFile = files.contains(file);
-        e.getPresentation().setEnabled(isSourceFile);
-        e.getPresentation().setVisible(isSourceFile);
+        boolean isSourceFile = false;
+        try {
+            CrowdinProperties properties;
+            properties = CrowdinPropertiesLoader.load(project);
+            List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
+                .stream()
+                .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
+                .collect(Collectors.toList());
+            isSourceFile = files.contains(file);
+        } catch (Exception exception) {
+//            do nothing
+        } finally {
+            e.getPresentation().setEnabled(isSourceFile);
+            e.getPresentation().setVisible(isSourceFile);
+        }
     }
 
     @Override

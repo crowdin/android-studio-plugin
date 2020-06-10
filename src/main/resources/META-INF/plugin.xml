@@ -42,6 +42,10 @@
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 
+    <action icon="PluginIcons.ICON" id="Crowdin.UploadTranslation" class="com.crowdin.action.UploadTranslationsFromContextAction" text="Upload translation file to Crowdin" description="Upload this 'strings.xml' to Crowdin">
+      <add-to-group group-id="ProjectViewPopupMenu" />
+    </action>
+
     <group icon="PluginIcons.ICON" id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
       <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
       <action id="Crowdin.UploadSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
