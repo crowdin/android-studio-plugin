@@ -107,6 +107,8 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             });
             Path filePath = Paths.get(file.getPath());
             isTranslationFile = translations.contains(filePath);
+        } catch (Exception exception) {
+//            do nothing
         } finally {
             e.getPresentation().setEnabled(isTranslationFile);
             e.getPresentation().setVisible(isTranslationFile);

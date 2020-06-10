@@ -54,16 +54,14 @@ public class UploadFromContextAction extends BackgroundAction {
         boolean isSourceFile = false;
         try {
             CrowdinProperties properties;
-            try {
-                properties = CrowdinPropertiesLoader.load(project);
-            } catch (Exception exception) {
-                return;
-            }
+            properties = CrowdinPropertiesLoader.load(project);
             List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
                 .stream()
                 .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
                 .collect(Collectors.toList());
             isSourceFile = files.contains(file);
+        } catch (Exception exception) {
+//            do nothing
         } finally {
             e.getPresentation().setEnabled(isSourceFile);
             e.getPresentation().setVisible(isSourceFile);

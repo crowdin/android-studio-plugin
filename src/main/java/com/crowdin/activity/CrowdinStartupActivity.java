@@ -34,8 +34,12 @@ public class CrowdinStartupActivity implements StartupActivity {
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
-                    indicator.setText("Updating Crowdin cache");
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    try {
+                        indicator.setText("Updating Crowdin cache");
+                        CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    } catch (Exception e) {
+                        NotificationUtil.showErrorMessage(project, e.getMessage());
+                    }
                 }
             });
         } catch (Exception e) {
