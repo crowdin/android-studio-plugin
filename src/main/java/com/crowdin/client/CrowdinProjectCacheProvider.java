@@ -23,6 +23,7 @@ public class CrowdinProjectCacheProvider {
     public static class CrowdinProjectCache {
         private List<Language> ProjectLanguages;
         private Map<String, Branch> branches;
+        private Map<Branch, Map<String, Directory>> dirs;
         private Map<Branch, Map<String, File>> files;
     }
 
@@ -44,15 +45,22 @@ public class CrowdinProjectCacheProvider {
         if (crowdinProjectCache.getFiles() == null) {
             crowdinProjectCache.setFiles(new HashMap<>());
         }
+        if (crowdinProjectCache.getDirs() == null) {
+            crowdinProjectCache.setDirs(new HashMap<>());
+        }
         if ((branchName != null && !branchName.isEmpty()) && !crowdinProjectCache.getBranches().containsKey(branchName)) {
             return crowdinProjectCache;
         }
         Branch branch = crowdinProjectCache.getBranches().get(branchName);
-        if (!crowdinProjectCache.getFiles().containsKey(branch) || outdatedBranches.contains(branchName) || update) {
+        if (!crowdinProjectCache.getFiles().containsKey(branch)
+                || !crowdinProjectCache.getDirs().containsKey(branch)
+                || outdatedBranches.contains(branchName)
+                || update) {
             Long branchId = (branch != null) ? branch.getId() : null;
             List<com.crowdin.client.sourcefiles.model.File> files = crowdin.getFiles(branchId);
             Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
             crowdinProjectCache.getFiles().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
+            crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
             outdatedBranches.remove(branchName);
         }
         return crowdinProjectCache;

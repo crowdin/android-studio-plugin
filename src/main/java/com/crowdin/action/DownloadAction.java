@@ -10,6 +10,7 @@ import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PlaceholderUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -18,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class DownloadAction extends BackgroundAction {
     @Override
     public void performInBackground(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
-        VirtualFile virtualFile = project.getBaseDir();
+        VirtualFile root = project.getBaseDir();
         CrowdinProperties properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);
@@ -41,35 +41,37 @@ public class DownloadAction extends BackgroundAction {
         Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
         String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
-        File downloadTranslations = crowdin.downloadTranslations(virtualFile, branch);
+        File downloadTranslations = crowdin.downloadTranslations(root, branch);
         if (downloadTranslations == null) {
             return;
         }
-        String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime() + File.separator;
+        String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime();
         this.extractTranslations(project, downloadTranslations, tempDir);
         List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
             .map(File::getAbsolutePath)
             .map(path -> StringUtils.removeStart(path, tempDir))
-            .map(f -> f.replaceAll("[\\\\/]+", "/"))
+            .map(FileUtil::normalizePath)
             .collect(Collectors.toList());
 
         List<Language> projectLangs = crowdin.getProjectLanguages();
 
         properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-            List<VirtualFile> sources = FileUtil.getSourceFilesRec(virtualFile, sourcePattern);
+            List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
             sources.forEach(source -> {
-                VirtualFile parent = FileUtil.getBaseDir(source, sourcePattern);
+                VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
+                String relativePathToPattern = (properties.isPreserveHierarchy())
+                    ? File.separator + VfsUtil.findRelativePath(root, pathToPattern, File.separatorChar)
+                    : File.separator;
                 String basePattern = PlaceholderUtil.replaceFilePlaceholders(
                     translationPattern,
-                    StringUtils.removeStart(source.getPath(), virtualFile.getPath()));
+                    StringUtils.removeStart(source.getPath(), root.getPath()));
                 projectLangs.forEach(projectLanguage -> {
                     String languageBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, projectLanguage);
-                    languageBasedPattern = StringUtils.removeStart(languageBasedPattern, "/");
-                    if (!files.contains(languageBasedPattern)) {
+                    if (!files.contains(FileUtil.joinPaths(relativePathToPattern, languageBasedPattern))) {
                         return;
                     }
-                    File fromFile = new File(tempDir + languageBasedPattern);
-                    File toFile = new File(parent.getPath() + File.separator + languageBasedPattern);
+                    File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, languageBasedPattern));
+                    File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), languageBasedPattern));
                     toFile.getParentFile().mkdirs();
                     if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
                         NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.extract_file"), toFile));
@@ -77,17 +79,13 @@ public class DownloadAction extends BackgroundAction {
                 });
             });
         });
-        if (downloadTranslations.delete()) {
-            System.out.println("all.zip was deleted");
-        } else {
-            System.out.println("all.zip wasn't deleted");
-        }
+        downloadTranslations.delete();
         try {
             FileUtils.deleteDirectory(new File(tempDir));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        virtualFile.refresh(true, true);
+        root.refresh(true, true);
         NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download"));
     }
 

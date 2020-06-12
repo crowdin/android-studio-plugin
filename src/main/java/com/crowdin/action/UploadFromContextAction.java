@@ -1,9 +1,11 @@
 package com.crowdin.action;
 
-import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.*;
+import com.crowdin.client.sourcefiles.model.AddBranchRequest;
+import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.client.sourcefiles.model.Directory;
+import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
@@ -11,13 +13,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.lang.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
-import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
 /**
  * Created by ihor on 1/27/17.
@@ -30,18 +33,32 @@ public class UploadFromContextAction extends BackgroundAction {
         try {
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
-            Optional<String> sourcePattern = properties.getSourcesWithPatterns().keySet()
+            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+
+            Branch branch = crowdinProjectCache.getBranches().get(branchName);
+            if (branch == null && StringUtils.isNotEmpty(branchName)) {
+                AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
+                branch = crowdin.addBranch(addBranchRequest);
+            }
+            Long branchId = (branch != null) ? branch.getId() : null;
+
+            Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+            Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
+
+            String sourcePattern = properties.getSourcesWithPatterns().keySet()
                 .stream()
                 .filter(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).contains(file))
-                .findAny();
-            if (sourcePattern.isPresent()) {
-                crowdin.uploadFile(file, properties.getSourcesWithPatterns().get(sourcePattern.get()), branch);
-            } else {
-                throw new RuntimeException("Unexpected error: couldn't find suitable source pattern");
-            }
-            CrowdinProjectCacheProvider.outdateBranch(branch);
+                .findAny()
+                .orElseThrow(() -> new RuntimeException("Unexpected error: couldn't find suitable source pattern"));
+            String translationPattern = properties.getSourcesWithPatterns().get(sourcePattern);
+
+            SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
+            sourceLogic.uploadSource(file, sourcePattern, translationPattern);
+
+            CrowdinProjectCacheProvider.outdateBranch(branchName);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }

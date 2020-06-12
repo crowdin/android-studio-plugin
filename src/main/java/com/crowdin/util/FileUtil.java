@@ -17,7 +17,7 @@ public final class FileUtil {
 
     public static VirtualFile getBaseDir(VirtualFile file, String relativePath) {
         VirtualFile dir = file;
-        int depth = relativePath.replaceAll("^[\\\\/]?\\*\\*[\\\\/]?", "").split("[\\\\/]+").length;
+        int depth = FileUtil.splitPath(relativePath.replaceAll("^[\\\\/]?\\*\\*[\\\\/]?", "")).length;
         for (int i = depth; i > 0; i--) {
             if (dir.getParent() == null) {
                 break;
@@ -70,5 +70,25 @@ public final class FileUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String normalizePath(String path) {
+        return path.replaceAll("[\\\\/]+", File.separator);
+    }
+
+    public static String unixPath(String path) {
+        return path.replaceAll("[\\\\/]+", "/");
+    }
+
+    public static String[] splitPath(String path) {
+        return path.split("[\\\\/]+");
+    }
+
+    public static String joinPaths(String... paths) {
+        return FileUtil.normalizePath(String.join(File.separator, paths));
+    }
+
+    public static String noSepAtStart(String path) {
+        return path.replaceAll("^[\\\\/]+", "");
     }
 }

@@ -1,8 +1,11 @@
 package com.crowdin.event;
 
-import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.*;
+import com.crowdin.client.sourcefiles.model.AddBranchRequest;
+import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.client.sourcefiles.model.Directory;
+import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.PropertyUtil;
@@ -13,11 +16,13 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -25,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.*;
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.Constants.PROPERTY_AUTO_UPLOAD;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
 
@@ -59,12 +65,28 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                 } catch (Exception e) {
                     return;
                 }
-                String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+                String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
                 Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-                Map<VirtualFile, String> allSources = new HashMap<>();
+
+                CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+
+                Branch branch = crowdinProjectCache.getBranches().get(branchName);
+                if (branch == null && StringUtils.isNotEmpty(branchName)) {
+                    AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
+                    branch = crowdin.addBranch(addBranchRequest);
+                }
+
+                Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+                Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
+                Long branchId = (branch != null) ? branch.getId() : null;
+
+                SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
+
+                Map<VirtualFile, Pair<String, String>> allSources = new HashMap<>();
                 properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                     List<VirtualFile> files = FileUtil.getSourceFilesRec(project.getBaseDir(), sourcePattern);
-                    files.forEach(f -> allSources.put(f, translationPattern));
+                    files.forEach(f -> allSources.put(f, Pair.create(sourcePattern, translationPattern)));
                 });
                 List<VirtualFile> changedSources = events.stream()
                         .map(VFileEvent::getFile)
@@ -76,8 +98,9 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                             .collect(Collectors.joining(","));
                     indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
                     changedSources.forEach(file -> {
-                        crowdin.uploadFile(file, allSources.get(file), branch);
+                        sourceLogic.uploadSource(file, allSources.get(file).first, allSources.get(file).second);
                     });
+                    CrowdinProjectCacheProvider.outdateBranch(branchName);
                 }
             }
         });

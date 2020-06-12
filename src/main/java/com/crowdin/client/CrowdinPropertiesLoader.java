@@ -52,7 +52,13 @@ public class CrowdinPropertiesLoader {
             if (disabledBranches != null) {
                 crowdinProperties.setDisabledBranches(Boolean.parseBoolean(disabledBranches));
             } else {
-                crowdinProperties.setDisabledBranches(false);
+                crowdinProperties.setDisabledBranches(DISABLE_BRANCHES_DEFAULT);
+            }
+            String preserveHierarchy = properties.getProperty(PROPERTY_PRESERVE_HIERARCHY);
+            if (preserveHierarchy != null) {
+                crowdinProperties.setPreserveHierarchy(Boolean.parseBoolean(preserveHierarchy));
+            } else {
+                crowdinProperties.setPreserveHierarchy(PRESERVE_HIERARCHY_DEFAULT);
             }
 
             Map<String, String> files = getSources(properties, errors);
