@@ -40,8 +40,8 @@ public class CrowdinFileUtilTest {
                 }},new HashMap<Long, Directory>() {{
                     put(201L, dir_201L);
                 }},  new HashMap<String, File>() {{
-                    put("values" + sep + "strings.xml", file_101L_201L);
-                    put("strings2.xml", file_102L_null);
+                    put(sep + "values" + sep + "strings.xml", file_101L_201L);
+                    put(sep + "strings2.xml", file_102L_null);
                 }})
         );
     }
