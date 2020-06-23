@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class BackgroundAction extends AnAction {
 
-    abstract void performInBackground(@NonNull AnActionEvent e);
+    abstract void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator);
 
     abstract String loadingText(AnActionEvent e);
 
@@ -20,7 +20,7 @@ public abstract class BackgroundAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setText(loadingText(e));
-                performInBackground(e);
+                performInBackground(e, indicator);
             }
         });
 

@@ -9,6 +9,8 @@ import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -28,7 +30,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 public class UploadTranslationsAction extends BackgroundAction {
 
     @Override
-    public void performInBackground(@NotNull AnActionEvent e) {
+    public void performInBackground(@NotNull AnActionEvent e, ProgressIndicator indicator) {
         Project project = e.getProject();
         VirtualFile root = project.getBaseDir();
 
@@ -40,9 +42,11 @@ public class UploadTranslationsAction extends BackgroundAction {
             if (!confirmation) {
                 return;
             }
+            indicator.checkCanceled();
 
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            indicator.checkCanceled();
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
@@ -102,6 +106,8 @@ public class UploadTranslationsAction extends BackgroundAction {
             if (uploadedFilesCounter.get() > 0) {
                 NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
             }
+        } catch (ProcessCanceledException exception) {
+            throw exception;
         } catch (Exception exception) {
             NotificationUtil.showErrorMessage(project, exception.getMessage());
         }

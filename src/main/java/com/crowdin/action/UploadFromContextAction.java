@@ -14,6 +14,8 @@ import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +32,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
  */
 public class UploadFromContextAction extends BackgroundAction {
     @Override
-    public void performInBackground(AnActionEvent anActionEvent) {
+    public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Project project = anActionEvent.getProject();
         try {
@@ -40,10 +42,12 @@ public class UploadFromContextAction extends BackgroundAction {
             if (!confirmation) {
                 return;
             }
+            indicator.checkCanceled();
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
@@ -54,6 +58,7 @@ public class UploadFromContextAction extends BackgroundAction {
                 branch = crowdin.addBranch(addBranchRequest);
             }
             Long branchId = (branch != null) ? branch.getId() : null;
+            indicator.checkCanceled();
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
             Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
@@ -65,10 +70,13 @@ public class UploadFromContextAction extends BackgroundAction {
                 .orElseThrow(() -> new RuntimeException("Unexpected error: couldn't find suitable source pattern"));
             String translationPattern = properties.getSourcesWithPatterns().get(sourcePattern);
 
+            indicator.checkCanceled();
             SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
             sourceLogic.uploadSource(file, sourcePattern, translationPattern);
 
             CrowdinProjectCacheProvider.outdateBranch(branchName);
+        } catch (ProcessCanceledException e) {
+            throw e;
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }

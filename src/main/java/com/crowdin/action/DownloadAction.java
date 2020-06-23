@@ -8,6 +8,7 @@ import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -27,7 +28,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 public class DownloadAction extends BackgroundAction {
 
     @Override
-    public void performInBackground(AnActionEvent anActionEvent) {
+    public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
         VirtualFile root = project.getBaseDir();
 
@@ -37,6 +38,7 @@ public class DownloadAction extends BackgroundAction {
         if (!confirmation) {
             return;
         }
+        indicator.checkCanceled();
 
         CrowdinProperties properties;
         try {
@@ -47,6 +49,7 @@ public class DownloadAction extends BackgroundAction {
         }
         Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
         String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+        indicator.checkCanceled();
 
         File downloadTranslations = crowdin.downloadTranslations(root, branch);
         if (downloadTranslations == null) {

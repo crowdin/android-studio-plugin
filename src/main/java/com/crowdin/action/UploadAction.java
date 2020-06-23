@@ -13,6 +13,8 @@ import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +32,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 @SuppressWarnings("ALL")
 public class UploadAction extends BackgroundAction {
     @Override
-    public void performInBackground(@NotNull final AnActionEvent anActionEvent) {
+    public void performInBackground(@NotNull final AnActionEvent anActionEvent, ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
         try {
             CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
@@ -39,6 +41,7 @@ public class UploadAction extends BackgroundAction {
             if (!confirmation) {
                 return;
             }
+            indicator.checkCanceled();
 
             VirtualFile root = project.getBaseDir();
 
@@ -49,18 +52,22 @@ public class UploadAction extends BackgroundAction {
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+            indicator.checkCanceled();
 
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
             if (branch == null && StringUtils.isNotEmpty(branchName)) {
                 AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
                 branch = crowdin.addBranch(addBranchRequest);
             }
+            indicator.checkCanceled();
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
             Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
             Long branchId = (branch != null) ? branch.getId() : null;
 
             SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
+
+            indicator.checkCanceled();
 
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                 List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, sourcePattern);
@@ -73,6 +80,8 @@ public class UploadAction extends BackgroundAction {
                 });
             });
             CrowdinProjectCacheProvider.outdateBranch(branchName);
+        } catch (ProcessCanceledException e) {
+            throw e;
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }

@@ -10,6 +10,8 @@ import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -33,7 +35,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
 
     @Override
-    public void performInBackground(AnActionEvent anActionEvent) {
+    public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Project project = anActionEvent.getProject();
         try {
@@ -43,11 +45,13 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             if (!confirmation) {
                 return;
             }
+            indicator.checkCanceled();
 
             VirtualFile root = project.getBaseDir();
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
@@ -56,6 +60,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
 
+            indicator.checkCanceled();
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
                 sources.forEach(s -> {
@@ -99,8 +104,8 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     }
                 });
             });
-
-
+        } catch (ProcessCanceledException e) {
+            throw e;
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
