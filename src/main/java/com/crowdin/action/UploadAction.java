@@ -5,11 +5,14 @@ import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +33,13 @@ public class UploadAction extends BackgroundAction {
     public void performInBackground(@NotNull final AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         try {
+            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
+
+            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_sources"), "Upload");
+            if (!confirmation) {
+                return;
+            }
+
             VirtualFile root = project.getBaseDir();
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);

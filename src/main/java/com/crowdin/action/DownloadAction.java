@@ -4,11 +4,10 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
-import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.PlaceholderUtil;
+import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,6 +30,14 @@ public class DownloadAction extends BackgroundAction {
     public void performInBackground(AnActionEvent anActionEvent) {
         Project project = anActionEvent.getProject();
         VirtualFile root = project.getBaseDir();
+
+        CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
+
+        boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
+        if (!confirmation) {
+            return;
+        }
+
         CrowdinProperties properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);

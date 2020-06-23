@@ -5,12 +5,11 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
-import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.PlaceholderUtil;
+import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -38,6 +37,13 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         Project project = anActionEvent.getProject();
         try {
+            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
+
+            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_translation_file"), "Upload");
+            if (!confirmation) {
+                return;
+            }
+
             VirtualFile root = project.getBaseDir();
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
