@@ -12,8 +12,11 @@ public final class Constants {
     public static final String PROPERTIES_FILE = "crowdin.properties";
 
     public static final String PROJECT_ID = "project-id";
+    public static final String PROJECT_ID_ENV = "project-id-env";
     public static final String API_TOKEN = "api-token";
+    public static final String API_TOKEN_ENV = "api-token-env";
     public static final String BASE_URL = "base-url";
+    public static final String BASE_URL_ENV = "base-url-env";
     public static final String PROPERTY_SOURCES = "sources";
     public static final String PROPERTY_FILES_SOURCES_PATTERN = "files.%ssource";
     public static final String PROPERTY_FILES_TRANSLATIONS_PATTERN = "files.%stranslation";
