@@ -53,6 +53,25 @@ If you are using Crowdin Enterprise, you also need to specify `base-url`:
 base-url=https://{organization-name}.crowdin.com
 ```
 
+Also, you could load the credentials from environment variables:
+
+```ini
+project-id-env=CROWDIN_PROJECT_ID
+api-token-env=CROWDIN_TOKEN
+base-url-env=CROWDIN_BASE_URL
+```
+
+If mixed, project-id, api-token and base-url are prioritized:
+
+```ini
+project-id-env=CROWDIN_PROJECT_ID                   # Low priority
+api-token-env=CROWDIN_TOKEN                         # Low priority
+base-url-env=CROWDIN_URL                            # Low priority
+project-id=your-project-identifier                  # High priority
+api-token=your-api-token                            # High priority
+base-url=https://{organization-name}.crowdin.com    # High priority
+```
+
 ### Source files and translations
 
 Plugin will automatically find `\*\*/values/strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
