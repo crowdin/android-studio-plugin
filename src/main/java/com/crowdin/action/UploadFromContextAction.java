@@ -65,7 +65,7 @@ public class UploadFromContextAction extends BackgroundAction {
 
             String sourcePattern = properties.getSourcesWithPatterns().keySet()
                 .stream()
-                .filter(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).contains(file))
+                .filter(s -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), s).contains(file))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("Unexpected error: couldn't find suitable source pattern"));
             String translationPattern = properties.getSourcesWithPatterns().get(sourcePattern);
@@ -92,7 +92,7 @@ public class UploadFromContextAction extends BackgroundAction {
             properties = CrowdinPropertiesLoader.load(project);
             List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
                 .stream()
-                .flatMap(s -> FileUtil.getSourceFilesRec(project.getBaseDir(), s).stream())
+                .flatMap(s -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), s).stream())
                 .collect(Collectors.toList());
             isSourceFile = files.contains(file);
         } catch (Exception exception) {

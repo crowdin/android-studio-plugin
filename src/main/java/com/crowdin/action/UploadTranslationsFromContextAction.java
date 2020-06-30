@@ -47,7 +47,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             }
             indicator.checkCanceled();
 
-            VirtualFile root = project.getBaseDir();
+            VirtualFile root = FileUtil.getProjectBaseDir(project);
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
@@ -68,10 +68,10 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(s, sourcePattern);
 
                     String relativePathToPattern = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + VfsUtil.findRelativePath(root, pathToPattern, java.io.File.separatorChar)
+                        ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
                         : "";
                     String patternPathToFile = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + VfsUtil.findRelativePath(pathToPattern, s.getParent(), java.io.File.separatorChar)
+                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, s.getParent())
                         : "";
 
                     File crowdinSource = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()));
@@ -123,7 +123,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             } catch (Exception exception) {
                 return;
             }
-            VirtualFile root = project.getBaseDir();
+            VirtualFile root = FileUtil.getProjectBaseDir(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);

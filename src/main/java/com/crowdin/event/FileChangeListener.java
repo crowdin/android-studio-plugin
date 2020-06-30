@@ -85,7 +85,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
                 Map<VirtualFile, Pair<String, String>> allSources = new HashMap<>();
                 properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                    List<VirtualFile> files = FileUtil.getSourceFilesRec(project.getBaseDir(), sourcePattern);
+                    List<VirtualFile> files = FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), sourcePattern);
                     files.forEach(f -> allSources.put(f, Pair.create(sourcePattern, translationPattern)));
                 });
                 List<VirtualFile> changedSources = events.stream()

@@ -30,7 +30,7 @@ public class DownloadAction extends BackgroundAction {
     @Override
     public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
-        VirtualFile root = project.getBaseDir();
+        VirtualFile root = FileUtil.getProjectBaseDir(project);
 
         CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
 
@@ -70,7 +70,7 @@ public class DownloadAction extends BackgroundAction {
             sources.forEach(source -> {
                 VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
                 String relativePathToPattern = (properties.isPreserveHierarchy())
-                    ? File.separator + VfsUtil.findRelativePath(root, pathToPattern, File.separatorChar)
+                    ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
                     : File.separator;
                 String basePattern = PlaceholderUtil.replaceFilePlaceholders(
                     translationPattern,

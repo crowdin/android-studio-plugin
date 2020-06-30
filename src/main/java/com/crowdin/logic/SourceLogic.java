@@ -40,10 +40,10 @@ public class SourceLogic {
             VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
 
             String relativePathToPattern = (properties.isPreserveHierarchy())
-                ? java.io.File.separator + VfsUtil.findRelativePath(project.getBaseDir(), pathToPattern, java.io.File.separatorChar)
+                ? java.io.File.separator + FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern)
                 : "";
             String patternPathToFile = (properties.isPreserveHierarchy())
-                ? java.io.File.separator + VfsUtil.findRelativePath(pathToPattern, source.getParent(), java.io.File.separatorChar)
+                ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
                 : "";
 
             GeneralFileExportOptions exportOptions = new GeneralFileExportOptions();

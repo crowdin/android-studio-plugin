@@ -1,6 +1,10 @@
 package com.crowdin.util;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import lombok.NonNull;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +17,18 @@ public final class FileUtil {
 
     private FileUtil() {
         throw new UnsupportedOperationException();
+    }
+
+    public static VirtualFile getProjectBaseDir(Project project) {
+        String baseDirString = project.getBasePath();
+        return LocalFileSystem.getInstance().findFileByPath(baseDirString);
+    }
+
+    public static String findRelativePath(@NonNull VirtualFile baseDir, @NonNull VirtualFile file) {
+        return StringUtils.removeStart(file.getCanonicalPath(), baseDir.getCanonicalPath())
+            .replaceAll("^[\\\\/]+", "");
+//        @AvailableSince("181.2784.17")
+//        return VfsUtil.findRelativePath(baseDir, file, java.io.File.separatorChar);
     }
 
     public static VirtualFile getBaseDir(VirtualFile file, String relativePath) {

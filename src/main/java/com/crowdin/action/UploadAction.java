@@ -43,7 +43,7 @@ public class UploadAction extends BackgroundAction {
             }
             indicator.checkCanceled();
 
-            VirtualFile root = project.getBaseDir();
+            VirtualFile root = FileUtil.getProjectBaseDir(project);
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());

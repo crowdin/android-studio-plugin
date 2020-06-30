@@ -32,7 +32,7 @@ public class UploadTranslationsAction extends BackgroundAction {
     @Override
     public void performInBackground(@NotNull AnActionEvent e, ProgressIndicator indicator) {
         Project project = e.getProject();
-        VirtualFile root = project.getBaseDir();
+        VirtualFile root = FileUtil.getProjectBaseDir(project);
 
         CrowdinProperties properties;
         try {
@@ -69,10 +69,10 @@ public class UploadTranslationsAction extends BackgroundAction {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
 
                     String relativePathToPattern = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + VfsUtil.findRelativePath(root, pathToPattern, java.io.File.separatorChar)
+                        ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
                         : "";
                     String patternPathToFile = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + VfsUtil.findRelativePath(pathToPattern, source.getParent(), java.io.File.separatorChar)
+                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
                         : "";
 
                     File crowdinSource = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
