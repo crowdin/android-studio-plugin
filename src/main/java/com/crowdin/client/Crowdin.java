@@ -221,7 +221,12 @@ public class Crowdin {
                 .addBranch(this.projectId, request)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            String errorMessage = this.getErrorMessage(e);
+            if (errorMessage.contains("regexNotMatch File name can't contain")) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+            } else {
+                throw new RuntimeException(this.getErrorMessage(e));
+            }
         }
     }
 
