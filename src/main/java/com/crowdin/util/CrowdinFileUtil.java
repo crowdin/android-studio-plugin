@@ -1,12 +1,14 @@
 package com.crowdin.util;
 
-import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.client.languages.model.Language;
+import com.crowdin.client.sourcefiles.model.*;
 import lombok.NonNull;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class CrowdinFileUtil {
 
@@ -42,5 +44,34 @@ public class CrowdinFileUtil {
             dirPaths.put(sb.toString(), dir);
         }
         return dirPaths;
+    }
+
+    public static Map<Long, String> revDirPaths(@NonNull Map<String, Directory> dirs) {
+        return dirs.keySet().stream()
+            .collect(Collectors.toMap(path -> dirs.get(path).getId(), Function.identity()));
+    }
+
+    public static Map<String, String> buildAllProjectTranslationsWithSources(@NonNull List<File> sources, @NonNull Map<Long, String> dirPaths, @NonNull List<Language> projLanguages) {
+        Map<String, String> result = new HashMap<>();
+        for (File source : sources) {
+            String sourcePath = ((source.getDirectoryId() != null) ? dirPaths.get(source.getDirectoryId()) + java.io.File.separator : java.io.File.separator) + source.getName();
+            for (Language lang : projLanguages) {
+                String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(getExportPattern(source.getExportOptions()), lang);
+                String translationPath = PlaceholderUtil.replaceFilePlaceholders(langBasedPattern, sourcePath);
+                result.put(translationPath, sourcePath);
+            }
+        }
+        return result;
+    }
+
+
+    private static String getExportPattern(ExportOptions exportOptions) {
+        if (exportOptions instanceof GeneralFileExportOptions) {
+            return ((GeneralFileExportOptions) exportOptions).getExportPattern();
+        } else if (exportOptions instanceof PropertyFileExportOptions) {
+            return ((PropertyFileExportOptions) exportOptions).getExportPattern();
+        } else {
+            throw new RuntimeException(String.format("Unexpected export pattern: %s", exportOptions.toString()));
+        }
     }
 }

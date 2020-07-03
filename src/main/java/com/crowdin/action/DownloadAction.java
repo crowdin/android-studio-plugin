@@ -1,16 +1,18 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
+import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -20,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -48,26 +50,43 @@ public class DownloadAction extends BackgroundAction {
             return;
         }
         Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-        String branch = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+        String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
         indicator.checkCanceled();
 
-        File downloadTranslations = crowdin.downloadTranslations(root, branch);
+        CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+            CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+
+        Branch branch = null;
+        if (branchName != null && branchName.length() > 0) {
+            Optional<Branch> foundBranch = crowdin.getBranch(branchName);
+            if (!foundBranch.isPresent()) {
+                NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"), branchName));
+                return;
+            } else {
+                branch = foundBranch.get();
+            }
+        }
+
+        Map<String, String> allCrowdinTranslationsWithSources = CrowdinFileUtil.buildAllProjectTranslationsWithSources(
+            new ArrayList<>(crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>()).values()),
+            CrowdinFileUtil.revDirPaths(crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>())),
+            crowdinProjectCache.getProjectLanguages()
+        );
+
+        File downloadTranslations = crowdin.downloadTranslations(root, (branch != null ? branch.getId() : null));
         if (downloadTranslations == null) {
             return;
         }
         String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime();
         this.extractTranslations(project, downloadTranslations, tempDir);
-        List<String> files = FileUtil.walkDir(Paths.get(tempDir)).stream()
-            .map(File::getAbsolutePath)
-            .map(path -> StringUtils.removeStart(path, tempDir))
-            .map(FileUtil::normalizePath)
-            .collect(Collectors.toList());
+        List<java.io.File> files = FileUtil.walkDir(Paths.get(tempDir));
 
         List<Language> projectLangs = crowdin.getProjectLanguages();
 
+        List<Pair<File, File>> targets = new ArrayList<>();
         properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
             List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-            sources.forEach(source -> {
+            for (VirtualFile source : sources) {
                 VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
                 String relativePathToPattern = (properties.isPreserveHierarchy())
                     ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
@@ -75,20 +94,31 @@ public class DownloadAction extends BackgroundAction {
                 String basePattern = PlaceholderUtil.replaceFilePlaceholders(
                     translationPattern,
                     StringUtils.removeStart(source.getPath(), root.getPath()));
-                projectLangs.forEach(projectLanguage -> {
+                for (Language projectLanguage : projectLangs) {
                     String languageBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, projectLanguage);
-                    if (!files.contains(FileUtil.joinPaths(relativePathToPattern, languageBasedPattern))) {
-                        return;
-                    }
                     File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, languageBasedPattern));
                     File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), languageBasedPattern));
-                    toFile.getParentFile().mkdirs();
-                    if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.extract_file"), toFile));
+                    if (!files.contains(fromFile)) {
+                        return;
                     }
-                });
-            });
+                    targets.add(Pair.create(fromFile, toFile));
+                }
+            }
         });
+        for (Pair<File, File> target : targets) {
+            File fromFile = target.first;
+            File toFile = target.second;
+            toFile.getParentFile().mkdirs();
+            if (!fromFile.renameTo(toFile) && toFile.delete() && !fromFile.renameTo(toFile)) {
+                NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.extract_file"), toFile));
+            }
+        }
+
+        List<File> foundTranslations = targets.stream().map(p -> p.getFirst()).collect(Collectors.toList());
+        List<File> omittedTranslations = files.stream()
+            .filter(file -> !foundTranslations.contains(file))
+            .collect(Collectors.toList());
+
         downloadTranslations.delete();
         try {
             FileUtils.deleteDirectory(new File(tempDir));
@@ -96,6 +126,35 @@ public class DownloadAction extends BackgroundAction {
             e.printStackTrace();
         }
         root.refresh(true, true);
+
+        Set<String> omittedSources = new HashSet<>();
+        Set<String> notFoundTranslations = new HashSet<>();
+        if (!omittedTranslations.isEmpty()) {
+            for (File omittedTranslation : omittedTranslations) {
+                String omittedFileString = StringUtils.removeStart(omittedTranslation.toString(), tempDir);
+                if (allCrowdinTranslationsWithSources.containsKey(omittedFileString)) {
+                    omittedSources.add(allCrowdinTranslationsWithSources.get(omittedFileString));
+                } else {
+                    notFoundTranslations.add(omittedFileString);
+                }
+            }
+        }
+
+        if (!omittedSources.isEmpty() || !notFoundTranslations.isEmpty()) {
+            String omittedSourcesText = omittedSources.isEmpty()
+                ? ""
+                : MESSAGES_BUNDLE.getString("messages.omitted_sources") + omittedSources.stream()
+                    .map(source -> "\n\t- " + source)
+                    .collect(Collectors.joining());
+            String translationsWithNoSourcesText = notFoundTranslations.isEmpty()
+                ? ""
+                : (omittedSourcesText.isEmpty() ? "" : "\n")
+                    + MESSAGES_BUNDLE.getString("messages.omitted_translations_with_unfound_sources") + notFoundTranslations.stream()
+                        .map(translation -> "\n\t- " + translation)
+                        .collect(Collectors.joining());
+            String omittedFilesText = omittedSourcesText + translationsWithNoSourcesText;
+            NotificationUtil.showWarningMessage(project, omittedFilesText);
+        }
         NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download"));
     }
 

@@ -118,17 +118,8 @@ public class Crowdin {
             .collect(Collectors.toList());
     }
 
-    public File downloadTranslations(VirtualFile baseDir, String branch) {
+    public File downloadTranslations(VirtualFile baseDir, Long branchId) {
         try {
-            Long branchId = null;
-            if (branch != null && branch.length() > 0) {
-                Optional<Branch> foundBranch = this.getBranch(branch);
-                if (!foundBranch.isPresent()) {
-                    NotificationUtil.showWarningMessage(this.project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branch));
-                    return null;
-                }
-                branchId = foundBranch.get().getId();
-            }
             CrowdinTranslationCreateProjectBuildForm buildProjectTranslationRequest = new CrowdinTranslationCreateProjectBuildForm();
             buildProjectTranslationRequest.setBranchId(branchId);
             ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectId, buildProjectTranslationRequest);
