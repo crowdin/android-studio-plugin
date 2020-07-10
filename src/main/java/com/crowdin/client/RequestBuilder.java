@@ -24,7 +24,6 @@ public class RequestBuilder {
         request.setName(name);
         request.setBranchId(branchId);
         request.setDirectoryId(directoryId);
-        request.setTitle(type);
         request.setExportOptions(exportOptions);
         return request;
     }
