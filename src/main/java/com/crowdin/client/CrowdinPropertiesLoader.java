@@ -37,7 +37,11 @@ public class CrowdinPropertiesLoader {
                 if (propProjectIdEnvValue == null) {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist"), propProjectIdEnv));
                 } else {
-                    crowdinProperties.setProjectId(Long.valueOf(propProjectIdEnvValue));
+                    try {
+                        crowdinProperties.setProjectId(Long.valueOf(propProjectIdEnvValue));
+                    } catch (NumberFormatException e) {
+                        errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.env_property_is_not_number"), propProjectIdEnv));
+                    }
                 }
             } else {
                 errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROJECT_ID));
