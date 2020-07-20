@@ -73,7 +73,7 @@ public class CrowdinPropertiesLoader {
                 if (propBaseUrlEnvValue != null) {
                     crowdinProperties.setBaseUrl(propBaseUrlEnvValue);
                 } else {
-                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist"), propBaseUrlEnvValue));
+                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist"), propApiTokenEnv));
                 }
             }
             String disabledBranches = properties.getProperty(PROPERTY_DISABLE_BRANCHES);
