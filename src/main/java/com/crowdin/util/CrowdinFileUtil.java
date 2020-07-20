@@ -55,10 +55,14 @@ public class CrowdinFileUtil {
         Map<String, String> result = new HashMap<>();
         for (File source : sources) {
             String sourcePath = ((source.getDirectoryId() != null) ? dirPaths.get(source.getDirectoryId()) + java.io.File.separator : java.io.File.separator) + source.getName();
-            for (Language lang : projLanguages) {
-                String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(getExportPattern(source.getExportOptions()), lang);
-                String translationPath = PlaceholderUtil.replaceFilePlaceholders(langBasedPattern, sourcePath);
-                result.put(translationPath, sourcePath);
+            if (source.getExportOptions() != null) {
+                for (Language lang : projLanguages) {
+                    String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(getExportPattern(source.getExportOptions()), lang);
+                    String translationPath = PlaceholderUtil.replaceFilePlaceholders(langBasedPattern, sourcePath);
+                    result.put(translationPath, sourcePath);
+                }
+            } else {
+                result.put(sourcePath, sourcePath);
             }
         }
         return result;
