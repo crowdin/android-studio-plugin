@@ -6,10 +6,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.logic.SourceLogic;
-import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
-import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.PropertyUtil;
+import com.crowdin.util.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -79,6 +76,21 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
                     indicator.checkCanceled();
 
+                    Map<VirtualFile, Pair<String, String>> allSources = new HashMap<>();
+                    properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
+                        List<VirtualFile> files = FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), sourcePattern);
+                        files.forEach(f -> allSources.put(f, Pair.create(sourcePattern, translationPattern)));
+                    });
+
+                    List<VirtualFile> changedSources = events.stream()
+                        .map(VFileEvent::getFile)
+                        .filter(file -> file != null && allSources.containsKey(file))
+                        .collect(Collectors.toList());
+
+                    if (changedSources.isEmpty()) {
+                        return;
+                    }
+
                     Branch branch = crowdinProjectCache.getBranches().get(branchName);
                     if (branch == null && StringUtils.isNotEmpty(branchName)) {
                         AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
@@ -92,26 +104,15 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
                     SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
 
-                    Map<VirtualFile, Pair<String, String>> allSources = new HashMap<>();
-                    properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                        List<VirtualFile> files = FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), sourcePattern);
-                        files.forEach(f -> allSources.put(f, Pair.create(sourcePattern, translationPattern)));
-                    });
                     indicator.checkCanceled();
-                    List<VirtualFile> changedSources = events.stream()
-                        .map(VFileEvent::getFile)
-                        .filter(file -> file != null && allSources.containsKey(file))
-                        .collect(Collectors.toList());
-                    if (changedSources.size() > 0) {
-                        String text = changedSources.stream()
-                            .map(VirtualFile::getName)
-                            .collect(Collectors.joining(","));
-                        indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
-                        changedSources.forEach(file -> {
-                            sourceLogic.uploadSource(file, allSources.get(file).first, allSources.get(file).second);
-                        });
-                        CrowdinProjectCacheProvider.outdateBranch(branchName);
-                    }
+                    String text = changedSources.stream()
+                        .map(VirtualFile::getName)
+                        .collect(Collectors.joining(","));
+                    indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
+                    changedSources.forEach(file -> {
+                        sourceLogic.uploadSource(file, allSources.get(file).first, allSources.get(file).second);
+                    });
+                    CrowdinProjectCacheProvider.outdateBranch(branchName);
                 } catch (ProcessCanceledException e) {
                     throw e;
                 } catch (Exception e) {
