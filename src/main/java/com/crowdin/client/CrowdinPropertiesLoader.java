@@ -71,10 +71,12 @@ public class CrowdinPropertiesLoader {
                 }
             } else if (StringUtils.isNotEmpty(propBaseUrlEnv)) {
                 String propBaseUrlEnvValue = System.getenv(propBaseUrlEnv);
-                if (propBaseUrlEnvValue != null) {
-                    crowdinProperties.setBaseUrl(propBaseUrlEnvValue);
-                } else {
+                if (propBaseUrlEnvValue == null) {
                     notExistEnvVars.add(propBaseUrlEnv);
+                } else if (!isBaseUrlValid(propBaseUrlEnvValue)) {
+                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_url_env"), propBaseUrlEnv, propBaseUrlEnvValue));
+                } else {
+                    crowdinProperties.setBaseUrl(propBaseUrlEnvValue);
                 }
             }
             if (notExistEnvVars.size() == 1) {
