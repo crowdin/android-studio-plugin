@@ -102,8 +102,8 @@ public class CrowdinPropertiesLoader {
         }
 
         if (!errors.isEmpty()) {
-            String errorsInOne = String.join("\n", errors);
-            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + "\n" + errorsInOne);
+            String errorsInOne = "<ul>" + errors.stream().map(s -> "<li>" + s + "</li>\n").collect(Collectors.joining()) + "</ul>";
+            throw new RuntimeException("<body><p>" + MESSAGES_BUNDLE.getString("errors.config.has_errors") + "</p>" + errorsInOne + "</body>");
         }
 
         return crowdinProperties;

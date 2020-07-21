@@ -100,7 +100,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                                 crowdin.uploadTranslation(lang.getId(), request);
                                 NotificationUtil.showInformationMessage(project,
                                     String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translation"),
-                                        FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, translationFile.toFile().getName()))));
+                                        FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, builtPattern))));
                             } catch (Exception exception) {
                                 NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
                             }
