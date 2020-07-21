@@ -74,7 +74,7 @@ public class CrowdinPropertiesLoader {
                 if (propBaseUrlEnvValue != null) {
                     crowdinProperties.setBaseUrl(propBaseUrlEnvValue);
                 } else {
-                    notExistEnvVars.add(propApiTokenEnv);
+                    notExistEnvVars.add(propBaseUrlEnv);
                 }
             }
             if (notExistEnvVars.size() == 1) {
