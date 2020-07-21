@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.2.0]
+
+- Added: `preserve-hierarchy` config option
+- Added: Environment variables support
+- Added: Upload translations confirm dialog
+- Added: Warning to 'download' command about omitted translations
+- Updated: Deprecated API usage and fix compatibility with versions prior to 181+
+- Updated: Improve error message for wrong branch name
+- Other fixes and improvements
+
 ## [1.1.0]
 - Added: Upload Translation to Crowdin
 - Added: Set custom directory to sources and translations files
