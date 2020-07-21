@@ -7,10 +7,7 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
-import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
-import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.UIUtil;
+import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -49,6 +46,10 @@ public class UploadAction extends BackgroundAction {
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+
+            if (!CrowdinFileUtil.isValidBranchName(branchName)) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+            }
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);

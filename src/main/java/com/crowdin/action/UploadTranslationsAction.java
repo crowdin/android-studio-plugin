@@ -50,6 +50,10 @@ public class UploadTranslationsAction extends BackgroundAction {
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
+            if (!CrowdinFileUtil.isValidBranchName(branchName)) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+            }
+
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 

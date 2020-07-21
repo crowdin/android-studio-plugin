@@ -51,6 +51,10 @@ public class DownloadAction extends BackgroundAction {
         }
         Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
         String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+
+        if (!CrowdinFileUtil.isValidBranchName(branchName)) {
+            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+        }
         indicator.checkCanceled();
 
         CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =

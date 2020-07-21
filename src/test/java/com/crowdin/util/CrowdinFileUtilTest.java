@@ -45,4 +45,21 @@ public class CrowdinFileUtilTest {
                 }})
         );
     }
+
+    @ParameterizedTest
+    @MethodSource
+    public void testIsValidBranchName(String branchName, boolean expected) {
+        boolean result = CrowdinFileUtil.isValidBranchName(branchName);
+        assertEquals(expected, result);
+    }
+
+    public static Stream<Arguments> testIsValidBranchName() {
+        return Stream.of(
+            arguments("master", true),
+            arguments(null, true),
+            arguments("test<42>", false),
+            arguments("\\4\\2\\", false),
+            arguments("", true)
+        );
+    }
 }

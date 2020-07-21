@@ -70,6 +70,9 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     }
                     indicator.checkCanceled();
                     String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+                    if (!CrowdinFileUtil.isValidBranchName(branchName)) {
+                        return;
+                    }
                     Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
                     CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
