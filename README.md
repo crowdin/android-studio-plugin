@@ -114,6 +114,12 @@ To prevent automatic file upload to Crowdin use `auto-upload`:
 auto-upload=false
 ```
 
+If your project contains multiple modules you want to localize with the same source files naming you need to use the following option:
+
+```ini
+preserve-hierarchy=true
+```
+
 ## Seeking Assistance
 
 If you find any problems or would like to suggest a feature, please read the [How can I contribute](/CONTRIBUTING.md#how-can-i-contribute) section in our contributing guidelines.

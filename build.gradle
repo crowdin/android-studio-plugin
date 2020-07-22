@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.1.0'
+version '1.2.0'
 
 sourceCompatibility = 1.8
 
@@ -40,13 +40,13 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Added: Upload Translations to Crowdin<br>
-      - Added: Set custom directory to sources and translations files<br>
-      - Added: Wrapped plugin actions into background tasks<br>
-      - Added: Crowdin icon for menu<br>
-      - Updated: Improved base path validation<br>
-      - Fixed: Work in multiple projects<br>
-      - Fixed: Removed error notification if project does not have crowdin property file"""
+      - Added: `preserve-hierarchy` config option<br>
+      - Added: Environment variables support<br>
+      - Added: Upload translations confirm dialog<br>
+      - Added: Warning to 'download' command about omitted translations<br>
+      - Updated: Deprecated API usage and fix compatibility with versions prior to 181+<br>
+      - Updated: Improve error message for wrong branch name<br>
+      - Other fixes and improvements"""
 }
 
 wrapper {
