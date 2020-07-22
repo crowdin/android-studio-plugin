@@ -7,6 +7,7 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 public final class NotificationUtil {
 
@@ -21,15 +22,15 @@ public final class NotificationUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static void showInformationMessage(Project project, String message) {
+    public static void showInformationMessage(@NotNull Project project, @NotNull String message) {
         showMessage(project, message, NotificationType.INFORMATION);
     }
 
-    public static void showErrorMessage(Project project, String message) {
+    public static void showErrorMessage(@NotNull Project project, @NotNull String message) {
         showMessage(project, message, NotificationType.ERROR);
     }
 
-    public static void showWarningMessage(Project project, String message) {
+    public static void showWarningMessage(@NotNull Project project, @NotNull String message) {
         showMessage(project, message, NotificationType.WARNING);
     }
 

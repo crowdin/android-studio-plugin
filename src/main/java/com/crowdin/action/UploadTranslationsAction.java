@@ -1,20 +1,26 @@
 package com.crowdin.action;
 
-import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.*;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,16 +30,29 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 public class UploadTranslationsAction extends BackgroundAction {
 
     @Override
-    public void performInBackground(@NotNull AnActionEvent e) {
+    public void performInBackground(@NotNull AnActionEvent e, ProgressIndicator indicator) {
         Project project = e.getProject();
-        VirtualFile root = project.getBaseDir();
+        VirtualFile root = FileUtil.getProjectBaseDir(project);
 
         CrowdinProperties properties;
         try {
+            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
+
+            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_translations"), "Upload");
+            if (!confirmation) {
+                return;
+            }
+            indicator.checkCanceled();
+
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            indicator.checkCanceled();
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+
+            if (!CrowdinFileUtil.isValidBranchName(branchName)) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+            }
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
@@ -41,41 +60,60 @@ public class UploadTranslationsAction extends BackgroundAction {
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
             if ((branchName != null && !branchName.isEmpty()) && branch == null) {
                 NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
+                return;
             }
 
-            Map<String, File> filePaths = crowdinProjectCache.getFiles().get(branch);
+            Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
 
             AtomicInteger uploadedFilesCounter = new AtomicInteger(0);
 
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
                 sources.forEach(source -> {
-                    VirtualFile baseDir = FileUtil.getBaseDir(source, sourcePattern);
-                    String sourcePath = source.getName();
+                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
 
-                    File crowdinSource = filePaths.get(sourcePath);
+                    String relativePathToPattern = (properties.isPreserveHierarchy())
+                        ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
+                        : "";
+                    String patternPathToFile = (properties.isPreserveHierarchy())
+                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
+                        : "";
+
+                    File crowdinSource = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + sourcePath));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
                         return;
                     }
-                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
+                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
                         String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
-                        java.io.File translationFile = Paths.get(baseDir.getPath(), builtPattern).toFile();
+                        java.io.File translationFile = Paths.get(pathToPattern.getPath(), builtPattern).toFile();
                         if (!translationFile.exists()) {
                             continue;
                         }
-                        boolean uploaded = crowdin.uploadTranslationFile(translationFile, crowdinSource.getId(), lang.getId());
-                        if (uploaded) {
+                        Long storageId;
+                        try (InputStream translationFileStrem = new FileInputStream(translationFile)) {
+                            storageId = crowdin.addStorage(translationFile.getName(), translationFileStrem);
+                        } catch (IOException exception) {
+                            throw new RuntimeException("Unhandled exception with File '" + translationFile + "'", exception);
+                        }
+                        UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId);
+                        try {
+                            crowdin.uploadTranslation(lang.getId(), request);
                             uploadedFilesCounter.incrementAndGet();
+                        } catch (Exception exception) {
+                            NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
                         }
                     }
                 });
             });
-            NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
+            if (uploadedFilesCounter.get() > 0) {
+                NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
+            }
+        } catch (ProcessCanceledException exception) {
+            throw exception;
         } catch (Exception exception) {
             NotificationUtil.showErrorMessage(project, exception.getMessage());
-            return;
         }
     }
 

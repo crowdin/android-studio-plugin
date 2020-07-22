@@ -5,7 +5,6 @@ import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.model.*;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
-import com.crowdin.client.storage.model.Storage;
 import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
@@ -18,8 +17,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -29,7 +28,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
-import static com.crowdin.Constants.STANDARD_TRANSLATION_PATTERN;
 
 public class Crowdin {
 
@@ -51,43 +49,54 @@ public class Crowdin {
             this.client = new Client(credentials, clientConfig);
     }
 
-    public void uploadFile(VirtualFile source, String translationPattern, String branch) {
+    public Long addStorage(String fileName, InputStream content) {
         try {
-            Long branchId = this.getOrCreateBranch(branch);
-
-            ResponseObject<Storage> storageResponseObject = this.client.getStorageApi().addStorage(source.getName(), source.getInputStream());
-            Long storageId = storageResponseObject.getData().getId();
-            ResponseList<com.crowdin.client.sourcefiles.model.File> fileResponseList = this.client.getSourceFilesApi().listFiles(this.projectId, branchId, null, null, 500, null);
-            ResponseObject<com.crowdin.client.sourcefiles.model.File> foundFile = fileResponseList.getData().stream()
-                    .filter(f -> {
-                        if (branchId != null) {
-                            return f.getData().getBranchId().equals(branchId);
-                        } else {
-                            return f.getData().getBranchId() == null;
-                        }
-                    })
-                    .filter(f -> f.getData().getName().equals(source.getName()))
-                    .findFirst().orElse(null);
-            if (foundFile != null) {
-                UpdateFileRequest request = new UpdateFileRequest();
-                request.setStorageId(storageId);
-                GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
-                generalFileExportOptions.setExportPattern(STANDARD_TRANSLATION_PATTERN);
-                this.client.getSourceFilesApi().updateOrRestoreFile(this.projectId, foundFile.getData().getId(), request);
-                NotificationUtil.showInformationMessage(this.project, String.format(MESSAGES_BUNDLE.getString("messages.source_updated"), source.getName()));
-            } else {
-                AddFileRequest request = new AddFileRequest();
-                request.setStorageId(storageId);
-                request.setName(source.getName());
-                request.setBranchId(branchId);
-                GeneralFileExportOptions generalFileExportOptions = new GeneralFileExportOptions();
-                generalFileExportOptions.setExportPattern(translationPattern);
-                request.setExportOptions(generalFileExportOptions);
-                this.client.getSourceFilesApi().addFile(this.projectId, request);
-                NotificationUtil.showInformationMessage(this.project, String.format(MESSAGES_BUNDLE.getString("messages.source_uploaded"), source.getName()));
-            }
+            return this.client.getStorageApi()
+                .addStorage(fileName, content)
+                .getData()
+                .getId();
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.project, this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public com.crowdin.client.sourcefiles.model.File updateSource(Long sourceId, UpdateFileRequest request) {
+        try {
+            return this.client.getSourceFilesApi()
+                .updateOrRestoreFile(this.projectId, sourceId, request)
+                .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public com.crowdin.client.sourcefiles.model.File addSource(AddFileRequest request) {
+        try {
+            return this.client.getSourceFilesApi()
+                .addFile(this.projectId, request)
+                .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public void uploadTranslation(String languageId, UploadTranslationsRequest request) {
+        try {
+            this.client.getTranslationsApi()
+                .uploadTranslations(this.projectId, languageId, request)
+                .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
+        }
+    }
+
+    public Directory addDirectory(AddDirectoryRequest request) {
+        try {
+            return this.client.getSourceFilesApi()
+                .addDirectory(this.projectId, request)
+                .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e));
         }
     }
 
@@ -109,32 +118,8 @@ public class Crowdin {
             .collect(Collectors.toList());
     }
 
-    public boolean uploadTranslationFile(File translationFile, Long sourceId, String languageId) {
+    public File downloadTranslations(VirtualFile baseDir, Long branchId) {
         try {
-            UploadTranslationsRequest request = new UploadTranslationsRequest();
-            request.setFileId(sourceId);
-            Long storageId = client.getStorageApi()
-                .addStorage(translationFile.getName(), new FileInputStream(translationFile)).getData().getId();
-            request.setStorageId(storageId);
-            client.getTranslationsApi().uploadTranslations(this.projectId, languageId, request);
-            return true;
-        } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.project, String.format(MESSAGES_BUNDLE.getString("errors.upload_source"), translationFile.getName(), languageId, this.getErrorMessage(e)));
-            return false;
-        }
-    }
-
-    public File downloadTranslations(VirtualFile baseDir, String branch) {
-        try {
-            Long branchId = null;
-            if (branch != null && branch.length() > 0) {
-                Optional<Branch> foundBranch = this.getBranch(branch);
-                if (!foundBranch.isPresent()) {
-                    NotificationUtil.showWarningMessage(this.project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branch));
-                    return null;
-                }
-                branchId = foundBranch.get().getId();
-            }
             CrowdinTranslationCreateProjectBuildForm buildProjectTranslationRequest = new CrowdinTranslationCreateProjectBuildForm();
             buildProjectTranslationRequest.setBranchId(branchId);
             ResponseObject<ProjectBuild> projectBuildResponseObject = this.client.getTranslationsApi().buildProjectTranslation(this.projectId, buildProjectTranslationRequest);
@@ -176,7 +161,7 @@ public class Crowdin {
         try {
             return executeRequestFullList((limit, offset) ->
                     this.client.getSourceFilesApi()
-                        .listDirectories(this.projectId, branchId, null, null, limit, offset)
+                        .listDirectories(this.projectId, branchId, null, true, limit, offset)
                         .getData()
                 )
                 .stream()
@@ -192,7 +177,7 @@ public class Crowdin {
         try {
             return executeRequestFullList((limit, offset) ->
                     this.client.getSourceFilesApi()
-                        .listFiles(this.projectId, branchId, null, null, 500, 0)
+                        .listFiles(this.projectId, branchId, null, true, 500, 0)
                         .getData()
                 )
                 .stream()
@@ -221,34 +206,19 @@ public class Crowdin {
         return models;
     }
 
-    private Long getOrCreateBranch(String name) {
-        if (name != null && name.length() > 0) {
-            try {
-                Branch foundBranch = this.getBranch(name).orElse(null);
-                if (foundBranch != null) {
-                    return foundBranch.getId();
-                } else {
-                    AddBranchRequest request = new AddBranchRequest();
-                    request.setName(name);
-                    ResponseObject<Branch> responseObject = this.client.getSourceFilesApi().addBranch(this.projectId, request);
-                    return responseObject.getData().getId();
-                }
-            } catch (Exception e) {
-                try {
-                    if (!this.concurrentIssue(e)) {
-                        throw e;
-                    }
-                    return this.waitAndFindBranch(name);
-                } catch (Exception error) {
-                    if (this.customMessage(error)) {
-                        throw new RuntimeException(this.getErrorMessage(error));
-                    }
-                    String msg = String.format(MESSAGES_BUNDLE.getString("errors.create_or_find_branch"), name, this.projectId, this.getErrorMessage(error));
-                    throw new RuntimeException(msg);
-                }
+    public Branch addBranch(AddBranchRequest request) {
+        try {
+            return this.client.getSourceFilesApi()
+                .addBranch(this.projectId, request)
+                .getData();
+        } catch (Exception e) {
+            String errorMessage = this.getErrorMessage(e);
+            if (errorMessage.contains("regexNotMatch File name can't contain")) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+            } else {
+                throw new RuntimeException(this.getErrorMessage(e));
             }
         }
-        return null;
     }
 
     public Optional<Branch> getBranch(String name) {

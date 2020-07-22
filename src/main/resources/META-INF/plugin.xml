@@ -34,11 +34,12 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"></postStartupActivity>
+    <projectService serviceImplementation="com.crowdin.logic.CrowdinSettings"/>
   </extensions>
 
   <actions>
 
-    <action icon="PluginIcons.ICON" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this 'strings.xml' to Crowdin">
+    <action icon="PluginIcons.ICON" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 

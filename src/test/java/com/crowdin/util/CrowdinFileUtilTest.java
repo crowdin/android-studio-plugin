@@ -40,9 +40,26 @@ public class CrowdinFileUtilTest {
                 }},new HashMap<Long, Directory>() {{
                     put(201L, dir_201L);
                 }},  new HashMap<String, File>() {{
-                    put("values" + sep + "strings.xml", file_101L_201L);
-                    put("strings2.xml", file_102L_null);
+                    put(sep + "values" + sep + "strings.xml", file_101L_201L);
+                    put(sep + "strings2.xml", file_102L_null);
                 }})
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void testIsValidBranchName(String branchName, boolean expected) {
+        boolean result = CrowdinFileUtil.isValidBranchName(branchName);
+        assertEquals(expected, result);
+    }
+
+    public static Stream<Arguments> testIsValidBranchName() {
+        return Stream.of(
+            arguments("master", true),
+            arguments(null, true),
+            arguments("test<42>", false),
+            arguments("\\4\\2\\", false),
+            arguments("", true)
         );
     }
 }

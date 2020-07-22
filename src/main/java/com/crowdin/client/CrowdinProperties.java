@@ -11,5 +11,6 @@ public class CrowdinProperties {
     private String apiToken;
     private String baseUrl;
     private boolean disabledBranches;
+    private boolean preserveHierarchy;
     private Map<String, String> sourcesWithPatterns;
 }

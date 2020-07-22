@@ -38,7 +38,7 @@ public class PropertyUtil {
     }
 
     public static VirtualFile getCrowdinPropertyFile(Project project) {
-        VirtualFile baseDir = project.getBaseDir();
+        VirtualFile baseDir = FileUtil.getProjectBaseDir(project);
         if (baseDir == null || !baseDir.isDirectory()) {
             System.out.println("Base dir not exist");
             return null;
