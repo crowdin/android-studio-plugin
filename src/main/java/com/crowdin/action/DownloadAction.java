@@ -92,16 +92,15 @@ public class DownloadAction extends BackgroundAction {
             List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
             for (VirtualFile source : sources) {
                 VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
+                String sourceRelativePath = StringUtils.removeStart(source.getPath(), root.getPath());
                 String relativePathToPattern = (properties.isPreserveHierarchy())
                     ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
                     : File.separator;
-                String basePattern = PlaceholderUtil.replaceFilePlaceholders(
-                    translationPattern,
-                    StringUtils.removeStart(source.getPath(), root.getPath()));
-                for (Language projectLanguage : projectLangs) {
-                    String languageBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, projectLanguage);
-                    File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, languageBasedPattern));
-                    File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), languageBasedPattern));
+                Map<Language, String> translationPaths =
+                    PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, projectLangs);
+                for (Map.Entry<Language, String> translationPathEntry : translationPaths.entrySet()) {
+                    File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
+                    File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), translationPathEntry.getValue()));
                     if (!files.contains(fromFile)) {
                         return;
                     }

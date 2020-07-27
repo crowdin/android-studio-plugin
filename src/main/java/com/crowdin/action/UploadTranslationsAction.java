@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.FileInputStream;
@@ -71,23 +72,18 @@ public class UploadTranslationsAction extends BackgroundAction {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
                 sources.forEach(source -> {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
+                    String sourceRelativePath = StringUtils.removeStart(source.getPath(), root.getPath());
 
-                    String relativePathToPattern = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
-                        : "";
-                    String patternPathToFile = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
-                        : "";
+                    Map<Language, String> translationPaths =
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages());
 
-                    File crowdinSource = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
+                    File crowdinSource = filePaths.get(sourceRelativePath);
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + sourceRelativePath));
                         return;
                     }
-                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
-                    for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
-                        java.io.File translationFile = Paths.get(pathToPattern.getPath(), builtPattern).toFile();
+                    for (Map.Entry<Language, String> translationPath : translationPaths.entrySet()) {
+                        java.io.File translationFile = Paths.get(pathToPattern.getPath(), translationPath.getValue()).toFile();
                         if (!translationFile.exists()) {
                             continue;
                         }
@@ -99,7 +95,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                         }
                         UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId);
                         try {
-                            crowdin.uploadTranslation(lang.getId(), request);
+                            crowdin.uploadTranslation(translationPath.getKey().getId(), request);
                             uploadedFilesCounter.incrementAndGet();
                         } catch (Exception exception) {
                             NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());

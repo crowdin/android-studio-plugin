@@ -4,6 +4,11 @@ import com.crowdin.client.languages.model.Language;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 
+import java.util.List;
+import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
+
 public class PlaceholderUtil {
 
     private static final String PLACEHOLDER_ANDROID_CODE = "%android_code%";
@@ -21,6 +26,22 @@ public class PlaceholderUtil {
     private static final String PLACEHOLDER_ORIGINAL_PATH = "%original_path%";
 
     private PlaceholderUtil() {}
+
+    /**
+     * Build relative paths to all possible translations.
+     *
+     * @param relativeSourcePath source path relative to project root (StringUtils.removeStart(source.getPath(), root.getPath())
+     * @param translationPattern translation pattern
+     * @param projLanguages list of project languages
+     * @return relative paths to all possible translations
+     */
+    public static Map<Language, String> buildTranslationPatterns(
+        String relativeSourcePath, String translationPattern, List<Language> projLanguages
+    ) {
+        String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, relativeSourcePath);
+        return projLanguages.stream()
+            .collect(toMap(lang -> lang, lang -> PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang)));
+    }
 
     public static String replaceLanguagePlaceholders(@NonNull String pattern, @NonNull Language lang) {
         return pattern
