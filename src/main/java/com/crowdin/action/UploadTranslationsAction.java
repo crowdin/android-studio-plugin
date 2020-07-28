@@ -85,7 +85,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                     for (Map.Entry<Language, String> translationPath : translationPaths.entrySet()) {
                         java.io.File translationFile = Paths.get(pathToPattern.getPath(), translationPath.getValue()).toFile();
                         if (!translationFile.exists()) {
-                            NotificationUtil.showWarningMessage(project, String.format("Translation file '%s' is missing in the project.", FileUtil.noSepAtStart(StringUtils.removeStart(translationFile.getPath(), root.getPath()))));
+                            NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_translation"), FileUtil.noSepAtStart(StringUtils.removeStart(translationFile.getPath(), root.getPath()))));
                             continue;
                         }
                         Long storageId;
@@ -107,7 +107,7 @@ public class UploadTranslationsAction extends BackgroundAction {
             if (uploadedFilesCounter.get() > 0) {
                 NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
             } else {
-                NotificationUtil.showWarningMessage(project, "Couldn't find any translation file to upload");
+                NotificationUtil.showWarningMessage(project, MESSAGES_BUNDLE.getString("errors.uploaded_zero_translations"));
             }
         } catch (ProcessCanceledException exception) {
             throw exception;
