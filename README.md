@@ -74,30 +74,71 @@ base-url=https://{organization-name}.crowdin.com    # High priority
 
 ### Source files and translations
 
-Plugin will automatically find `\*\*/values/strings.xml` file in the values directory and if renewed it will be uploaded to Crowdin instantly.
-If you have more source files or the source file's name is other than `strings.xml` please specify this in the `sources` parameter.
+#### Default behaviour
 
-```ini
+By default, plugin searches for a source file by `**/values/strings.xml` pattern, and for translation files by `/values-%android_code%/%original_file_name%` pattern.
+
+#### `sources` parameter
+
+If there are multiple source files in the same `values` directory, or if source file has a different name, it can be specified in `sources` parameter:
+
+```properties
 sources=file1.xml, file2.xml
 ```
 
-Translations will be exported to the resource folder (`\*\*/resources/values-uk/strings.xml`, `\*\*/resources/values-fr/strings.xml`, ...)
+By default, plugin works as if `sources` parameter were specified like this:
 
-To set up your own sources and translations pattern use the following configuration in the `crowdin.properties` file:
+```properties
+sources=strings.xml
+```
 
-```ini
+For such a parameter, the passed names are substituted into the `**/values/<source_file>` pattern, while for translations the pattern remains standard – `/values-%android_code%/%original_file_name%`.
+
+#### `files.#.(source|translation)` parameters
+
+For more flexibility, there is `files.#` parameter.
+
+```properties
 files.source=/values/*.xml
 files.translation=/values-%android_code%/%original_file_name%
 
 files.1.source=/another/path/*.xml
 files.1.translation=/another/path-%android_code%/%original_file_name%
-
-...
 ```
+
+Example of having multiple source files with the same name:
+
+```properties
+preserve-hierarchy=true
+
+files.source=**/values/strings.xml
+files.translation=/values-%two_letters_code%/%original_file_name%
+
+files.1.source=app/src/main/res/values/file.xml
+files.1.translation=app/src/main/res/values-%android_code%/%original_file_name%
+files.2.source=ext/src/main/res/values/file.xml
+files.2.translation=ext/src/main/res/values-%android_code%/%original_file_name%
+```
+
+**Note**: Both `.source` and `.translation` parts should be specified
+
+**Note**: If `preserve-hierarchy` is set to `true`, plugin adds path to your translation pattern.
+
+```properties
+preserve-hierarchy=true
+
+files.source=**/values/strings.xml
+files.translation=/values-%two_letters_code%/%original_file_name% #CORRECT
+# this will be transformed to 'app/src/main/res/values-%two_letter_code%/%original_file_name%' export pattern for each file
+```
+
+#### Placeholders
 
 See the [Placeholders](https://support.crowdin.com/configuration-file/#placeholders) article to put appropriate variables.
 
-**Note:** Currently `%original_path%` placeholder is not supported.
+**Note**: `%android_code%` placeholder means a format such as `'fr-rCA'` ([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php) -r[<ISO 3166-1-alpha-2>](https://www.iso.org/obp/ui/#iso:pub:PUB500001:en)). When applying format with only two-letter language code such as `'fr'`([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php)) format, use `%two_letters_code%` placeholder.
+
+**Note**: Currently `%original_path%` placeholder is not supported.
 
 ### Additional options
 
