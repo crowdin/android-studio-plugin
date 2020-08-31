@@ -47,7 +47,7 @@ public class SourceLogic {
                 : "";
 
             GeneralFileExportOptions exportOptions = new GeneralFileExportOptions();
-            exportOptions.setExportPattern(FileUtil.unixPath(relativePathToPattern + translationPattern));
+            exportOptions.setExportPattern(FileUtil.unixPath(FileUtil.joinPaths(relativePathToPattern, translationPattern)));
 
             String outputName = FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
             if (filePaths.containsKey(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()))) {
