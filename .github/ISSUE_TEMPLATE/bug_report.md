@@ -18,7 +18,8 @@ Steps to reproduce the behavior:
 4. See error
 
 **Environment:**
- Android Studio version [e.g. 3.6.3]
+1. Android Studio version [e.g. 3.6.3]
+2. OS version [e.g. Windows 10]
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
