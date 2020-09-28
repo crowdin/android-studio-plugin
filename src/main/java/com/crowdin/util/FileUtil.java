@@ -5,6 +5,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.NonNull;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,7 +90,7 @@ public final class FileUtil {
     }
 
     public static String normalizePath(String path) {
-        return path.replaceAll("[\\\\/]+", File.separator);
+        return path.replaceAll("[\\\\/]+", SystemUtils.IS_OS_WINDOWS ? "\\\\" : "/");
     }
 
     public static String unixPath(String path) {
