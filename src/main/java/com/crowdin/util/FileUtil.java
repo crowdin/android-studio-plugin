@@ -108,4 +108,8 @@ public final class FileUtil {
     public static String noSepAtStart(String path) {
         return path.replaceAll("^[\\\\/]+", "");
     }
+
+    public static String sepAtStart(String path) {
+        return File.separator + noSepAtStart(path);
+    }
 }

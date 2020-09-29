@@ -42,6 +42,9 @@ public class UploadFromContextAction extends BackgroundAction {
             indicator.checkCanceled();
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
+            NotificationUtil.setLogDebugLevel(properties.isDebug());
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
@@ -57,6 +60,9 @@ public class UploadFromContextAction extends BackgroundAction {
             if (branch == null && StringUtils.isNotEmpty(branchName)) {
                 AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
                 branch = crowdin.addBranch(addBranchRequest);
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.created_branch"), branch.getId(), branch.getName()));
+            } else if (branch != null) {
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
             }
             Long branchId = (branch != null) ? branch.getId() : null;
             indicator.checkCanceled();
@@ -79,6 +85,7 @@ public class UploadFromContextAction extends BackgroundAction {
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
+            NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
     }

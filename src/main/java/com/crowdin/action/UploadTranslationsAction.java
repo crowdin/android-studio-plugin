@@ -46,6 +46,9 @@ public class UploadTranslationsAction extends BackgroundAction {
             indicator.checkCanceled();
 
             properties = CrowdinPropertiesLoader.load(project);
+            NotificationUtil.setLogDebugLevel(properties.isDebug());
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             indicator.checkCanceled();
 
@@ -62,6 +65,8 @@ public class UploadTranslationsAction extends BackgroundAction {
             if ((branchName != null && !branchName.isEmpty()) && branch == null) {
                 NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
                 return;
+            } else if (branch != null) {
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
             }
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
@@ -99,6 +104,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                             crowdin.uploadTranslation(translationPath.getKey().getId(), request);
                             uploadedFilesCounter.incrementAndGet();
                         } catch (Exception exception) {
+                            NotificationUtil.logErrorMessage(project, exception);
                             NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
                         }
                     }
@@ -112,6 +118,7 @@ public class UploadTranslationsAction extends BackgroundAction {
         } catch (ProcessCanceledException exception) {
             throw exception;
         } catch (Exception exception) {
+            NotificationUtil.logErrorMessage(project, exception);
             NotificationUtil.showErrorMessage(project, exception.getMessage());
         }
     }

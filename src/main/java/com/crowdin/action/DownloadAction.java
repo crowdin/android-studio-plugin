@@ -49,6 +49,9 @@ public class DownloadAction extends BackgroundAction {
             NotificationUtil.showErrorMessage(project, e.getMessage());
             return;
         }
+        NotificationUtil.setLogDebugLevel(properties.isDebug());
+        NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
         Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
         String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
@@ -69,6 +72,7 @@ public class DownloadAction extends BackgroundAction {
             } else {
                 branch = foundBranch.get();
             }
+            NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
         }
 
         Map<String, String> allCrowdinTranslationsWithSources = CrowdinFileUtil.buildAllProjectTranslationsWithSources(
@@ -77,11 +81,13 @@ public class DownloadAction extends BackgroundAction {
             crowdinProjectCache.getProjectLanguages()
         );
 
+        NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.download_archive"));
         File downloadTranslations = crowdin.downloadTranslations(root, (branch != null ? branch.getId() : null));
         if (downloadTranslations == null) {
             return;
         }
         String tempDir = downloadTranslations.getParent() + File.separator + "all" + System.nanoTime();
+        NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.extract_files"), tempDir));
         this.extractTranslations(project, downloadTranslations, tempDir);
         List<java.io.File> files = FileUtil.walkDir(Paths.get(tempDir));
 
@@ -102,8 +108,12 @@ public class DownloadAction extends BackgroundAction {
                     File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
                     File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), translationPathEntry.getValue()));
                     if (!files.contains(fromFile)) {
+                        NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.file_not_found"),
+                            FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
                         return;
                     }
+                    NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.file_found"),
+                        FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
                     targets.add(Pair.create(fromFile, toFile));
                 }
             }
@@ -122,6 +132,7 @@ public class DownloadAction extends BackgroundAction {
             .filter(file -> !foundTranslations.contains(file))
             .collect(Collectors.toList());
 
+        NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.clearing"));
         downloadTranslations.delete();
         try {
             FileUtils.deleteDirectory(new File(tempDir));

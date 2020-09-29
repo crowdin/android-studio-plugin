@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
@@ -45,6 +46,14 @@ public class UploadAction extends BackgroundAction {
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
+            NotificationUtil.setLogDebugLevel(properties.isDebug());
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns")
+                + properties.getSourcesWithPatterns().keySet().stream()
+                .map(key -> String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns_item"), key, properties.getSourcesWithPatterns().get(key)))
+                .collect(Collectors.joining()));
+
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
             if (!CrowdinFileUtil.isValidBranchName(branchName)) {
@@ -59,6 +68,9 @@ public class UploadAction extends BackgroundAction {
             if (branch == null && StringUtils.isNotEmpty(branchName)) {
                 AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
                 branch = crowdin.addBranch(addBranchRequest);
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.created_branch"), branch.getId(), branch.getName()));
+            } else if (branch != null) {
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
             }
             indicator.checkCanceled();
 
@@ -76,6 +88,7 @@ public class UploadAction extends BackgroundAction {
                     try {
                         sourceLogic.uploadSource(sf, sourcePattern, translationPattern);
                     } catch (Exception e) {
+                        NotificationUtil.logErrorMessage(project, e);
                         NotificationUtil.showErrorMessage(project, e.getMessage());
                     }
                 });
@@ -84,6 +97,7 @@ public class UploadAction extends BackgroundAction {
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
+            NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
     }

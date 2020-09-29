@@ -127,6 +127,9 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             } catch (Exception exception) {
                 return;
             }
+            NotificationUtil.setLogDebugLevel(properties.isDebug());
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
