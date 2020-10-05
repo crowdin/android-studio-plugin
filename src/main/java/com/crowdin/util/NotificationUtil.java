@@ -60,7 +60,8 @@ public final class NotificationUtil {
     }
 
     public static void logErrorMessage(@NotNull Project project, @NotNull Exception e) {
-        logMessage(project, ExceptionUtils.getStackTrace(ExceptionUtils.getRootCause(e)), NotificationType.ERROR, "ERROR");
+        Throwable rootCause = ExceptionUtils.getRootCause(e);
+        logMessage(project, ExceptionUtils.getStackTrace((rootCause != null) ? rootCause : e), NotificationType.ERROR, "ERROR");
     }
 
     private static void logMessage(@NotNull Project project, @NotNull String message, @NotNull NotificationType type, String level) {
