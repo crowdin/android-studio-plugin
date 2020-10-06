@@ -82,9 +82,9 @@ public class UploadTranslationsAction extends BackgroundAction {
                     Map<Language, String> translationPaths =
                         PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages());
 
-                    File crowdinSource = filePaths.get(sourceRelativePath);
+                    File crowdinSource = filePaths.get(FileUtil.normalizePath(sourceRelativePath));
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName : "") + FileUtil.sepAtStart(sourceRelativePath)));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), FileUtil.normalizePath((branchName != null ? branchName + "/" : "") + sourceRelativePath)));
                         return;
                     }
                     for (Map.Entry<Language, String> translationPath : translationPaths.entrySet()) {
