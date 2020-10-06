@@ -71,13 +71,15 @@ public class UploadTranslationsAction extends BackgroundAction {
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
 
+            NotificationUtil.logDebugMessage(project, "Project files: " + filePaths.keySet());
+
             AtomicInteger uploadedFilesCounter = new AtomicInteger(0);
 
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
                 sources.forEach(source -> {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
-                    String sourceRelativePath = StringUtils.removeStart(source.getPath(), root.getPath());
+                    String sourceRelativePath = properties.isPreserveHierarchy() ? StringUtils.removeStart(source.getPath(), root.getPath()) : FileUtil.sepAtStart(source.getName());
 
                     Map<Language, String> translationPaths =
                         PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages());
