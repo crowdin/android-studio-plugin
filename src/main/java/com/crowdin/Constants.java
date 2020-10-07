@@ -23,6 +23,7 @@ public final class Constants {
     public static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
     public static final String PROPERTY_PRESERVE_HIERARCHY = "preserve-hierarchy";
+    public static final String PROPERTY_DEBUG = "debug";
 
     public static final Boolean DISABLE_BRANCHES_DEFAULT = false;
     public static final Boolean PRESERVE_HIERARCHY_DEFAULT = false;

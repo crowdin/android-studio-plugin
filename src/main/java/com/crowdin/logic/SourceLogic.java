@@ -7,11 +7,17 @@ import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.InputStream;
 import java.util.Map;
+
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.util.FileUtil.joinPaths;
+import static com.crowdin.util.FileUtil.normalizePath;
+import static com.crowdin.util.FileUtil.sepAtStart;
+import static com.crowdin.util.FileUtil.unixPath;
 
 public class SourceLogic {
 
@@ -39,36 +45,56 @@ public class SourceLogic {
         try {
             VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
 
-            String relativePathToPattern = (properties.isPreserveHierarchy())
-                ? java.io.File.separator + FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern)
-                : "";
-            String patternPathToFile = (properties.isPreserveHierarchy())
-                ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
-                : "";
-
             GeneralFileExportOptions exportOptions = new GeneralFileExportOptions();
-            exportOptions.setExportPattern(FileUtil.unixPath(FileUtil.joinPaths(relativePathToPattern, translationPattern)));
 
-            String outputName = FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
-            if (filePaths.containsKey(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()))) {
-                Long sourceId = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName())).getId();
-                Long storageId = crowdin.addStorage(source.getName(), source.getInputStream());
+            String path;
+            String parentPath;
+            if (properties.isPreserveHierarchy()) {
+                String relativePathToPattern = FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern);
+                String patternPathToFile = FileUtil.findRelativePath(pathToPattern, source.getParent());
+
+                path = sepAtStart(normalizePath(joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
+
+                parentPath = sepAtStart(normalizePath(joinPaths(relativePathToPattern, patternPathToFile)));
+                exportOptions.setExportPattern(sepAtStart(unixPath(joinPaths(relativePathToPattern, translationPattern))));
+            } else {
+                path = sepAtStart(source.getName());
+                parentPath = "";
+                exportOptions.setExportPattern(sepAtStart(translationPattern));
+            }
+
+            String outputName = FileUtil.noSepAtStart(path);
+            if (filePaths.containsKey(path)) {
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.update"), outputName, sourcePattern));
+                Long sourceId = filePaths.get(path).getId();
+                Long storageId;
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.add_to_storage"), outputName));
+                try (InputStream sourceStream = source.getInputStream()) {
+                    storageId = crowdin.addStorage(source.getName(), sourceStream);
+                }
 
                 UpdateFileRequest updateFileRequest = RequestBuilder.updateFile(storageId, exportOptions);
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.update_request"), updateFileRequest));
                 crowdin.updateSource(sourceId, updateFileRequest);
                 NotificationUtil.showInformationMessage(project, "File '" + outputName + "' is updated");
             } else {
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.upload"), outputName, sourcePattern));
                 String type = source.getFileType().getName().toLowerCase();
-                Long directoryId = this.buildPath(crowdin, FileUtil.joinPaths(relativePathToPattern, patternPathToFile), dirPaths, branchId);
-                Long storageId = crowdin.addStorage(source.getName(), source.getInputStream());
+                Long directoryId = this.buildPath(crowdin, parentPath, dirPaths, branchId);
+                Long storageId;
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.add_to_storage"), outputName));
+                try (InputStream sourceStream = source.getInputStream()) {
+                    storageId = crowdin.addStorage(source.getName(), sourceStream);
+                }
 
                 AddFileRequest addFileRequest = RequestBuilder.addFile(
                     storageId, source.getName(), (directoryId == null ? branchId : null), directoryId, type, exportOptions);
+                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.upload_request"), addFileRequest));
                 crowdin.addSource(addFileRequest);
                 NotificationUtil.showInformationMessage(project, "File '" + outputName + "' is uploaded");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Couldn't upload source file", e);
+            throw new RuntimeException(String.format("Couldn't upload source file: %s", e.getMessage()), e);
         }
     }
 

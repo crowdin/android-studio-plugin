@@ -13,4 +13,5 @@ public class CrowdinProperties {
     private boolean disabledBranches;
     private boolean preserveHierarchy;
     private Map<String, String> sourcesWithPatterns;
+    private boolean debug;
 }

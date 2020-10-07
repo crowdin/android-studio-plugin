@@ -78,9 +78,9 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                         ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, s.getParent())
                         : "";
 
-                    File crowdinSource = filePaths.get(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()));
+                    File crowdinSource = filePaths.get(FileUtil.normalizePath(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName())));
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName + "/" : "") + FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName())));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName : "") + FileUtil.sepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()))));
                         return;
                     }
                     String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()));
@@ -127,6 +127,9 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             } catch (Exception exception) {
                 return;
             }
+            NotificationUtil.setLogDebugLevel(properties.isDebug());
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
+
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 

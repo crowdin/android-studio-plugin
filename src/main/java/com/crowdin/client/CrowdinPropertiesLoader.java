@@ -96,6 +96,12 @@ public class CrowdinPropertiesLoader {
             } else {
                 crowdinProperties.setPreserveHierarchy(PRESERVE_HIERARCHY_DEFAULT);
             }
+            String debug = properties.getProperty(PROPERTY_DEBUG);
+            if (debug != null) {
+                crowdinProperties.setDebug(Boolean.parseBoolean(debug));
+            } else {
+                crowdinProperties.setDebug(false);
+            }
 
             Map<String, String> files = getSources(properties, errors);
             crowdinProperties.setSourcesWithPatterns(files);
