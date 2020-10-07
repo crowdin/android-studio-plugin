@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.2.0'
+version '1.2.1'
 
 sourceCompatibility = 1.8
 
@@ -40,13 +40,9 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Added: `preserve-hierarchy` config option<br>
-      - Added: Environment variables support<br>
-      - Added: Upload translations confirm dialog<br>
-      - Added: Warning to 'download' command about omitted translations<br>
-      - Updated: Deprecated API usage and fix compatibility with versions prior to 181+<br>
-      - Updated: Improve error message for wrong branch name<br>
-      - Other fixes and improvements"""
+      - Added: Debug mode<br>
+      - Updated: Improve for finding translation files<br>
+      - Fixed: Fix escaping for Windows OS"""
 }
 
 wrapper {
