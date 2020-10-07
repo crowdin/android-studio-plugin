@@ -26,3 +26,8 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
+
+**Additional context**
+
+Run the plugin in Debug mode and provide an extended log.
+To enable Debug mode add `debug=true` to the *crowdin.properties* file.

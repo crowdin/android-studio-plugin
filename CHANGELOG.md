@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.2.1]
+
+- Added: Debug mode. To enable add `debug=true` to the configuration file
+- Updated: Improve for finding translation files
+- Fixed: Fix escaping for Windows OS
+
 ## [1.2.0]
 
 - Added: `preserve-hierarchy` config option
