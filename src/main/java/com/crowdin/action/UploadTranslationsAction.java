@@ -3,7 +3,7 @@ package com.crowdin.action;
 import com.crowdin.client.*;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
@@ -12,7 +12,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,6 +59,11 @@ public class UploadTranslationsAction extends BackgroundAction {
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
+            if (!crowdinProjectCache.isManagerAccess()) {
+                NotificationUtil.showErrorMessage(project, "You need to have manager access to perform this action");
+                return;
+            }
+
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
             if ((branchName != null && !branchName.isEmpty()) && branch == null) {
                 NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
@@ -69,7 +72,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                 NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
             }
 
-            Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
 
             NotificationUtil.logDebugMessage(project, "Project files: " + filePaths.keySet());
 
@@ -82,9 +85,9 @@ public class UploadTranslationsAction extends BackgroundAction {
                     String sourceRelativePath = properties.isPreserveHierarchy() ? StringUtils.removeStart(source.getPath(), root.getPath()) : FileUtil.sepAtStart(source.getName());
 
                     Map<Language, String> translationPaths =
-                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages());
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
 
-                    File crowdinSource = filePaths.get(FileUtil.normalizePath(sourceRelativePath));
+                    FileInfo crowdinSource = filePaths.get(FileUtil.normalizePath(sourceRelativePath));
                     if (crowdinSource == null) {
                         NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), FileUtil.normalizePath((branchName != null ? branchName + "/" : "") + sourceRelativePath)));
                         return;
