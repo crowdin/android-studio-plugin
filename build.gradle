@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.2.1'
+version '1.3.0'
 
 sourceCompatibility = 1.8
 
@@ -40,9 +40,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Added: Debug mode<br>
-      - Updated: Improve for finding translation files<br>
-      - Fixed: Fix escaping for Windows OS"""
+      - Added: Language Mapping support"""
 }
 
 wrapper {
