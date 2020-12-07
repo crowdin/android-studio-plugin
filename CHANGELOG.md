@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.0]
+
+- Added: Language Mapping support ([#49](https://github.com/crowdin/android-studio-plugin/pull/49))
+
 ## [1.2.1]
 
 - Added: Debug mode. To enable add `debug=true` to the configuration file
