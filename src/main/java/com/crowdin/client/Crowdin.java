@@ -60,9 +60,9 @@ public class Crowdin {
         }
     }
 
-    public com.crowdin.client.sourcefiles.model.File updateSource(Long sourceId, UpdateFileRequest request) {
+    public void updateSource(Long sourceId, UpdateFileRequest request) {
         try {
-            return this.client.getSourceFilesApi()
+            this.client.getSourceFilesApi()
                 .updateOrRestoreFile(this.projectId, sourceId, request)
                 .getData();
         } catch (Exception e) {
@@ -70,9 +70,9 @@ public class Crowdin {
         }
     }
 
-    public com.crowdin.client.sourcefiles.model.File addSource(AddFileRequest request) {
+    public void addSource(AddFileRequest request) {
         try {
-            return this.client.getSourceFilesApi()
+            this.client.getSourceFilesApi()
                 .addFile(this.projectId, request)
                 .getData();
         } catch (Exception e) {
@@ -110,12 +110,8 @@ public class Crowdin {
         }
     }
 
-    public List<Language> getProjectLanguages() {
-        com.crowdin.client.projectsgroups.model.Project crowdinProject = this.getProject();
-        return this.getSupportedLanguages()
-            .stream()
-            .filter(lang -> crowdinProject.getTargetLanguageIds().contains(lang.getId()))
-            .collect(Collectors.toList());
+    public List<Language> extractProjectLanguages(com.crowdin.client.projectsgroups.model.Project crowdinProject) {
+        return crowdinProject.getTargetLanguages();
     }
 
     public File downloadTranslations(VirtualFile baseDir, Long branchId) {
@@ -173,7 +169,7 @@ public class Crowdin {
         }
     }
 
-    public List<com.crowdin.client.sourcefiles.model.File> getFiles(Long branchId) {
+    public List<com.crowdin.client.sourcefiles.model.FileInfo> getFiles(Long branchId) {
         try {
             return executeRequestFullList((limit, offset) ->
                     this.client.getSourceFilesApi()

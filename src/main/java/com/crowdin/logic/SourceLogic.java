@@ -23,7 +23,7 @@ public class SourceLogic {
 
     private final Project project;
     private final Crowdin crowdin;
-    private final Map<String, File> filePaths;
+    private final Map<String, FileInfo> filePaths;
     private final Map<String, Directory> dirPaths;
     private final Long branchId;
     private final CrowdinProperties properties;
@@ -31,7 +31,7 @@ public class SourceLogic {
     public SourceLogic(
         Project project,
         Crowdin crowdin, CrowdinProperties properties,
-        Map<String, File> filePaths, Map<String, Directory> dirPaths, Long branchId
+        Map<String, FileInfo> filePaths, Map<String, Directory> dirPaths, Long branchId
     ) {
         this.project = project;
         this.crowdin = crowdin;

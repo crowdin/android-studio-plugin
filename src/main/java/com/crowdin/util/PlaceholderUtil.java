@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toMap;
 
 public class PlaceholderUtil {
 
+    protected static final String PLACEHOLDER_LANGUAGE_ID = "%language_id%";
     private static final String PLACEHOLDER_ANDROID_CODE = "%android_code%";
     private static final String PLACEHOLDER_LANGUAGE = "%language%";
     private static final String PLACEHOLDER_LOCALE = "%locale%";
@@ -19,6 +20,17 @@ public class PlaceholderUtil {
     private static final String PLACEHOLDER_TWO_LETTERS_CODE = "%two_letters_code%";
     private static final String PLACEHOLDER_OSX_CODE = "%osx_code%";
     private static final String PLACEHOLDER_OSX_LOCALE = "%osx_locale%";
+
+    protected static final String PLACEHOLDER_LANGUAGE_ID_NAME = "language_id";
+    private static final String PLACEHOLDER_ANDROID_CODE_NAME = "android_code";
+    private static final String PLACEHOLDER_LANGUAGE_NAME = "language";
+    private static final String PLACEHOLDER_LANGUAGE_NAME_2 = "name";
+    private static final String PLACEHOLDER_LOCALE_NAME = "locale";
+    private static final String PLACEHOLDER_LOCALE_WITH_UNDERSCORE_NAME = "locale_with_underscore";
+    private static final String PLACEHOLDER_THREE_LETTERS_CODE_NAME = "three_letters_code";
+    private static final String PLACEHOLDER_TWO_LETTERS_CODE_NAME = "two_letters_code";
+    private static final String PLACEHOLDER_OSX_CODE_NAME = "osx_code";
+    private static final String PLACEHOLDER_OSX_LOCALE_NAME = "osx_locale";
 
     private static final String PLACEHOLDER_FILE_EXTENSION = "%file_extension%";
     private static final String PLACEHOLDER_FILE_NAME = "%file_name%";
@@ -36,23 +48,34 @@ public class PlaceholderUtil {
      * @return relative paths to all possible translations
      */
     public static Map<Language, String> buildTranslationPatterns(
-        String relativeSourcePath, String translationPattern, List<Language> projLanguages
+        String relativeSourcePath, String translationPattern, List<Language> projLanguages, LanguageMapping languageMapping
     ) {
         String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, relativeSourcePath);
         return projLanguages.stream()
-            .collect(toMap(lang -> lang, lang -> PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang)));
+            .collect(toMap(lang -> lang, lang -> PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, languageMapping)));
     }
 
-    public static String replaceLanguagePlaceholders(@NonNull String pattern, @NonNull Language lang) {
+    public static String replaceLanguagePlaceholders(@NonNull String pattern, @NonNull Language lang, LanguageMapping langMapping) {
         return pattern
-            .replace(PLACEHOLDER_LANGUAGE, lang.getName())
-            .replace(PLACEHOLDER_LOCALE, lang.getLocale())
-            .replace(PLACEHOLDER_LOCALE_WITH_UNDERSCORE, lang.getLocale().replace("-", "_"))
-            .replace(PLACEHOLDER_TWO_LETTERS_CODE, lang.getTwoLettersCode())
-            .replace(PLACEHOLDER_THREE_LETTERS_CODE, lang.getThreeLettersCode())
-            .replace(PLACEHOLDER_ANDROID_CODE, lang.getAndroidCode())
-            .replace(PLACEHOLDER_OSX_LOCALE, lang.getOsxLocale())
-            .replace(PLACEHOLDER_OSX_CODE, lang.getOsxCode());
+            .replaceAll(PLACEHOLDER_LANGUAGE_ID,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LANGUAGE_ID_NAME, lang.getId()))
+            .replace(PLACEHOLDER_LANGUAGE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LANGUAGE_NAME,
+                    langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LANGUAGE_NAME_2, lang.getName())))
+            .replace(PLACEHOLDER_LOCALE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LOCALE_NAME, lang.getLocale()))
+            .replace(PLACEHOLDER_LOCALE_WITH_UNDERSCORE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LOCALE_WITH_UNDERSCORE_NAME, lang.getLocale().replace("-", "_")))
+            .replace(PLACEHOLDER_TWO_LETTERS_CODE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_TWO_LETTERS_CODE_NAME, lang.getTwoLettersCode()))
+            .replace(PLACEHOLDER_THREE_LETTERS_CODE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_THREE_LETTERS_CODE_NAME, lang.getThreeLettersCode()))
+            .replace(PLACEHOLDER_ANDROID_CODE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_ANDROID_CODE_NAME, lang.getAndroidCode()))
+            .replace(PLACEHOLDER_OSX_LOCALE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_OSX_LOCALE_NAME, lang.getOsxLocale()))
+            .replace(PLACEHOLDER_OSX_CODE,
+                langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_OSX_CODE_NAME, lang.getOsxCode()));
     }
 
     public static String replaceFilePlaceholders(@NonNull String toFormat, @NonNull String sourcePath) {

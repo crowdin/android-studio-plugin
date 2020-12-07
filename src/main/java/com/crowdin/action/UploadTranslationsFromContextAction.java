@@ -13,7 +13,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 
 import java.io.FileInputStream;
@@ -22,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,10 +57,15 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+
+            if (!crowdinProjectCache.isManagerAccess()) {
+                NotificationUtil.showErrorMessage(project, "You need to have manager access to perform this action");
+                return;
+            }
+
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
 
-
-            Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+            Map<String, File> filePaths = crowdinProjectCache.getFiles(branch);
 
             indicator.checkCanceled();
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
@@ -85,7 +88,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     }
                     String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()));
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
                         Path translationFile = Paths.get(pathToPattern.getPath(), builtPattern);
                         int compare = translationFile.compareTo(Paths.get(file.getPath()));
                         if (compare == 0) {
@@ -146,7 +149,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     String sourcePath = s.getName();
                     String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang);
+                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
                         Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
                         translations.add(translationFile);
                     }

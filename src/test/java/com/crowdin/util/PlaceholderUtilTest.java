@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +32,7 @@ public class PlaceholderUtilTest {
     @ParameterizedTest
     @MethodSource
     public void testReplaceLanguageDependentPlaceholders(String pattern, Language language, String expected) {
-        String result = PlaceholderUtil.replaceLanguagePlaceholders(pattern, language);
+        String result = PlaceholderUtil.replaceLanguagePlaceholders(pattern, language, LanguageMapping.fromServerLanguageMapping(new HashMap<>()));
         assertEquals(String.format("pattern: %s, language: %s", pattern, language), expected, result);
     }
 

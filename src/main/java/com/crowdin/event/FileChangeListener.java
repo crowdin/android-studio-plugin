@@ -4,7 +4,7 @@ import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
 import com.intellij.openapi.Disposable;
@@ -98,7 +98,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     }
                     indicator.checkCanceled();
 
-                    Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+                    Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
                     Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
                     Long branchId = (branch != null) ? branch.getId() : null;
 

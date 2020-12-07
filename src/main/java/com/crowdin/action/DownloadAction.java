@@ -65,6 +65,11 @@ public class DownloadAction extends BackgroundAction {
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
+            if (!crowdinProjectCache.isManagerAccess()) {
+                NotificationUtil.showErrorMessage(project, "You need to have manager access to perform this action");
+                return;
+            }
+
             Branch branch = null;
             if (branchName != null && branchName.length() > 0) {
                 Optional<Branch> foundBranch = crowdin.getBranch(branchName);
@@ -78,9 +83,10 @@ public class DownloadAction extends BackgroundAction {
             }
 
             Map<String, String> allCrowdinTranslationsWithSources = CrowdinFileUtil.buildAllProjectTranslationsWithSources(
-                new ArrayList<>(crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>()).values()),
+                new ArrayList<>(crowdinProjectCache.getFiles(branch).values()),
                 CrowdinFileUtil.revDirPaths(crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>())),
-                crowdinProjectCache.getProjectLanguages()
+                crowdinProjectCache.getProjectLanguages(),
+                crowdinProjectCache.getLanguageMapping()
             );
 
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.download_archive"));
@@ -93,8 +99,6 @@ public class DownloadAction extends BackgroundAction {
             this.extractTranslations(project, downloadTranslations, tempDir);
             List<java.io.File> files = FileUtil.walkDir(Paths.get(tempDir));
 
-            List<Language> projectLangs = crowdin.getProjectLanguages();
-
             List<Pair<File, File>> targets = new ArrayList<>();
             properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
                 List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
@@ -105,7 +109,8 @@ public class DownloadAction extends BackgroundAction {
                         ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
                         : File.separator;
                     Map<Language, String> translationPaths =
-                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, projectLangs);
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern,
+                            crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
                     for (Map.Entry<Language, String> translationPathEntry : translationPaths.entrySet()) {
                         File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
                         File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), translationPathEntry.getValue()));

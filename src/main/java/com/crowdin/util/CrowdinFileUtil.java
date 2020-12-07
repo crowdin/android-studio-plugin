@@ -15,9 +15,9 @@ public class CrowdinFileUtil {
 
     private CrowdinFileUtil() {}
 
-    public static Map<String, File> buildFilePaths(@NonNull List<File> files, @NonNull Map<Long, Directory> dirs) {
-        Map<String, File> filePaths = new HashMap<>();
-        for (File file : files) {
+    public static <F extends FileInfo>  Map<String, F> buildFilePaths(@NonNull List<F> files, @NonNull Map<Long, Directory> dirs) {
+        Map<String, F> filePaths = new HashMap<>();
+        for (F file : files) {
             StringBuilder sb = new StringBuilder(file.getName());
             Long parentDirId = file.getDirectoryId();
             while (parentDirId != null) {
@@ -52,13 +52,13 @@ public class CrowdinFileUtil {
             .collect(Collectors.toMap(path -> dirs.get(path).getId(), Function.identity()));
     }
 
-    public static Map<String, String> buildAllProjectTranslationsWithSources(@NonNull List<File> sources, @NonNull Map<Long, String> dirPaths, @NonNull List<Language> projLanguages) {
+    public static Map<String, String> buildAllProjectTranslationsWithSources(@NonNull List<File> sources, @NonNull Map<Long, String> dirPaths, @NonNull List<Language> projLanguages, LanguageMapping languageMapping) {
         Map<String, String> result = new HashMap<>();
         for (File source : sources) {
             String sourcePath = ((source.getDirectoryId() != null) ? dirPaths.get(source.getDirectoryId()) + java.io.File.separator : java.io.File.separator) + source.getName();
             if (source.getExportOptions() != null) {
                 for (Language lang : projLanguages) {
-                    String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(getExportPattern(source.getExportOptions()), lang);
+                    String langBasedPattern = PlaceholderUtil.replaceLanguagePlaceholders(getExportPattern(source.getExportOptions()), lang, languageMapping);
                     String translationPath = PlaceholderUtil.replaceFilePlaceholders(langBasedPattern, sourcePath);
                     result.put(translationPath, sourcePath);
                 }

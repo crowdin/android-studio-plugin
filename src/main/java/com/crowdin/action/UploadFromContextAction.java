@@ -4,7 +4,7 @@ import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.File;
+import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
@@ -67,7 +67,7 @@ public class UploadFromContextAction extends BackgroundAction {
             Long branchId = (branch != null) ? branch.getId() : null;
             indicator.checkCanceled();
 
-            Map<String, File> filePaths = crowdinProjectCache.getFiles().getOrDefault(branch, new HashMap<>());
+            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
             Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
 
             String sourcePattern = properties.getSourcesWithPatterns().keySet()
