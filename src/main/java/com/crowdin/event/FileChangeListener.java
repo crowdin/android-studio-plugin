@@ -43,6 +43,11 @@ public class FileChangeListener implements Disposable, BulkFileListener {
         connection.subscribe(VirtualFileManager.VFS_CHANGES, this);
     }
 
+    @Override
+    public void before(@NotNull List<? extends VFileEvent> events) {
+//        do nothing
+    }
+
     public void after(List<? extends VFileEvent> events) {
         if (this.project.isDisposed()) {
             return;
