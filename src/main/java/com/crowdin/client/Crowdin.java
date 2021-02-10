@@ -10,8 +10,7 @@ import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.RetryUtil;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
+import com.crowdin.util.Util;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -31,8 +30,6 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class Crowdin {
 
-    private static final String PLUGIN_ID = "com.crowdin.crowdin-idea";
-
     private final Long projectId;
 
     private final Project project;
@@ -41,12 +38,12 @@ public class Crowdin {
 
     public Crowdin(@NotNull Project project, @NotNull Long projectId, @NotNull String apiToken, String baseUrl) {
         this.project = project;
-            this.projectId = projectId;
-            Credentials credentials = new Credentials(apiToken, null, baseUrl);
-            ClientConfig clientConfig = ClientConfig.builder()
-                    .userAgent("crowdin-android-studio-plugin/ " + PluginManager.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion() + " android-studio/" + PluginManager.getPlugin(PluginId.getId(PluginManager.CORE_PLUGIN_ID)).getVersion())
-                    .build();
-            this.client = new Client(credentials, clientConfig);
+        this.projectId = projectId;
+        Credentials credentials = new Credentials(apiToken, null, baseUrl);
+        ClientConfig clientConfig = ClientConfig.builder()
+            .userAgent(Util.getUserAgent())
+            .build();
+        this.client = new Client(credentials, clientConfig);
     }
 
     public Long addStorage(String fileName, InputStream content) {
