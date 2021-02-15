@@ -53,7 +53,7 @@ public class Crowdin {
                 .getData()
                 .getId();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -63,7 +63,7 @@ public class Crowdin {
                 .updateOrRestoreFile(this.projectId, sourceId, request)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -73,7 +73,7 @@ public class Crowdin {
                 .addFile(this.projectId, request)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -83,7 +83,7 @@ public class Crowdin {
                 .uploadTranslations(this.projectId, languageId, request)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -93,7 +93,7 @@ public class Crowdin {
                 .addDirectory(this.projectId, request)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -103,7 +103,7 @@ public class Crowdin {
                 .getProject(this.projectId)
                 .getData();
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -146,7 +146,7 @@ public class Crowdin {
                 .map(ResponseObject::getData)
                 .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -162,7 +162,7 @@ public class Crowdin {
                 .filter(dir -> Objects.equals(dir.getBranchId(), branchId))
                 .collect(Collectors.toMap(Directory::getId, Function.identity()));
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -178,7 +178,7 @@ public class Crowdin {
                 .filter(file -> Objects.equals(file.getBranchId(), branchId))
                 .collect(Collectors.toList());
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
@@ -209,7 +209,7 @@ public class Crowdin {
             if (errorMessage.contains("regexNotMatch File name can't contain")) {
                 throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
             } else {
-                throw new RuntimeException(this.getErrorMessage(e));
+                throw new RuntimeException(errorMessage, e);
             }
         }
     }
@@ -233,27 +233,40 @@ public class Crowdin {
                 .map(ResponseObject::getData)
                 .collect(Collectors.toMap(Branch::getName, Function.identity()));
         } catch (Exception e) {
-            throw new RuntimeException(this.getErrorMessage(e));
+            throw new RuntimeException(this.getErrorMessage(e), e);
         }
     }
 
     private String getErrorMessage(Exception e) {
         if (e instanceof HttpException) {
             HttpException ex = (HttpException) e;
-            if (ex.getError().getCode().equalsIgnoreCase("401")) {
+            String code = (ex.getError() != null && ex.getError().getCode() != null) ? ex.getError().getCode() : "<empty_code>";
+            String message = (ex.getError() != null && ex.getError().getMessage() != null) ? ex.getError().getMessage() : "<empty_message>";
+            if ("401".equals(code)) {
                 return MESSAGES_BUNDLE.getString("errors.authorize");
             } else {
-                return ex.getError().getMessage();
+                return String.format("Error from server: <Code: %s, Message: %s>", code, message);
             }
         } else if (e instanceof HttpBadRequestException) {
-            return ((HttpBadRequestException) e).getErrors().stream()
-                    .map(er -> {
-                        String key = er.getError().getKey() == null ? "" : er.getError().getKey();
-                        return key + " " + er.getError().getErrors().stream()
-                                .map(err -> err.getCode() + " " + err.getMessage())
-                                .collect(Collectors.joining(";"));
-                    })
-                    .collect(Collectors.joining(";"));
+            HttpBadRequestException ex = (HttpBadRequestException) e;
+            if (ex.getErrors() == null) {
+                return "HttpBadRequestException<empty_error>";
+            }
+            if (ex.getErrors() == null) {
+                return "Wrong parameters: <Key: <empty_key>, Code: <empty_code>, Message: <empty_message>";
+            }
+            return "Wrong parameters: \n" + ex.getErrors()
+                .stream()
+                .map(HttpBadRequestException.ErrorHolder::getError)
+                .flatMap(holder -> holder.getErrors()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(error ->
+                        String.format("<Key: %s, Code: %s, Message: %s>",
+                            (holder.getKey() != null) ? holder.getKey() : "<empty_key>",
+                            (error.getCode() != null) ? error.getCode() : "<empty_code>",
+                            (error.getMessage() != null) ? error.getMessage() : "<empty_message>")))
+                .collect(Collectors.joining("\n"));
         } else {
             return e.getMessage();
         }
