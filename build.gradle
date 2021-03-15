@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.3.0'
+version '1.3.1'
 
 sourceCompatibility = 1.8
 
@@ -43,7 +43,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Added: Language Mapping support"""
+      - Fix deprecated API usage, Improve error wrapping for api client"""
 }
 
 wrapper {
