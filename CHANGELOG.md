@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.3.1]
+
+- Updated: Improve error wrapping for api client ([#52](https://github.com/crowdin/android-studio-plugin/pull/52))
+- Fixed: Fix deprecated API usage ([#51](https://github.com/crowdin/android-studio-plugin/pull/51))
+
 ## [1.3.0]
 
 - Added: Language Mapping support ([#49](https://github.com/crowdin/android-studio-plugin/pull/49))
