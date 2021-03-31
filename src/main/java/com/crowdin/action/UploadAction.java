@@ -56,9 +56,7 @@ public class UploadAction extends BackgroundAction {
 
             String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
 
-            if (!CrowdinFileUtil.isValidBranchName(branchName)) {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
-            }
+            CrowdinFileUtil.checkBranchName(branchName);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
@@ -103,7 +101,7 @@ public class UploadAction extends BackgroundAction {
     }
 
     @Override
-    String loadingText(AnActionEvent e) {
+    protected String loadingText(AnActionEvent e) {
         return MESSAGES_BUNDLE.getString("labels.loading_text.upload_sources");
     }
 }
