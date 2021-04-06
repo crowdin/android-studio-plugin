@@ -37,8 +37,8 @@ public class TranslationProgressWindow {
         scrollPane.getViewport().setBackground(JBColor.WHITE);
         translatedTip.setIcon(IconLoader.getIcon("/icons/translated.svg", this.getClass()));
         approvedTip.setIcon(IconLoader.getIcon("/icons/approved.svg", this.getClass()));
+        this.setPlug("Refresh data");
         tree1.setCellRenderer(new TranslationProgressCellRenderer());
-        setPlug("Refresh data");
     }
 
     public JPanel getContent() {
@@ -150,6 +150,9 @@ public class TranslationProgressWindow {
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             CellData cellData = retrieveData(value);
+            if (cellData == null) {
+                return null;
+            }
 
             TreeCellLanguage cell = new TreeCellLanguage(cellData.getText());
             if (cellData.getIcon() != null) {
