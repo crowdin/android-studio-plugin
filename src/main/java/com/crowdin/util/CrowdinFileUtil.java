@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+
 public class CrowdinFileUtil {
 
     private CrowdinFileUtil() {}
@@ -82,5 +84,11 @@ public class CrowdinFileUtil {
 
     public static boolean isValidBranchName(String branchName) {
         return StringUtils.containsNone(branchName, "/\\:*?\"<>");
+    }
+
+    public static void checkBranchName(String branchName) {
+        if (!isValidBranchName(branchName)) {
+            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
+        }
     }
 }

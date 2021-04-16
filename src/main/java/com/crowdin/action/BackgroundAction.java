@@ -8,11 +8,19 @@ import com.intellij.openapi.progress.Task;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
+
 public abstract class BackgroundAction extends AnAction {
 
-    abstract void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator);
+    public BackgroundAction() { }
 
-    abstract String loadingText(AnActionEvent e);
+    public BackgroundAction(String text, String description, Icon icon) {
+        super(text, description, icon);
+    }
+
+    protected abstract void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator);
+
+    protected abstract String loadingText(AnActionEvent e);
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {

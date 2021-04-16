@@ -8,6 +8,8 @@ import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.RetryUtil;
 import com.crowdin.util.Util;
@@ -232,6 +234,32 @@ public class Crowdin {
                 .stream()
                 .map(ResponseObject::getData)
                 .collect(Collectors.toMap(Branch::getName, Function.identity()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public List<LanguageProgress> getProjectProgress() {
+        try {
+            return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
+                .getProjectProgress(this.projectId, limit, offset, null)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public List<FileProgress> getLanguageProgress(String languageId) {
+        try {
+            return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
+                .getLanguageProgress(this.projectId, languageId, limit, offset)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e), e);
         }

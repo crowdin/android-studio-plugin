@@ -166,7 +166,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
     }
 
     @Override
-    String loadingText(AnActionEvent e) {
+    protected String loadingText(AnActionEvent e) {
         return String.format(MESSAGES_BUNDLE.getString("labels.loading_text.upload_sources_from_context"), CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName());
     }
 }
