@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.3.1'
+version '1.4.0'
 
 sourceCompatibility = 1.8
 
@@ -43,7 +43,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Fix deprecated API usage, Improve error wrapping for api client"""
+      - Added Project Progress UI"""
 }
 
 wrapper {

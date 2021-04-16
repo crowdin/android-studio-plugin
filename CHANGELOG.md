@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.4.0]
+
+- Added: 'Project progress' UI ([#55](https://github.com/crowdin/android-studio-plugin/pull/55))
+
 ## [1.3.1]
 
 - Updated: Improve error wrapping for api client ([#52](https://github.com/crowdin/android-studio-plugin/pull/52))
