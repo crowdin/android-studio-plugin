@@ -48,11 +48,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-
-            if (!CrowdinFileUtil.isValidBranchName(branchName)) {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
-            }
+            String branchName = ActionUtils.getBranchName(project, properties, true);
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
@@ -136,7 +132,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            String branchName = ActionUtils.getBranchName(project, properties, false);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);

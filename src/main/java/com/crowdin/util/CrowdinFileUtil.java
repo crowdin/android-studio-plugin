@@ -85,10 +85,4 @@ public class CrowdinFileUtil {
     public static boolean isValidBranchName(String branchName) {
         return StringUtils.containsNone(branchName, "/\\:*?\"<>");
     }
-
-    public static void checkBranchName(String branchName) {
-        if (!isValidBranchName(branchName)) {
-            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
-        }
-    }
 }

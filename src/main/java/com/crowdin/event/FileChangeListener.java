@@ -71,7 +71,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         return;
                     }
                     indicator.checkCanceled();
-                    String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+                    String branchName = ActionUtils.getBranchName(project, properties, false);
                     if (!CrowdinFileUtil.isValidBranchName(branchName)) {
                         return;
                     }
