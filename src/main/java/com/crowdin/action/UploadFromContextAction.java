@@ -46,9 +46,7 @@ public class UploadFromContextAction extends BackgroundAction {
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-
-            CrowdinFileUtil.checkBranchName(branchName);
+            String branchName = ActionUtils.getBranchName(project, properties, true);
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =

@@ -12,6 +12,7 @@ import com.crowdin.client.translationstatus.model.FileProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.ui.TranslationProgressWindow;
 import com.crowdin.ui.TranslationProgressWindowFactory;
+import com.crowdin.util.ActionUtils;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.GitUtil;
@@ -75,9 +76,7 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-
-            CrowdinFileUtil.checkBranchName(branchName);
+            String branchName = ActionUtils.getBranchName(project, properties, true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
