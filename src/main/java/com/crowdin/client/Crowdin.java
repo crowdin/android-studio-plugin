@@ -172,7 +172,7 @@ public class Crowdin {
         try {
             return executeRequestFullList((limit, offset) ->
                     this.client.getSourceFilesApi()
-                        .listFiles(this.projectId, branchId, null, true, 500, 0)
+                        .listFiles(this.projectId, branchId, null, null, null, 500, 0)
                         .getData()
                 )
                 .stream()

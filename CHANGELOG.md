@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.4.1]
+
+- Updated: Update Crowdin API client to 1.3.10
+
 ## [1.4.0]
 
 - Added: 'Project progress' UI ([#55](https://github.com/crowdin/android-studio-plugin/pull/55))
