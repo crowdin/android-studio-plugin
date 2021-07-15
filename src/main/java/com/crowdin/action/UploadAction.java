@@ -54,9 +54,7 @@ public class UploadAction extends BackgroundAction {
                 .map(key -> String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns_item"), key, properties.getSourcesWithPatterns().get(key)))
                 .collect(Collectors.joining()));
 
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-
-            CrowdinFileUtil.checkBranchName(branchName);
+            String branchName = ActionUtils.getBranchName(project, properties, true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);

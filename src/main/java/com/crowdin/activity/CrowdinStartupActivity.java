@@ -5,6 +5,7 @@ import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
+import com.crowdin.util.ActionUtils;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
@@ -29,7 +30,7 @@ public class CrowdinStartupActivity implements StartupActivity {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            String branchName = ActionUtils.getBranchName(project, properties, false);
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
                 @Override

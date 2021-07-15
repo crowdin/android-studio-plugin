@@ -50,9 +50,7 @@ public class UploadTranslationsAction extends BackgroundAction {
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             indicator.checkCanceled();
 
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
-
-            CrowdinFileUtil.checkBranchName(branchName);
+            String branchName = ActionUtils.getBranchName(project, properties, true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
