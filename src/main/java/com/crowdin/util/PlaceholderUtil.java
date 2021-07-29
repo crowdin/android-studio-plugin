@@ -1,11 +1,13 @@
 package com.crowdin.util;
 
+import com.crowdin.Constants;
 import com.crowdin.client.languages.model.Language;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -36,6 +38,26 @@ public class PlaceholderUtil {
     private static final String PLACEHOLDER_FILE_NAME = "%file_name%";
     private static final String PLACEHOLDER_ORIGINAL_FILE_NAME = "%original_file_name%";
     private static final String PLACEHOLDER_ORIGINAL_PATH = "%original_path%";
+
+    private static final String REGEX = "regex";
+    private static final String ASTERISK = "*";
+    private static final String QUESTION_MARK = "?";
+    private static final String DOT = ".";
+    private static final String DOT_PLUS = ".+";
+    private static final String SET_OPEN_BRECKET = "[";
+    private static final String SET_CLOSE_BRECKET = "]";
+    public static final String ROUND_BRACKET_OPEN = "(";
+    public static final String ROUND_BRACKET_CLOSE = ")";
+    public static final String ESCAPE_ROUND_BRACKET_OPEN = "\\(";
+    public static final String ESCAPE_ROUND_BRACKET_CLOSE = "\\)";
+    private static final String ESCAPE_DOT = "\\.";
+    private static final String ESCAPE_DOT_PLACEHOLDER = "{ESCAPE_DOT}";
+    private static final String ESCAPE_QUESTION = "\\?";
+    private static final String ESCAPE_QUESTION_PLACEHOLDER = "{ESCAPE_QUESTION_MARK}";
+    private static final String ESCAPE_ASTERISK = "\\*";
+    private static final String ESCAPE_ASTERISK_PLACEHOLDER = "{ESCAPE_ASTERISK}";
+    private static final String ESCAPE_ASTERISK_REPLACEMENT_FROM = ".+" + FileUtil.PATH_SEPARATOR;
+    private static final String ESCAPE_ASTERISK_REPLACEMENT_TO = "(.+" + FileUtil.PATH_SEPARATOR_REGEX + ")?";
 
     private PlaceholderUtil() {}
 
@@ -84,5 +106,62 @@ public class PlaceholderUtil {
             .replace(PLACEHOLDER_FILE_NAME, FilenameUtils.getBaseName(sourcePath))
             .replace(PLACEHOLDER_FILE_EXTENSION, FilenameUtils.getExtension(sourcePath))
             .replace(PLACEHOLDER_ORIGINAL_PATH, FilenameUtils.getPathNoEndSeparator(sourcePath));
+    }
+
+    public List<String> formatForRegex(List<String> toFormat, List<Language> languages) {
+        String langIds = languages.stream().map(Language::getId).collect(Collectors.joining("|", "(", ")"));
+        String langNames = languages.stream().map(Language::getName).collect(Collectors.joining("|", "(", ")"));
+        String langLocales = languages.stream().map(Language::getLocale).collect(Collectors.joining("|", "(", ")"));
+        String langLocalesWithUnderscore = languages.stream().map(Language::getLocale).map(s -> s.replace("-", "_"))
+            .collect(Collectors.joining("|", "(", ")"));
+        String langTwoLettersCodes = languages.stream().map(Language::getTwoLettersCode).collect(Collectors.joining("|", "(", ")"));
+        String langThreeLettersCodes = languages.stream().map(Language::getThreeLettersCode).collect(Collectors.joining("|", "(", ")"));
+        String langAndroidCodes = languages.stream().map(Language::getAndroidCode).collect(Collectors.joining("|", "(", ")"));
+        String langOsxLocales = languages.stream().map(Language::getOsxLocale).collect(Collectors.joining("|", "(", ")"));
+        String langOsxCodes = languages.stream().map(Language::getOsxCode).collect(Collectors.joining("|", "(", ")"));
+        return toFormat.stream()
+            .map(PlaceholderUtil::formatSourcePatternForRegex)
+            .map(s -> s
+                .replace(PLACEHOLDER_LANGUAGE_ID, langIds)
+                .replace(PLACEHOLDER_LANGUAGE, langNames)
+                .replace(PLACEHOLDER_LOCALE, langLocales)
+                .replace(PLACEHOLDER_LOCALE_WITH_UNDERSCORE, langLocalesWithUnderscore)
+                .replace(PLACEHOLDER_TWO_LETTERS_CODE, langTwoLettersCodes)
+                .replace(PLACEHOLDER_THREE_LETTERS_CODE, langThreeLettersCodes)
+                .replace(PLACEHOLDER_ANDROID_CODE, langAndroidCodes)
+                .replace(PLACEHOLDER_OSX_LOCALE, langOsxLocales)
+                .replace(PLACEHOLDER_OSX_CODE, langOsxCodes))
+            .map(s -> "^" + s + "$")
+            .collect(Collectors.toList());
+    }
+
+    public static String formatSourcePatternForRegex(String toFormat) {
+        toFormat = toFormat
+            .replace(ESCAPE_DOT, ESCAPE_DOT_PLACEHOLDER)
+            .replace(DOT, ESCAPE_DOT)
+            .replace(ESCAPE_DOT_PLACEHOLDER, ESCAPE_DOT)
+
+            .replace(ESCAPE_QUESTION, ESCAPE_QUESTION_PLACEHOLDER)
+            .replace(QUESTION_MARK, "[^/]")
+            .replace(ESCAPE_QUESTION_PLACEHOLDER, ESCAPE_QUESTION)
+
+            .replace(ESCAPE_ASTERISK, ESCAPE_ASTERISK_PLACEHOLDER)
+            .replace("**", ".+")
+            .replace(ESCAPE_ASTERISK_PLACEHOLDER, ESCAPE_ASTERISK)
+
+            .replace(ESCAPE_ASTERISK, ESCAPE_ASTERISK_PLACEHOLDER)
+            .replace(ASTERISK, "[^/]+")
+            .replace(ESCAPE_ASTERISK_PLACEHOLDER, ESCAPE_ASTERISK)
+
+            .replace(ROUND_BRACKET_OPEN, ESCAPE_ROUND_BRACKET_OPEN)
+
+            .replace(ROUND_BRACKET_CLOSE, ESCAPE_ROUND_BRACKET_CLOSE)
+
+            .replace(ESCAPE_ASTERISK_REPLACEMENT_FROM, ESCAPE_ASTERISK_REPLACEMENT_TO);
+        return toFormat
+            .replace(PLACEHOLDER_FILE_EXTENSION, "[^/]+")
+            .replace(PLACEHOLDER_FILE_NAME, "[^/]+")
+            .replace(PLACEHOLDER_ORIGINAL_FILE_NAME, "[^/]+")
+            .replace(PLACEHOLDER_ORIGINAL_PATH, ".+");
     }
 }

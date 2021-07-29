@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -64,6 +65,16 @@ public class Crowdin {
             this.client.getSourceFilesApi()
                 .updateOrRestoreFile(this.projectId, sourceId, request)
                 .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public URL downloadFile(Long fileId) {
+        try {
+            return url(this.client.getSourceFilesApi()
+                .downloadFile(this.projectId, fileId)
+                .getData());
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e), e);
         }
@@ -172,7 +183,7 @@ public class Crowdin {
         try {
             return executeRequestFullList((limit, offset) ->
                     this.client.getSourceFilesApi()
-                        .listFiles(this.projectId, branchId, null, null, null, 500, 0)
+                        .listFiles(this.projectId, branchId, null, null, true, 500, 0)
                         .getData()
                 )
                 .stream()
@@ -339,6 +350,14 @@ public class Crowdin {
             }
         }
         return false;
+    }
+
+    private URL url(DownloadLink downloadLink) {
+        try {
+            return new URL(downloadLink.getUrl());
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected exception: malformed download url: " + downloadLink.getUrl(), e);
+        }
     }
 
 }

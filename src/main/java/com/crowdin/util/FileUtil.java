@@ -1,20 +1,34 @@
 package com.crowdin.util;
 
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.NonNull;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class FileUtil {
+
+    public static final String PATH_SEPARATOR = FileSystems.getDefault().getSeparator();
+    public static final String PATH_SEPARATOR_REGEX = "\\".equals(PATH_SEPARATOR) ? "\\\\" : PATH_SEPARATOR;
 
     private FileUtil() {
         throw new UnsupportedOperationException();
@@ -22,7 +36,11 @@ public final class FileUtil {
 
     public static VirtualFile getProjectBaseDir(Project project) {
         String baseDirString = project.getBasePath();
-        return LocalFileSystem.getInstance().findFileByPath(baseDirString);
+        return findVFileByPath(baseDirString);
+    }
+
+    public static VirtualFile findVFileByPath(String path) {
+        return LocalFileSystem.getInstance().findFileByPath(path);
     }
 
     public static String findRelativePath(@NonNull VirtualFile baseDir, @NonNull VirtualFile file) {
@@ -87,6 +105,52 @@ public final class FileUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Predicate<String> filePathRegex(String filePathPattern, boolean preserveHierarchy) {
+        if (preserveHierarchy) {
+            return Pattern.compile("^" + PlaceholderUtil.formatSourcePatternForRegex(noSepAtStart(filePathPattern)) + "$").asPredicate();
+        } else {
+            List<String> sourcePatternSplits = Arrays.stream(splitPath(noSepAtStart(filePathPattern)))
+                .map(PlaceholderUtil::formatSourcePatternForRegex)
+                .collect(Collectors.toList());
+
+            StringBuilder sourcePatternRegex = new StringBuilder();
+            for (int i = 0; i < sourcePatternSplits.size()-1; i++) {
+                sourcePatternRegex.insert(0, "(")
+                    .append(sourcePatternSplits.get(i)).append(PATH_SEPARATOR_REGEX).append(")?");
+            }
+            sourcePatternRegex.insert(0, FileUtil.PATH_SEPARATOR_REGEX).insert(0, "^")
+                .append(sourcePatternSplits.get(sourcePatternSplits.size()-1)).append("$");
+
+            return Pattern.compile(sourcePatternRegex.toString()).asPredicate();
+        }
+    }
+
+    public static void downloadFile(Object requestor, VirtualFile file, InputStream data) throws IOException {
+        File tempFile = FileUtilRt.createTempFile(RandomStringUtils.randomAlphanumeric(9), ".crowdin.tmp", true);
+        try (OutputStream tempFileOutput = new FileOutputStream(tempFile)) {
+            FileUtilRt.copy(data, tempFileOutput);
+        }
+
+        WriteAction.runAndWait(() -> {
+            try (InputStream tempFileInput = new FileInputStream(tempFile); OutputStream fileOutput = file.getOutputStream(requestor)) {
+                FileUtilRt.copy(tempFileInput, fileOutput);
+            }
+        });
+    }
+
+    public static VirtualFile createIfNeededFilePath(Object requestor, VirtualFile root, String filePath) throws IOException {
+        String[] splitFilePath = splitPath(noSepAtStart(filePath));
+        return WriteAction.computeAndWait(() -> {
+            VirtualFile dir = root;
+            for (int i = 0; i < splitFilePath.length - 1; i++) {
+                VirtualFile child = dir.findChild(splitFilePath[i]);
+                dir = (child != null) ? child : dir.createChildDirectory(requestor, splitFilePath[i]);
+            }
+            VirtualFile file = dir.findChild(splitFilePath[splitFilePath.length-1]);
+            return (file != null) ? file : dir.createChildData(requestor, splitFilePath[splitFilePath.length-1]);
+        });
     }
 
     public static String normalizePath(String path) {
