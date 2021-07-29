@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '1.4.1'
+version '1.5.0'
 
 sourceCompatibility = 1.8
 
@@ -43,7 +43,9 @@ intellij {
 }
 patchPluginXml {
     changeNotes """
-      - Update Crowdin API client"""
+      - Add 'Download Sources' command<br>
+      - Add 'labels' and 'excluded-target-languages' parameters for sources upload<br>
+      - Add exception handling to getting git branch name"""
 }
 
 wrapper {
