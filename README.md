@@ -132,7 +132,7 @@ files.translation=/values-%two_letters_code%/%original_file_name% #CORRECT
 # this will be transformed to 'app/src/main/res/values-%two_letter_code%/%original_file_name%' export pattern for each file
 ```
 
-#### Placeholders
+### Placeholders
 
 See the [Placeholders](https://support.crowdin.com/configuration-file/#placeholders) article to put appropriate variables.
 
@@ -159,6 +159,28 @@ If your project contains multiple modules you want to localize with the same sou
 
 ```ini
 preserve-hierarchy=true
+```
+
+To attach labels to the uploaded strings use `labels`:
+
+```ini
+labels= main-menu, application 
+# Applies to default behavior, `sources' parameter 
+# and all filegroups that do not have such a configuration
+
+files.1.labels=help-menu   # For a specific filegroup, high priority
+files.2.labels=android     # For a specific filegroup, high priority
+```
+
+To specify excluded target languages use `excluded-target-languages`:
+
+```ini
+excluded-target-languages= uk, fr
+# Applies to default behavior, `sources` parameter 
+# and all filegroups that do not have such a configuration
+
+files.1.excluded-target-languages=uk   # For a specific filegroup, high priority
+files.2.excluded-target-languages=fr   # For a specific filegroup, high priority
 ```
 
 ## Seeking Assistance
