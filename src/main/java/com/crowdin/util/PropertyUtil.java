@@ -29,7 +29,7 @@ public class PropertyUtil {
         if (propertiesFile == null) {
             return null;
         }
-        try (InputStream in = new FileInputStream(propertiesFile.getCanonicalPath())) {
+        try (InputStream in = propertiesFile.getInputStream()) {
             properties.load(in);
         } catch (Exception e) {
             e.printStackTrace();

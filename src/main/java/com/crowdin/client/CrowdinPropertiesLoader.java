@@ -1,11 +1,12 @@
 package com.crowdin.client;
 
+import com.crowdin.util.FileUtil;
 import com.crowdin.util.PropertyUtil;
+import com.crowdin.util.Util;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.*;
@@ -102,55 +103,103 @@ public class CrowdinPropertiesLoader {
             } else {
                 crowdinProperties.setDebug(false);
             }
-
-            Map<String, String> files = getSources(properties, errors);
-            crowdinProperties.setSourcesWithPatterns(files);
+            crowdinProperties.setFiles(getFileBeans(properties, errors));
         }
 
         if (!errors.isEmpty()) {
-            String errorsInOne = "<ul>" + errors.stream().map(s -> "<li>" + s + "</li>\n").collect(Collectors.joining()) + "</ul>";
-            throw new RuntimeException("<body><p>" + MESSAGES_BUNDLE.getString("errors.config.has_errors") + "</p>" + errorsInOne + "</body>");
+            throw new RuntimeException(Util.prepareListMessageText(MESSAGES_BUNDLE.getString("errors.config.has_errors"), errors));
         }
 
         return crowdinProperties;
     }
 
-    private static Map<String, String> getSources(Properties properties, List<String> errors) {
-        Map<String, String> values = getSourcesList(properties);
-        values.putAll(getSourcesWithTranslations(properties, errors));
-        if (values.isEmpty()) {
-            values.put("**/" + STANDARD_SOURCE_PATH + "/" + STANDARD_SOURCE_NAME, STANDARD_TRANSLATION_PATTERN);
+    private static List<FileBean> getFileBeans(Properties properties, List<String> errors) {
+        List<FileBean> fileBeans = getSourcesList(properties);
+        fileBeans.addAll(getSourcesWithTranslations(properties, errors));
+        if (fileBeans.isEmpty()) {
+            FileBean defaultFileBean = new FileBean();
+            defaultFileBean.setSource(STANDARD_SOURCE_FILE_PATH);
+            defaultFileBean.setTranslation(STANDARD_TRANSLATION_PATTERN);
+            fileBeans.add(defaultFileBean);
         }
-        return values;
-    }
-
-    private static Map<String, String> getSourcesWithTranslations(Properties properties, List<String> errors) {
-        Map<String, String> values = new HashMap<>();
-        for (int i = 0; i < 1000; i++) {
-            String ident = (i == 0) ? "" : i + ".";
-            String filesSource = String.format(PROPERTY_FILES_SOURCES_PATTERN, ident);
-            String filesTranslation = String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident);
-            if (properties.containsKey(filesSource) && properties.containsKey(filesTranslation)) {
-                values.put(StringUtils.removeStart(properties.getProperty(filesSource).replaceAll("[\\\\/]+", "/"), "/"), properties.getProperty(filesTranslation).replaceAll("[\\\\/]+", "/"));
-            } else if (properties.containsKey(filesSource)) {
-                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), filesTranslation));
-            } else if (properties.containsKey(filesTranslation)) {
-                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), filesSource));
+        List<String> labels = parsePropertyToList(properties.getProperty(PROPERTY_LABELS));
+        List<String> excluded_target_languages = parsePropertyToList(properties.getProperty(PROPERTY_EXCLUDED_TARGET_LANGUAGES));
+        for (FileBean fb : fileBeans) {
+            if (fb.getLabels() == null) {
+                fb.setLabels(labels);
+            }
+            if (fb.getExcludedTargetLanguages() == null) {
+                fb.setExcludedTargetLanguages(excluded_target_languages);
             }
         }
-        return values;
+        return fileBeans;
     }
 
-    private static Map<String, String> getSourcesList(Properties properties) {
+    private static List<FileBean> getSourcesList(Properties properties) {
         String sources = properties.getProperty(PROPERTY_SOURCES);
-        if (sources == null) {
-            return new HashMap<>();
+        if (sources == null || StringUtils.isEmpty(sources)) {
+            return new ArrayList<>();
         }
         return Arrays.stream(sources.split(","))
             .map(String::trim)
             .filter(StringUtils::isNotEmpty)
-            .map(s -> "**/" + STANDARD_SOURCE_PATH + "/" + s)
-            .collect(Collectors.toMap(Function.identity(), (s) -> STANDARD_TRANSLATION_PATTERN));
+            .map(s -> STANDARD_SOURCE_PATH + s)
+            .map(source -> {
+                FileBean fb = new FileBean();
+                fb.setSource(source);
+                fb.setTranslation(STANDARD_TRANSLATION_PATTERN);
+                return fb;
+            })
+            .collect(Collectors.toList());
+    }
+
+    private static List<FileBean> getSourcesWithTranslations(Properties properties, List<String> errors) {
+        List<FileBean> fileBeans = new ArrayList<>();
+
+        List<String> foundKeys = properties.keySet().stream()
+            .map(key -> (String) key)
+            .filter(PROPERTY_FILES_SOURCES_REGEX.asPredicate()
+                .or(PROPERTY_FILES_TRANSLATIONS_REGEX.asPredicate()))
+            .map(key -> StringUtils.removeStart(key, "files."))
+            .map(key -> StringUtils.removeEnd(key, "source"))
+            .map(key -> StringUtils.removeEnd(key, "translation"))
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
+
+        for (String ident : foundKeys) {
+            String source = properties.getProperty(String.format(PROPERTY_FILES_SOURCES_PATTERN, ident));
+            String translation = properties.getProperty(String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident));
+            List<String> labels = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_LABELS_PATTERN, ident)));
+            List<String> excludedTargetLanguages = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_EXCLUDED_TARGET_LANGUAGES_PATTERN, ident)));
+            if (StringUtils.isNotEmpty(source) && StringUtils.isNotEmpty(translation)) {
+                FileBean fb = new FileBean();
+                fb.setSource(FileUtil.noSepAtStart(FileUtil.unixPath(source)));
+                fb.setTranslation(FileUtil.unixPath(translation));
+                fb.setLabels(labels);
+                fb.setExcludedTargetLanguages(excludedTargetLanguages);
+                fileBeans.add(fb);
+            } else if (StringUtils.isEmpty(translation)) {
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident)));
+            } else if (StringUtils.isEmpty(source)) {
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), String.format(PROPERTY_FILES_SOURCES_PATTERN, ident)));
+            }
+        }
+        return fileBeans;
+    }
+
+    private static List<String> parsePropertyToList(String property) {
+        if (StringUtils.isEmpty(property)) {
+            return null;
+        }
+        List<String> parsedProperty = new ArrayList<>();
+        for (String part : property.split(",")) {
+            part = part.trim();
+            if (StringUtils.isNotEmpty(part)) {
+                parsedProperty.add(part);
+            }
+        }
+        return parsedProperty;
     }
 
     protected static boolean isBaseUrlValid(String baseUrl) {

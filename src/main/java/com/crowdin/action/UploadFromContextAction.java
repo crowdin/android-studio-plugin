@@ -3,8 +3,6 @@ package com.crowdin.action;
 import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
@@ -17,7 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,6 +39,8 @@ public class UploadFromContextAction extends BackgroundAction {
             }
             indicator.checkCanceled();
 
+            VirtualFile root = FileUtil.getProjectBaseDir(project);
+
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
@@ -60,22 +60,18 @@ public class UploadFromContextAction extends BackgroundAction {
             } else if (branch != null) {
                 NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
             }
-            Long branchId = (branch != null) ? branch.getId() : null;
             indicator.checkCanceled();
 
-            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
-            Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
-
-            String sourcePattern = properties.getSourcesWithPatterns().keySet()
+            FileBean foundFileBean = properties.getFiles()
                 .stream()
-                .filter(s -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), s).contains(file))
+                .filter(fb -> FileUtil.getSourceFilesRec(root, fb.getSource()).contains(file))
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("Unexpected error: couldn't find suitable source pattern"));
-            String translationPattern = properties.getSourcesWithPatterns().get(sourcePattern);
 
             indicator.checkCanceled();
-            SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
-            sourceLogic.uploadSource(file, sourcePattern, translationPattern);
+
+            Map<FileBean, List<VirtualFile>> source = Collections.singletonMap(foundFileBean, Collections.singletonList(file));
+            SourceLogic.processSources(project, root, crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), source);
 
             CrowdinProjectCacheProvider.outdateBranch(branchName);
         } catch (ProcessCanceledException e) {
@@ -94,9 +90,9 @@ public class UploadFromContextAction extends BackgroundAction {
         try {
             CrowdinProperties properties;
             properties = CrowdinPropertiesLoader.load(project);
-            List<VirtualFile> files = properties.getSourcesWithPatterns().keySet()
+            List<VirtualFile> files = properties.getFiles()
                 .stream()
-                .flatMap(s -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), s).stream())
+                .flatMap(fb -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), fb.getSource()).stream())
                 .collect(Collectors.toList());
             isSourceFile = files.contains(file);
         } catch (Exception exception) {

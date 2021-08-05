@@ -5,6 +5,11 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+
 public class Util {
 
     private static final String PLUGIN_NAME = "crowdin-android-studio-plugin";
@@ -28,5 +33,10 @@ public class Util {
             PLUGIN_NAME, getPluginVersion(),
             appInfo.getVersionName(), appInfo.getApiVersion(),
             System.getProperty("os.name"), System.getProperty("os.version"));
+    }
+
+    public static String prepareListMessageText(String mainText, List<String> items) {
+        String itemsInOne = "<ul>" + items.stream().map(s -> "<li>" + s + "</li>\n").collect(Collectors.joining()) + "</ul>";
+        return "<body><p>" + mainText + "</p>" + itemsInOne + "</body>";
     }
 }

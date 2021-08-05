@@ -74,14 +74,13 @@ public class UploadTranslationsAction extends BackgroundAction {
 
             AtomicInteger uploadedFilesCounter = new AtomicInteger(0);
 
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-                sources.forEach(source -> {
-                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
+            for (FileBean fileBean : properties.getFiles()) {
+                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
+                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
                     String sourceRelativePath = properties.isPreserveHierarchy() ? StringUtils.removeStart(source.getPath(), root.getPath()) : FileUtil.sepAtStart(source.getName());
 
                     Map<Language, String> translationPaths =
-                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern, crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(), crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
 
                     FileInfo crowdinSource = filePaths.get(FileUtil.normalizePath(sourceRelativePath));
                     if (crowdinSource == null) {
@@ -109,8 +108,8 @@ public class UploadTranslationsAction extends BackgroundAction {
                             NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
                         }
                     }
-                });
-            });
+                }
+            }
             if (uploadedFilesCounter.get() > 0) {
                 NotificationUtil.showInformationMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translations"), uploadedFilesCounter.get()));
             } else {

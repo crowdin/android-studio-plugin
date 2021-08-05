@@ -3,6 +3,8 @@ package com.crowdin.client;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.model.*;
+import com.crowdin.client.labels.model.AddLabelRequest;
+import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
@@ -85,6 +87,15 @@ public class Crowdin {
             this.client.getSourceFilesApi()
                 .addFile(this.projectId, request)
                 .getData();
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public void editSource(Long fileId, List<PatchRequest> request) {
+        try {
+            this.client.getSourceFilesApi()
+                .editFile(this.projectId, fileId, request);
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e), e);
         }
@@ -271,6 +282,29 @@ public class Crowdin {
                 .stream()
                 .map(ResponseObject::getData)
                 .collect(Collectors.toList()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public List<Label> listLabels() {
+        try {
+        return executeRequestFullList((limit, offset) -> this.client.getLabelsApi()
+            .listLabels(this.projectId, limit, offset)
+            .getData()
+            .stream()
+            .map(ResponseObject::getData)
+            .collect(Collectors.toList()));
+        } catch (Exception e) {
+            throw new RuntimeException(this.getErrorMessage(e), e);
+        }
+    }
+
+    public Label addLabel(AddLabelRequest request) {
+        try {
+            return this.client.getLabelsApi()
+                .addLabel(this.projectId, request)
+                .getData();
         } catch (Exception e) {
             throw new RuntimeException(this.getErrorMessage(e), e);
         }

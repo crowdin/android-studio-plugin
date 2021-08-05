@@ -4,6 +4,7 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.FileBean;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.CrowdinSettings;
@@ -96,16 +97,15 @@ public class DownloadAction extends BackgroundAction {
             List<java.io.File> files = FileUtil.walkDir(Paths.get(tempDir));
 
             List<Pair<File, File>> targets = new ArrayList<>();
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-                for (VirtualFile source : sources) {
-                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, sourcePattern);
+            for (FileBean fileBean : properties.getFiles()) {
+                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
+                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
                     String sourceRelativePath = StringUtils.removeStart(source.getPath(), root.getPath());
                     String relativePathToPattern = (properties.isPreserveHierarchy())
                         ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
                         : File.separator;
                     Map<Language, String> translationPaths =
-                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, translationPattern,
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(),
                             crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
                     for (Map.Entry<Language, String> translationPathEntry : translationPaths.entrySet()) {
                         File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
@@ -120,7 +120,7 @@ public class DownloadAction extends BackgroundAction {
                         targets.add(Pair.create(fromFile, toFile));
                     }
                 }
-            });
+            }
             for (Pair<File, File> target : targets) {
                 File fromFile = target.first;
                 File toFile = target.second;

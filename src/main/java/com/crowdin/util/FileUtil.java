@@ -176,4 +176,12 @@ public final class FileUtil {
     public static String sepAtStart(String path) {
         return File.separator + noSepAtStart(path);
     }
+
+    public static String noSepAtEnd(String path) {
+        return path.replaceAll("[\\\\/]+$", "");
+    }
+
+    public static String sepAtEnd(String path) {
+        return noSepAtEnd(path) + PATH_SEPARATOR;
+    }
 }

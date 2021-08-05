@@ -3,8 +3,6 @@ package com.crowdin.event;
 import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
 import com.intellij.openapi.Disposable;
@@ -15,7 +13,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -24,6 +21,8 @@ import com.intellij.util.messages.MessageBusConnection;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,16 +80,25 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
                     indicator.checkCanceled();
 
-                    Map<VirtualFile, Pair<String, String>> allSources = new HashMap<>();
-                    properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                        List<VirtualFile> files = FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), sourcePattern);
-                        files.forEach(f -> allSources.put(f, Pair.create(sourcePattern, translationPattern)));
-                    });
+                    Map<FileBean, List<VirtualFile>> allSources = new HashMap<>();
+                    for (FileBean fileBean : properties.getFiles()) {
+                        allSources.put(fileBean, FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), fileBean.getSource()));
+                    }
 
-                    List<VirtualFile> changedSources = events.stream()
-                        .map(VFileEvent::getFile)
-                        .filter(file -> file != null && allSources.containsKey(file))
-                        .collect(Collectors.toList());
+                    Map<FileBean, List<VirtualFile>> changedSources = new HashMap<>();
+                    for (VFileEvent event : events) {
+                        VirtualFile eventFile = event.getFile();
+                        if (eventFile != null) {
+                            for (FileBean fileBean : properties.getFiles()) {
+                                if (allSources.get(fileBean).contains(eventFile)) {
+                                    changedSources.putIfAbsent(fileBean, new ArrayList<>());
+                                    changedSources.get(fileBean).add(eventFile);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
 
                     if (changedSources.isEmpty()) {
                         return;
@@ -103,20 +111,14 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     }
                     indicator.checkCanceled();
 
-                    Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
-                    Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
-                    Long branchId = (branch != null) ? branch.getId() : null;
-
-                    SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
-
-                    indicator.checkCanceled();
-                    String text = changedSources.stream()
+                    String text = changedSources.values().stream()
+                        .flatMap(Collection::stream)
                         .map(VirtualFile::getName)
                         .collect(Collectors.joining(","));
                     indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
-                    changedSources.forEach(file -> {
-                        sourceLogic.uploadSource(file, allSources.get(file).first, allSources.get(file).second);
-                    });
+
+                    SourceLogic.processSources(project, FileUtil.getProjectBaseDir(project), crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), changedSources);
+
                     CrowdinProjectCacheProvider.outdateBranch(branchName);
                 } catch (ProcessCanceledException e) {
                     throw e;

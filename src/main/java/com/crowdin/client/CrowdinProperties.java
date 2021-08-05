@@ -2,6 +2,7 @@ package com.crowdin.client;
 
 import lombok.Data;
 
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -12,6 +13,6 @@ public class CrowdinProperties {
     private String baseUrl;
     private boolean disabledBranches;
     private boolean preserveHierarchy;
-    private Map<String, String> sourcesWithPatterns;
+    private List<FileBean> files;
     private boolean debug;
 }

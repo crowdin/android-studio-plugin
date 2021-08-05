@@ -4,6 +4,7 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.CrowdinSettings;
@@ -90,19 +91,19 @@ public class DownloadSourcesAction extends BackgroundAction {
 
             AtomicBoolean isAnyFileDownloaded = new AtomicBoolean(false);
 
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                Predicate<String> sourcePredicate = FileUtil.filePathRegex(sourcePattern, properties.isPreserveHierarchy());
+            for (FileBean fileBean : properties.getFiles()) {
+                Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), properties.isPreserveHierarchy());
                 Map<String, VirtualFile> localSourceFiles = (properties.isPreserveHierarchy())
                     ? Collections.emptyMap()
-                    : FileUtil.getSourceFilesRec(root, sourcePattern).stream()
-                        .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
+                    : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
+                    .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
                 List<String> foundSources = filePaths.keySet().stream()
                     .filter(sourcePredicate)
                     .sorted()
                     .collect(Collectors.toList());
 
                 if (foundSources.isEmpty()) {
-                    NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), sourcePattern));
+                    NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), fileBean.getSource()));
                     return;
                 }
                 for (String foundSourceFilePath : foundSources) {
@@ -128,7 +129,7 @@ public class DownloadSourcesAction extends BackgroundAction {
                     }
                     NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download_sources.file_downloaded"), foundSourceFilePath));
                 }
-            });
+            }
 
             if (isAnyFileDownloaded.get()) {
                 NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_sources"));

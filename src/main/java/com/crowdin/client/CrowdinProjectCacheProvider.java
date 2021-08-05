@@ -27,6 +27,7 @@ public class CrowdinProjectCacheProvider {
     public static class CrowdinProjectCache {
         private boolean managerAccess;
         private Project project;
+        private List<Language> SupportedLanguages;
         private List<Language> ProjectLanguages;
         private Map<String, Branch> branches;
         private Map<Branch, Map<String, Directory>> dirs;
@@ -101,6 +102,9 @@ public class CrowdinProjectCacheProvider {
                 crowdinProjectCache.setLanguageMapping(
                     LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
             }
+        }
+        if (crowdinProjectCache.getSupportedLanguages() == null) {
+            crowdinProjectCache.setSupportedLanguages(crowdin.getSupportedLanguages());
         }
         if (crowdinProjectCache.getProjectLanguages() == null || update) {
             crowdinProjectCache.setProjectLanguages(crowdin.extractProjectLanguages(crowdinProjectCache.getProject()));
