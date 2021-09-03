@@ -6,6 +6,8 @@ import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
+
 public final class GitUtil {
 
     private GitUtil() {
@@ -18,10 +20,16 @@ public final class GitUtil {
         String branchName = "";
         try {
             repository = GitBranchUtil.getCurrentRepository(project);
+            if (repository == null) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.not_found_git_branch"));
+            }
             localBranch = repository.getCurrentBranch();
+            if (localBranch == null) {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.not_found_git_branch"));
+            }
             branchName = localBranch.getName();
         } catch (Exception e) {
-            e.getMessage();
+            throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.get_git_branch_name"), e.getMessage()), e);
         }
         return branchName;
     }
