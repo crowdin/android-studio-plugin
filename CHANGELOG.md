@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.5.0]
+
+- Added: Add 'Download Sources' command ([#65](https://github.com/crowdin/android-studio-plugin/pull/65))
+- Added: Add 'labels' and 'excluded-target-languages' parameters and more unifying for uploading sources process ([#65](https://github.com/crowdin/android-studio-plugin/pull/65))
+- Added: Add exception handling to getting git branch name ([#61](https://github.com/crowdin/android-studio-plugin/pull/61))
+
 ## [1.4.1]
 
 - Updated: Update Crowdin API client to 1.3.10
