@@ -64,25 +64,23 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             Map<String, File> filePaths = crowdinProjectCache.getFiles(branch);
 
             indicator.checkCanceled();
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-                sources.forEach(s -> {
-
-                    VirtualFile pathToPattern = FileUtil.getBaseDir(s, sourcePattern);
+            for (FileBean fileBean : properties.getFiles()) {
+                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
+                    VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
 
                     String relativePathToPattern = (properties.isPreserveHierarchy())
                         ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
                         : "";
                     String patternPathToFile = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, s.getParent())
+                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
                         : "";
 
-                    File crowdinSource = filePaths.get(FileUtil.normalizePath(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName())));
+                    File crowdinSource = filePaths.get(FileUtil.normalizePath(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
                     if (crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName : "") + FileUtil.sepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()))));
+                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName : "") + FileUtil.sepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()))));
                         return;
                     }
-                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, FileUtil.joinPaths(relativePathToPattern, patternPathToFile, s.getName()));
+                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(fileBean.getTranslation(), FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()));
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
                         String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
                         Path translationFile = Paths.get(pathToPattern.getPath(), builtPattern);
@@ -105,8 +103,8 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                             }
                         }
                     }
-                });
-            });
+                }
+            }
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
@@ -138,19 +136,18 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
 
             List<Path> translations = new ArrayList<>();
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                List<VirtualFile> sources = FileUtil.getSourceFilesRec(root, sourcePattern);
-                sources.forEach(s -> {
-                    VirtualFile baseDir = FileUtil.getBaseDir(s, sourcePattern);
-                    String sourcePath = s.getName();
-                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(translationPattern, sourcePath);
+            for (FileBean fileBean : properties.getFiles()) {
+                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
+                    VirtualFile baseDir = FileUtil.getBaseDir(source, fileBean.getSource());
+                    String sourcePath = source.getName();
+                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(fileBean.getTranslation(), sourcePath);
                     for (Language lang : crowdinProjectCache.getProjectLanguages()) {
                         String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
                         Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
                         translations.add(translationFile);
                     }
-                });
-            });
+                }
+            }
             Path filePath = Paths.get(file.getPath());
             isTranslationFile = translations.contains(filePath);
         } catch (Exception exception) {

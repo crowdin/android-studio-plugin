@@ -87,12 +87,12 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
                 .collect(Collectors.toMap(Function.identity(), langProgress -> crowdin.getLanguageProgress(langProgress.getLanguageId())));
 
 
-            List<String> crowdinFilePaths = properties.getSourcesWithPatterns().keySet().stream()
-                .flatMap((sourcePattern) -> {
-                    List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, sourcePattern);
+            List<String> crowdinFilePaths = properties.getFiles().stream()
+                .flatMap((fileBean) -> {
+                    List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, fileBean.getSource());
                     return sourceFiles.stream().map(sourceFile -> {
                         if (properties.isPreserveHierarchy()) {
-                            VirtualFile pathToPattern = FileUtil.getBaseDir(sourceFile, sourcePattern);
+                            VirtualFile pathToPattern = FileUtil.getBaseDir(sourceFile, fileBean.getSource());
 
                             String relativePathToPattern = FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern);
                             String patternPathToFile = FileUtil.findRelativePath(pathToPattern, sourceFile.getParent());

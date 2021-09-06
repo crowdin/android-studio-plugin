@@ -1,10 +1,16 @@
 package com.crowdin.client;
 
+import com.crowdin.client.core.model.PatchOperation;
+import com.crowdin.client.core.model.PatchRequest;
+import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.AddFileRequest;
 import com.crowdin.client.sourcefiles.model.ExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RequestBuilder {
 
@@ -38,6 +44,22 @@ public class RequestBuilder {
         UploadTranslationsRequest request = new UploadTranslationsRequest();
         request.setFileId(fileId);
         request.setStorageId(storageId);
+        return request;
+    }
+
+    public static AddLabelRequest addLabel(String title) {
+        AddLabelRequest request = new AddLabelRequest();
+        request.setTitle(title);
+        return request;
+    }
+
+    public static List<PatchRequest> updateExcludedTargetLanguages(List<String> excludedTargetLanguages) {
+        List<PatchRequest> request = new ArrayList<>();
+        PatchRequest patchRequest = new PatchRequest();
+        patchRequest.setPath("/excludedTargetLanguages");
+        patchRequest.setOp(PatchOperation.REPLACE);
+        patchRequest.setValue(excludedTargetLanguages);
+        request.add(patchRequest);
         return request;
     }
 }

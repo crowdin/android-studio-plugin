@@ -3,8 +3,6 @@ package com.crowdin.action;
 import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
@@ -17,9 +15,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -50,8 +48,8 @@ public class UploadAction extends BackgroundAction {
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns")
-                + properties.getSourcesWithPatterns().keySet().stream()
-                .map(key -> String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns_item"), key, properties.getSourcesWithPatterns().get(key)))
+                + properties.getFiles().stream()
+                .map(fileBean -> String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns_item"), fileBean.getSource(), fileBean.getTranslation()))
                 .collect(Collectors.joining()));
 
             String branchName = ActionUtils.getBranchName(project, properties, true);
@@ -70,25 +68,9 @@ public class UploadAction extends BackgroundAction {
             }
             indicator.checkCanceled();
 
-            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
-            Map<String, Directory> dirPaths = crowdinProjectCache.getDirs().getOrDefault(branch, new HashMap<>());
-            Long branchId = (branch != null) ? branch.getId() : null;
-
-            SourceLogic sourceLogic = new SourceLogic(project, crowdin, properties, filePaths, dirPaths, branchId);
-
-            indicator.checkCanceled();
-
-            properties.getSourcesWithPatterns().forEach((sourcePattern, translationPattern) -> {
-                List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, sourcePattern);
-                sourceFiles.forEach(sf -> {
-                    try {
-                        sourceLogic.uploadSource(sf, sourcePattern, translationPattern);
-                    } catch (Exception e) {
-                        NotificationUtil.logErrorMessage(project, e);
-                        NotificationUtil.showErrorMessage(project, e.getMessage());
-                    }
-                });
-            });
+            Map<FileBean, List<VirtualFile>> sources = properties.getFiles().stream()
+                .collect(Collectors.toMap(Function.identity(), fileBean -> FileUtil.getSourceFilesRec(root, fileBean.getSource())));
+            SourceLogic.processSources(project, root, crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), sources);
             CrowdinProjectCacheProvider.outdateBranch(branchName);
         } catch (ProcessCanceledException e) {
             throw e;

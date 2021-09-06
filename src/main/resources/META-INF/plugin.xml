@@ -59,6 +59,7 @@
       <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
       <action id="Crowdin.UploadSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
       <action id="Crowdin.UploadTranslations" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations" description="Upload Translation Files"/>
+      <action id="Crowdin.DownloadSources" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" description="Download Sources" />
       <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download Translations" description="Download Translations" />
     </group>
 
