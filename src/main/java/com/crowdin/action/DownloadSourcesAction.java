@@ -8,9 +8,8 @@ import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.CrowdinSettings;
-import com.crowdin.util.CrowdinFileUtil;
+import com.crowdin.util.ActionUtils;
 import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -67,9 +66,8 @@ public class DownloadSourcesAction extends BackgroundAction {
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branchName = properties.isDisabledBranches() ? "" : GitUtil.getCurrentBranch(project);
+            String branchName = ActionUtils.getBranchName(project, properties, true);
 
-            CrowdinFileUtil.checkBranchName(branchName);
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
