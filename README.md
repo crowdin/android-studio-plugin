@@ -2,7 +2,11 @@
 
 # Crowdin Android Studio Plugin [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fgithub.com%2Fcrowdin%2Fandroid-studio-plugin&text=Manage%20and%20synchronize%20your%20localization%20resources%20with%20Crowdin%20project%20instantly%20from%20IDE)
 
-This plugin lets you integrate Android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.
+This plugin lets you integrate your Android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations or source strings from your Crowdin project.
+
+Also, it allows you to track your Crowdin project translation and proofreading progress directly from the IDE :computer:
+
+The plugin is compatible with all the **JetBrains IDE's** such as PHPStorm, IntelliJ Idea and other :rocket:
 
 ## Status
 
@@ -21,16 +25,6 @@ This plugin lets you integrate Android project with Crowdin. It enables you to u
 * Source file can also be manually uploaded to Crowdin via menu `Tools > Crowdin > Upload Sources` or just select `Upload to Crowdin` option using the Right Mouse clicking on the file.
 * To upload translations use menu `Tools > Crowdin > Upload Translations`.
 * To download translations use menu `Tools > Crowdin > Download Translations`.
-
----
-
-:bookmark_tabs: For version *0.5.x* see the [branch 0.5.x](https://github.com/crowdin/android-studio-plugin/tree/0.5.x). Please note that these versions are no longer supported.
-
-:notebook: Complete list of changes: [CHANGELOG.md](/CHANGELOG.md)
-
-:exclamation: Migration from version *0.5.x* to *1.x.x* requires changes in your *crowdin.properties* file.
-
----
 
 ## Configuration
 
@@ -61,7 +55,7 @@ api-token-env=CROWDIN_TOKEN
 base-url-env=CROWDIN_BASE_URL
 ```
 
-If mixed, project-id, api-token and base-url are prioritized:
+If mixed, `project-id`, `api-token` and `base-url` are prioritized:
 
 ```ini
 project-id-env=CROWDIN_PROJECT_ID                   # Low priority
