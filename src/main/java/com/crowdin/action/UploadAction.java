@@ -1,8 +1,8 @@
 package com.crowdin.action;
 
 import com.crowdin.client.*;
-import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
@@ -12,7 +12,6 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -52,20 +51,14 @@ public class UploadAction extends BackgroundAction {
                 .map(fileBean -> String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns_item"), fileBean.getSource(), fileBean.getTranslation()))
                 .collect(Collectors.joining()));
 
-            String branchName = ActionUtils.getBranchName(project, properties, true);
+            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+            String branchName = branchLogic.acquireBranchName(true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
             indicator.checkCanceled();
 
-            Branch branch = crowdinProjectCache.getBranches().get(branchName);
-            if (branch == null && StringUtils.isNotEmpty(branchName)) {
-                AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
-                branch = crowdin.addBranch(addBranchRequest);
-                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.created_branch"), branch.getId(), branch.getName()));
-            } else if (branch != null) {
-                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
-            }
+            Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
             indicator.checkCanceled();
 
             Map<FileBean, List<VirtualFile>> sources = properties.getFiles().stream()

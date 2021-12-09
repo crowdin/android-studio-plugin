@@ -7,8 +7,8 @@ import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.CrowdinSettings;
-import com.crowdin.util.ActionUtils;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.UIUtil;
@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -66,24 +65,15 @@ public class DownloadSourcesAction extends BackgroundAction {
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branchName = ActionUtils.getBranchName(project, properties, true);
 
+            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+            String branchName = branchLogic.acquireBranchName(true);
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
-            Branch branch = null;
-            if (branchName != null && branchName.length() > 0) {
-                Optional<Branch> foundBranch = crowdin.getBranch(branchName);
-                if (!foundBranch.isPresent()) {
-                    NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"), branchName));
-                    return;
-                } else {
-                    branch = foundBranch.get();
-                }
-                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
-            }
+            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
             Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
 

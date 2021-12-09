@@ -5,6 +5,7 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -48,7 +49,9 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-            String branchName = ActionUtils.getBranchName(project, properties, true);
+
+            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+            String branchName = branchLogic.acquireBranchName(true);
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
@@ -59,7 +62,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                 return;
             }
 
-            Branch branch = crowdinProjectCache.getBranches().get(branchName);
+            Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
 
             Map<String, File> filePaths = crowdinProjectCache.getFiles(branch);
 

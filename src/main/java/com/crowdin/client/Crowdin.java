@@ -157,8 +157,7 @@ public class Crowdin {
             }
             return file;
         } catch (Exception e) {
-            NotificationUtil.showErrorMessage(this.project, this.getErrorMessage(e));
-            return null;
+            throw new RuntimeException(this.getErrorMessage(e));
         }
     }
 
