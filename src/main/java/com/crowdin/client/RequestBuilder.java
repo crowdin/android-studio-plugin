@@ -7,6 +7,8 @@ import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.AddFileRequest;
 import com.crowdin.client.sourcefiles.model.ExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
+import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
+import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 
 import java.util.ArrayList;
@@ -60,6 +62,18 @@ public class RequestBuilder {
         patchRequest.setOp(PatchOperation.REPLACE);
         patchRequest.setValue(excludedTargetLanguages);
         request.add(patchRequest);
+        return request;
+    }
+
+    public static CrowdinTranslationCreateProjectBuildForm buildProjectTranslationsRequest(Long branchId) {
+        CrowdinTranslationCreateProjectBuildForm request = new CrowdinTranslationCreateProjectBuildForm();
+        request.setBranchId(branchId);
+        return request;
+    }
+
+    public static BuildProjectFileTranslationRequest buildProjectFileTranslation(String targetLanguageId) {
+        BuildProjectFileTranslationRequest request = new BuildProjectFileTranslationRequest();
+        request.setTargetLanguageId(targetLanguageId);
         return request;
     }
 }

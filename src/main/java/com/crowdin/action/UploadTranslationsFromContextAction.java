@@ -6,6 +6,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.logic.ContextLogic;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -121,6 +122,9 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isTranslationFile = false;
         try {
+            if (file == null) {
+                return;
+            }
             CrowdinProperties properties;
             try {
                 properties = CrowdinPropertiesLoader.load(project);
@@ -138,21 +142,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
 
-            List<Path> translations = new ArrayList<>();
-            for (FileBean fileBean : properties.getFiles()) {
-                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
-                    VirtualFile baseDir = FileUtil.getBaseDir(source, fileBean.getSource());
-                    String sourcePath = source.getName();
-                    String basePattern = PlaceholderUtil.replaceFilePlaceholders(fileBean.getTranslation(), sourcePath);
-                    for (Language lang : crowdinProjectCache.getProjectLanguages()) {
-                        String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
-                        Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
-                        translations.add(translationFile);
-                    }
-                }
-            }
-            Path filePath = Paths.get(file.getPath());
-            isTranslationFile = translations.contains(filePath);
+            isTranslationFile = ContextLogic.findSourceFileFromTranslationFile(file, properties, root, crowdinProjectCache).isPresent();
         } catch (Exception exception) {
 //            do nothing
         } finally {

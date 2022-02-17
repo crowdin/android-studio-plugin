@@ -4,8 +4,11 @@ import com.crowdin.client.Crowdin;
 import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.FileBean;
+import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
+import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -20,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +77,22 @@ public class DownloadTranslationsLogic {
 
     public File downloadArchive() {
         NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.download_archive"));
-        return crowdin.downloadTranslations(root, (branch != null ? branch.getId() : null));
+        BuildProjectTranslationRequest request = RequestBuilder.buildProjectTranslationsRequest(branch != null ? branch.getId() : null);
+
+        ProjectBuild projectBuild = crowdin.startBuildingTranslation(request);
+        Long buildId = projectBuild.getId();
+
+        while (!projectBuild.getStatus().equalsIgnoreCase("finished")) {
+            projectBuild = crowdin.checkBuildingStatus(buildId);
+        }
+
+        URL url = crowdin.downloadProjectTranslations(buildId);
+
+        try {
+            return FileUtil.downloadTempFile(url.openStream());
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't download file", e);
+        }
     }
 
     public void extractArchive(File archive, String dirPath) {

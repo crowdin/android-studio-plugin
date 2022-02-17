@@ -51,7 +51,7 @@
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 
-    <action icon="/icons/icon.svg" id="Crowdin.UploadTranslation" class="com.crowdin.action.UploadTranslationsFromContextAction" text="Upload translation file to Crowdin" description="Upload this 'strings.xml' to Crowdin">
+    <action icon="/icons/icon.svg" id="Crowdin.UploadTranslation" class="com.crowdin.action.UploadTranslationsFromContextAction" text="Upload Translation File to Crowdin" description="Upload this 'strings.xml' to Crowdin">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 
@@ -59,7 +59,7 @@
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 
-    <action icon="/icons/icon.svg" id="Crowdin.DownloadTranslationsContextAction" class="com.crowdin.action.DownloadTranslationsFromContextAction" text="Download Translation Files from Crowdin" description="Download translation files from Crowdin">
+    <action icon="/icons/icon.svg" id="Crowdin.DownloadTranslationContextAction" class="com.crowdin.action.DownloadTranslationFromContextAction" text="Download Translation File from Crowdin" description="Download this translation file from Crowdin">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
 

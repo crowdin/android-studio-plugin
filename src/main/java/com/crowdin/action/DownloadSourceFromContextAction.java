@@ -5,8 +5,8 @@ import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.logic.ContextLogic;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -20,13 +20,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.NonNull;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
@@ -70,40 +65,15 @@ public class DownloadSourceFromContextAction extends BackgroundAction {
 
             Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
-            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
-
-            String fileRelativePath = FileUtil.sepAtStart(FileUtil.findRelativePath(root, file));
-            FileInfo foundSource = filePaths.get(fileRelativePath);
-            if (properties.isPreserveHierarchy()) {
-                this.downloadFile(crowdin, foundSource.getId(), file);
-                NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_sources"));
-            } else {
-                List<String> foundCrowdinSources = filePaths.keySet().stream()
-                    .filter(crowdinFilePath -> file.getPath().endsWith(crowdinFilePath))
-                    .collect(Collectors.toList());
-                if (foundCrowdinSources.isEmpty()) {
-                    throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"));
-                } else if (foundCrowdinSources.size() > 1) {
-                    throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_not_one_server_representative"));
-                } else {
-                    this.downloadFile(crowdin, filePaths.get(foundCrowdinSources.get(0)).getId(), file);
-                    NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_source"));
-                }
-            }
+            Long sourceId = ContextLogic.findSourceIdFromSourceFile(properties, crowdinProjectCache.getFileInfos(branch), file, root);
+            URL url = crowdin.downloadFile(sourceId);
+            FileUtil.downloadFile(this, file, url);
+            NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_source"));
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
             NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
-        }
-    }
-
-    private void downloadFile(Crowdin client, Long fileId, VirtualFile file) {
-        URL url = client.downloadFile(fileId);
-        try (InputStream data = url.openStream()) {
-            FileUtil.downloadFile(this, file, data);
-        } catch (IOException e) {
-            throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.download_file"), file.getPath(), e.getMessage()), e);
         }
     }
 
