@@ -1,11 +1,16 @@
 package com.crowdin.action;
 
-import com.crowdin.client.*;
+import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
+import com.crowdin.client.CrowdinProperties;
+import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.logic.ContextLogic;
 import com.crowdin.logic.CrowdinSettings;
-import com.crowdin.logic.SourceLogic;
-import com.crowdin.util.*;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.components.ServiceManager;
@@ -13,61 +18,57 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import lombok.NonNull;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.net.URL;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
-/**
- * Created by ihor on 1/27/17.
- */
-public class UploadFromContextAction extends BackgroundAction {
+public class DownloadSourceFromContextAction extends BackgroundAction {
     @Override
-    public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
+    protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
+        if (file == null) {
+            return;
+        }
         Project project = anActionEvent.getProject();
         try {
+            VirtualFile root = FileUtil.getProjectBaseDir(project);
+
             CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
 
-            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_source_file"), "Upload");
+            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
             if (!confirmation) {
                 return;
             }
             indicator.checkCanceled();
 
-            VirtualFile root = FileUtil.getProjectBaseDir(project);
-
-            CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
+            CrowdinProperties properties;
+            try {
+                properties = CrowdinPropertiesLoader.load(project);
+            } catch (Exception e) {
+                NotificationUtil.showErrorMessage(project, e.getMessage());
+                return;
+            }
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
             String branchName = branchLogic.acquireBranchName(true);
+
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
-            Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
-            indicator.checkCanceled();
+            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
-            FileBean foundFileBean = properties.getFiles()
-                .stream()
-                .filter(fb -> FileUtil.getSourceFilesRec(root, fb.getSource()).contains(file))
-                .findAny()
-                .orElseThrow(() -> new RuntimeException("Unexpected error: couldn't find suitable source pattern"));
-
-            indicator.checkCanceled();
-
-            Map<FileBean, List<VirtualFile>> source = Collections.singletonMap(foundFileBean, Collections.singletonList(file));
-            SourceLogic.processSources(project, root, crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), source);
-
-            CrowdinProjectCacheProvider.outdateBranch(branchName);
+            Long sourceId = ContextLogic.findSourceIdFromSourceFile(properties, crowdinProjectCache.getFileInfos(branch), file, root);
+            URL url = crowdin.downloadFile(sourceId);
+            FileUtil.downloadFile(this, file, url);
+            NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_source"));
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
@@ -79,11 +80,13 @@ public class UploadFromContextAction extends BackgroundAction {
     @Override
     public void update(AnActionEvent e) {
         Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isSourceFile = false;
         try {
-            CrowdinProperties properties;
-            properties = CrowdinPropertiesLoader.load(project);
+            CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
             isSourceFile = properties.getFiles()
                 .stream()
                 .flatMap(fb -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), fb.getSource()).stream())
@@ -98,6 +101,7 @@ public class UploadFromContextAction extends BackgroundAction {
 
     @Override
     protected String loadingText(AnActionEvent e) {
-        return String.format(MESSAGES_BUNDLE.getString("labels.loading_text.upload_sources_from_context"), CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext()).getName());
+        VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+        return String.format(MESSAGES_BUNDLE.getString("labels.loading_text.download_source_file_from_context"), (file != null ? file.getName() : "<UNKNOWN>"));
     }
 }

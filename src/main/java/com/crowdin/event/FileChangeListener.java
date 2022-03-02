@@ -3,6 +3,7 @@ package com.crowdin.event;
 import com.crowdin.client.*;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.util.*;
 import com.intellij.openapi.Disposable;
@@ -70,11 +71,10 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         return;
                     }
                     indicator.checkCanceled();
-                    String branchName = ActionUtils.getBranchName(project, properties, false);
-                    if (!CrowdinFileUtil.isValidBranchName(branchName)) {
-                        return;
-                    }
                     Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+
+                    BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+                    String branchName = branchLogic.acquireBranchName(true);
 
                     CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                         CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
@@ -104,11 +104,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         return;
                     }
 
-                    Branch branch = crowdinProjectCache.getBranches().get(branchName);
-                    if (branch == null && StringUtils.isNotEmpty(branchName)) {
-                        AddBranchRequest addBranchRequest = RequestBuilder.addBranch(branchName);
-                        branch = crowdin.addBranch(addBranchRequest);
-                    }
+                    Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
                     indicator.checkCanceled();
 
                     String text = changedSources.values().stream()

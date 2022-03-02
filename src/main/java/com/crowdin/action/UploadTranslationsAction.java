@@ -5,6 +5,7 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.*;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -20,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,7 +50,8 @@ public class UploadTranslationsAction extends BackgroundAction {
             Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             indicator.checkCanceled();
 
-            String branchName = ActionUtils.getBranchName(project, properties, true);
+            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+            String branchName = branchLogic.acquireBranchName(true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
@@ -60,13 +61,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                 return;
             }
 
-            Branch branch = crowdinProjectCache.getBranches().get(branchName);
-            if ((branchName != null && !branchName.isEmpty()) && branch == null) {
-                NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"),  branchName));
-                return;
-            } else if (branch != null) {
-                NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));
-            }
+            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
             Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
 

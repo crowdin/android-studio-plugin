@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public final class FileUtil {
 
@@ -127,17 +130,30 @@ public final class FileUtil {
         }
     }
 
-    public static void downloadFile(Object requestor, VirtualFile file, InputStream data) throws IOException {
-        File tempFile = FileUtilRt.createTempFile(RandomStringUtils.randomAlphanumeric(9), ".crowdin.tmp", true);
-        try (OutputStream tempFileOutput = new FileOutputStream(tempFile)) {
-            FileUtilRt.copy(data, tempFileOutput);
+    public static void downloadFile(Object requestor, VirtualFile file, URL url) {
+        try (InputStream data = url.openStream()) {
+            FileUtil.downloadFile(requestor, file, data);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.download_file"), file.getPath(), e.getMessage()), e);
         }
+    }
+
+    public static void downloadFile(Object requestor, VirtualFile file, InputStream data) throws IOException {
+        File tempFile = downloadTempFile(data);
 
         WriteAction.runAndWait(() -> {
             try (InputStream tempFileInput = new FileInputStream(tempFile); OutputStream fileOutput = file.getOutputStream(requestor)) {
                 FileUtilRt.copy(tempFileInput, fileOutput);
             }
         });
+    }
+
+    public static File downloadTempFile(InputStream data) throws IOException {
+        File tempFile = FileUtilRt.createTempFile(RandomStringUtils.randomAlphanumeric(9), ".crowdin.tmp", true);
+        try (OutputStream tempFileOutput = new FileOutputStream(tempFile)) {
+            FileUtilRt.copy(data, tempFileOutput);
+        }
+        return tempFile;
     }
 
     public static VirtualFile createIfNeededFilePath(Object requestor, VirtualFile root, String filePath) throws IOException {
