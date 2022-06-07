@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.5.1]
+
+- Added: Add new context actions and refactor code ([#71](https://github.com/crowdin/android-studio-plugin/pull/71))
+- Fixed: Fix 'download sources' for Windows ([#72](https://github.com/crowdin/android-studio-plugin/pull/72))
+
 ## [1.5.0]
 
 - Added: Add 'Download Sources' command ([#65](https://github.com/crowdin/android-studio-plugin/pull/65))
