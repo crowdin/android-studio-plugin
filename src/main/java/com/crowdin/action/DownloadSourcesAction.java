@@ -86,7 +86,9 @@ public class DownloadSourcesAction extends BackgroundAction {
                     : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
                     .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
                 List<String> foundSources = filePaths.keySet().stream()
+                    .map(FileUtil::unixPath)
                     .filter(sourcePredicate)
+                    .map(FileUtil::normalizePath)
                     .sorted()
                     .collect(Collectors.toList());
 
