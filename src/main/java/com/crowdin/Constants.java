@@ -32,6 +32,8 @@ public final class Constants {
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
     public static final String PROPERTY_PRESERVE_HIERARCHY = "preserve-hierarchy";
     public static final String PROPERTY_DEBUG = "debug";
+    public static final String PROPERTY_AUTOCOMPLETION_DISABLED = "completion-disabled";
+    public static final String PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS = "completion-file-extensions";
 
     public static final Boolean DISABLE_BRANCHES_DEFAULT = false;
     public static final Boolean PRESERVE_HIERARCHY_DEFAULT = false;

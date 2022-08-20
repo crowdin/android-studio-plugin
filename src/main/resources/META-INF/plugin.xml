@@ -37,6 +37,7 @@
     <projectService serviceImplementation="com.crowdin.logic.CrowdinSettings"/>
     <toolWindow factoryClass="com.crowdin.ui.TranslationProgressWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
     <projectService serviceImplementation="com.crowdin.ui.TranslationProgressWindowFactory$ProjectService"/>
+    <completion.contributor language="any" implementationClass="com.crowdin.completion.StringsCompletionContributor" />
   </extensions>
 
   <actions>

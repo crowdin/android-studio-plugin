@@ -177,6 +177,22 @@ files.1.excluded-target-languages=uk   # For a specific filegroup, high priority
 files.2.excluded-target-languages=fr   # For a specific filegroup, high priority
 ```
 
+### Strings autocompletion
+
+This plugin also provide autocompletion of Crowdin strings keys. It helps to enter correct string key.
+
+By default, this autocompletion feature will be enabled in all files. But you can configure files extensions where it should work:
+
+```ini
+completion-file-extensions=json,xml
+```
+
+Or to completely turn off this feature:
+
+```ini
+completion-disabled=true
+```
+
 ## Seeking Assistance
 
 If you find any problems or would like to suggest a feature, please read the [How can I contribute](/CONTRIBUTING.md#how-can-i-contribute) section in our contributing guidelines.
