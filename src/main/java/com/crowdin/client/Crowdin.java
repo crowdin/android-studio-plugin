@@ -7,6 +7,7 @@ import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
+import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
@@ -154,6 +155,24 @@ public class Crowdin {
             .map(ResponseObject::getData)
             .filter(file -> Objects.equals(file.getBranchId(), branchId))
             .collect(Collectors.toList());
+    }
+
+    public List<SourceString> getStrings() {
+        return executeRequestFullList((limit, offset) ->
+                this.client.getSourceStringsApi().listSourceStrings(
+                        this.projectId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        limit,
+                        offset).getData()
+                )
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList());
     }
 
     /**

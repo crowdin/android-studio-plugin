@@ -7,6 +7,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.sourcefiles.model.FileInfo;
+import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.LanguageMapping;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class CrowdinProjectCacheProvider {
         private Map<Branch, Map<String, Directory>> dirs;
         private Map<Branch, Map<String, ? extends FileInfo>> fileInfos;
         private LanguageMapping languageMapping;
+        private List<SourceString> strings;
 
         /**
          * Returns project information with additional information. Should be checked for managerAccess before accessing this value
@@ -102,6 +104,9 @@ public class CrowdinProjectCacheProvider {
                 crowdinProjectCache.setLanguageMapping(
                     LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
             }
+        }
+        if (crowdinProjectCache.getStrings() == null) {
+            crowdinProjectCache.setStrings(crowdin.getStrings());
         }
         if (crowdinProjectCache.getSupportedLanguages() == null) {
             crowdinProjectCache.setSupportedLanguages(crowdin.getSupportedLanguages());
