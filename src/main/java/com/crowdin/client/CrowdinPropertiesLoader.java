@@ -104,6 +104,13 @@ public class CrowdinPropertiesLoader {
                 crowdinProperties.setDebug(false);
             }
             crowdinProperties.setFiles(getFileBeans(properties, errors));
+
+            String autocompletionDisabled = properties.getProperty(PROPERTY_AUTOCOMPLETION_DISABLED);
+            String autocompletionFileExtensions = properties.getProperty(PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS);
+            crowdinProperties.setAutocompletionDisabled(autocompletionDisabled != null && autocompletionDisabled.equals("true"));
+            if (autocompletionFileExtensions != null) {
+                crowdinProperties.setAutocompletionFileExtensions(Arrays.asList(autocompletionFileExtensions.split(",")));
+            }
         }
 
         if (!errors.isEmpty()) {

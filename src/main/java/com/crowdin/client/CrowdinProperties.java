@@ -15,4 +15,6 @@ public class CrowdinProperties {
     private boolean preserveHierarchy;
     private List<FileBean> files;
     private boolean debug;
+    private boolean autocompletionDisabled;
+    private List<String> autocompletionFileExtensions;
 }
