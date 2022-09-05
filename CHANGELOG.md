@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.0]
+
+- Added: String keys autocompletion ([#75](https://github.com/crowdin/android-studio-plugin/pull/75))
+
 ## [1.5.1]
 
 - Added: Add new context actions and refactor code ([#71](https://github.com/crowdin/android-studio-plugin/pull/71))

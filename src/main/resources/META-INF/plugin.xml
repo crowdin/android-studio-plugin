@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <idea-version since-build="163.*"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[
