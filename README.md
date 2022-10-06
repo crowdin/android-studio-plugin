@@ -203,8 +203,6 @@ files.2.import-eq-suggestions=true/false
 ...
 ```
 
-
-
 ### Strings autocompletion
 
 This plugin also provide autocompletion of Crowdin strings keys. It helps to enter correct string key.
