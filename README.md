@@ -177,6 +177,34 @@ files.1.excluded-target-languages=uk   # For a specific filegroup, high priority
 files.2.excluded-target-languages=fr   # For a specific filegroup, high priority
 ```
 
+### Translations Upload Options
+
+The below properties can be used to configure the import options to the uploaded translations
+
+`import-eq-suggestions` - Defines whether to add translation if it's the same as the source string
+
+`auto-approve-imported` - Mark uploaded translations as approved
+
+`translate-hidden` - Allow translations upload to hidden source strings
+
+```ini
+# Applies to the default behavior and all filegroups that do not have such a configuration
+import-eq-suggestions=true/false
+auto-approve-imported=true/false
+translate-hidden=true/false
+
+# Ability to configure for specific file groups
+# higher priority
+files.1.import-eq-suggestions=true/false
+files.1.auto-approve-imported=true/false
+files.1.translate-hidden=true/false
+
+files.2.import-eq-suggestions=true/false
+...
+```
+
+
+
 ### Strings autocompletion
 
 This plugin also provide autocompletion of Crowdin strings keys. It helps to enter correct string key.

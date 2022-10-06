@@ -41,4 +41,10 @@ public final class Constants {
     public static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
     public static final ResourceBundle MESSAGES_BUNDLE = ResourceBundle.getBundle("messages/messages");
+
+    public static final String PROPERTY_IMPORT_EQ_SUGGESTIONS = "import-eq-suggestions";
+
+    public static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto-approve-imported";
+
+    public static final String PROPERTY_TRANSLATE_HIDDEN = "translate-hidden";
 }
