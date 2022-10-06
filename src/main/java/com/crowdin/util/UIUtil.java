@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class UIUtil {
 
-    public static boolean сonfirmDialog(Project project, CrowdinSettings settings, String questionText, String okButtonText) {
+    public static boolean confirmDialog(Project project, CrowdinSettings settings, String questionText, String okButtonText) {
         if (ApplicationManager.getApplication().isHeadlessEnvironment()) {
             return true;
         }
