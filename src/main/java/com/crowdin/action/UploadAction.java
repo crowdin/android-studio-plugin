@@ -32,7 +32,7 @@ public class UploadAction extends BackgroundAction {
         try {
             CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
 
-            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_sources"), "Upload");
+            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.upload_sources"), "Upload");
             if (!confirmation) {
                 return;
             }

@@ -41,7 +41,7 @@ public class DownloadTranslationFromContextAction extends BackgroundAction {
 
             CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
 
-            boolean confirmation = UIUtil.сonfirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
+            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
             if (!confirmation) {
                 return;
             }
