@@ -1,6 +1,7 @@
 package com.crowdin.api.model;
 
 import com.crowdin.client.core.model.Priority;
+import com.crowdin.client.sourcefiles.model.ExportOptions;
 import com.crowdin.client.sourcefiles.model.File;
 
 import java.text.ParseException;
@@ -32,6 +33,11 @@ public class FileBuilder {
 
     public FileBuilder setProjectId(Long projectId) {
         file.setProjectId(projectId);
+        return this;
+    }
+
+    public FileBuilder setExportOptions(ExportOptions exportOptions) {
+        file.setExportOptions(exportOptions);
         return this;
     }
 
