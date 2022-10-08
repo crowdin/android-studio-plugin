@@ -42,7 +42,13 @@ public class RequestBuilder {
         return request;
     }
 
-    public static UploadTranslationsRequest uploadTranslation(Long fileId, Long storageId, Boolean importEqSuggestions, Boolean autoApproveImported, Boolean translateHidden) {
+    public static UploadTranslationsRequest uploadTranslation(
+        Long fileId, 
+        Long storageId, 
+        Boolean importEqSuggestions, 
+        Boolean autoApproveImported, 
+        Boolean translateHidden
+    ) {
         UploadTranslationsRequest request = new UploadTranslationsRequest();
         request.setFileId(fileId);
         request.setStorageId(storageId);
