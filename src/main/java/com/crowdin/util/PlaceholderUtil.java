@@ -108,33 +108,6 @@ public class PlaceholderUtil {
             .replace(PLACEHOLDER_ORIGINAL_PATH, FilenameUtils.getPathNoEndSeparator(sourcePath));
     }
 
-    public List<String> formatForRegex(List<String> toFormat, List<Language> languages) {
-        String langIds = languages.stream().map(Language::getId).collect(Collectors.joining("|", "(", ")"));
-        String langNames = languages.stream().map(Language::getName).collect(Collectors.joining("|", "(", ")"));
-        String langLocales = languages.stream().map(Language::getLocale).collect(Collectors.joining("|", "(", ")"));
-        String langLocalesWithUnderscore = languages.stream().map(Language::getLocale).map(s -> s.replace("-", "_"))
-            .collect(Collectors.joining("|", "(", ")"));
-        String langTwoLettersCodes = languages.stream().map(Language::getTwoLettersCode).collect(Collectors.joining("|", "(", ")"));
-        String langThreeLettersCodes = languages.stream().map(Language::getThreeLettersCode).collect(Collectors.joining("|", "(", ")"));
-        String langAndroidCodes = languages.stream().map(Language::getAndroidCode).collect(Collectors.joining("|", "(", ")"));
-        String langOsxLocales = languages.stream().map(Language::getOsxLocale).collect(Collectors.joining("|", "(", ")"));
-        String langOsxCodes = languages.stream().map(Language::getOsxCode).collect(Collectors.joining("|", "(", ")"));
-        return toFormat.stream()
-            .map(PlaceholderUtil::formatSourcePatternForRegex)
-            .map(s -> s
-                .replace(PLACEHOLDER_LANGUAGE_ID, langIds)
-                .replace(PLACEHOLDER_LANGUAGE, langNames)
-                .replace(PLACEHOLDER_LOCALE, langLocales)
-                .replace(PLACEHOLDER_LOCALE_WITH_UNDERSCORE, langLocalesWithUnderscore)
-                .replace(PLACEHOLDER_TWO_LETTERS_CODE, langTwoLettersCodes)
-                .replace(PLACEHOLDER_THREE_LETTERS_CODE, langThreeLettersCodes)
-                .replace(PLACEHOLDER_ANDROID_CODE, langAndroidCodes)
-                .replace(PLACEHOLDER_OSX_LOCALE, langOsxLocales)
-                .replace(PLACEHOLDER_OSX_CODE, langOsxCodes))
-            .map(s -> "^" + s + "$")
-            .collect(Collectors.toList());
-    }
-
     public static String formatSourcePatternForRegex(String toFormat) {
         toFormat = toFormat
             .replace(ESCAPE_DOT, ESCAPE_DOT_PLACEHOLDER)
