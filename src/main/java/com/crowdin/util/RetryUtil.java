@@ -19,7 +19,7 @@ public final class RetryUtil {
             try {
                 return func.call();
             } catch (Exception e) {
-                if (i + i == retries) {
+                if (i + 1 == retries) {
                     throw e;
                 }
                 Thread.sleep(100);
