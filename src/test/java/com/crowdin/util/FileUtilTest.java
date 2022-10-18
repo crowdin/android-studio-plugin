@@ -132,7 +132,10 @@ public class FileUtilTest extends BasePlatformTestCase {
         Path path = Paths.get(filePath);
 
         List<File> result = FileUtil.walkDir(path);
-        assertEquals(expected, result);
+        assertEquals(expected.size(), result.size());
+        for(File file: result){
+            assertTrue(expected.contains(file));
+        }
     }
 
     public static Stream<Arguments> testWalkDir() {
@@ -226,38 +229,42 @@ public class FileUtilTest extends BasePlatformTestCase {
     }
     @ParameterizedTest
     @MethodSource
-    public void testJoinPaths(String expected, String... filePath) {
+    public void testJoinPaths(String expected1, String expected2, String... filePath) {
         String result = FileUtil.joinPaths(filePath);
-        assertEquals(expected, result);
+        assertTrue(result.equals(expected1) || result.equals(expected2));
     }
 
     public static Stream<Arguments> testJoinPaths() {
         return Stream.of(
-                arguments("values\\second\\values\\strings.xml",
+                arguments("values\\second\\values\\strings.xml", "values/second/values/strings.xml",
                         new String[]{"values\\\\/", "second\\\\/", "values\\\\/", "strings.xml"}));
     }
 
     @ParameterizedTest
     @MethodSource
-    public void testSepAtStart(String filePath, String expected) {
+    public void testSepAtStart(String filePath, String sep1, String sep2) {
         String result = FileUtil.sepAtStart(filePath);
-        assertEquals(expected, result);
+        assertTrue(result.equals(sep1+filePath) || result.equals(sep2+filePath));
     }
 
     public static Stream<Arguments> testSepAtStart() {
+        String sep1="/";
+        String sep2="\\";
         return Stream.of(
-                arguments("values/second/values/strings.xml", "\\values/second/values/strings.xml"));
+                arguments("values/second/values/strings.xml", sep1, sep2));
     }
 
     @ParameterizedTest
     @MethodSource
-    public void testSepAtEnd(String filePath, String expected) {
+    public void testSepAtEnd(String filePath, String sep1, String sep2) {
         String result = FileUtil.sepAtEnd(filePath);
-        assertEquals(expected, result);
+        assertTrue(result.equals(filePath+sep1) || result.equals(filePath+sep2));
     }
 
     public static Stream<Arguments> testSepAtEnd() {
+        String sep1="/";
+        String sep2="\\";
         return Stream.of(
-                arguments("values/second/values/strings.xml", "values/second/values/strings.xml\\"));
+                arguments("values/second/values/strings.xml", sep1, sep2));
     }
 }
