@@ -94,7 +94,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                         } catch (IOException exception) {
                             throw new RuntimeException("Unhandled exception with File '" + translationFile + "'", exception);
                         }
-                        UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId);
+                        UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId, properties.isImportEqSuggestions(), properties.isAutoApproveImported(), properties.isTranslateHidden());
                         try {
                             crowdin.uploadTranslation(translationPath.getKey().getId(), request);
                             uploadedFilesCounter.incrementAndGet();

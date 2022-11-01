@@ -17,4 +17,7 @@ public class CrowdinProperties {
     private boolean debug;
     private boolean autocompletionDisabled;
     private List<String> autocompletionFileExtensions;
+    private boolean importEqSuggestions;
+    private boolean autoApproveImported;
+    private boolean translateHidden;
 }

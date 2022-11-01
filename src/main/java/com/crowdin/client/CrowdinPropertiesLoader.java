@@ -111,6 +111,19 @@ public class CrowdinPropertiesLoader {
             if (autocompletionFileExtensions != null) {
                 crowdinProperties.setAutocompletionFileExtensions(Arrays.asList(autocompletionFileExtensions.split(",")));
             }
+
+            String importEqSuggestions = properties.getProperty(PROPERTY_IMPORT_EQ_SUGGESTIONS);
+            String autoApproveImported = properties.getProperty(PROPERTY_AUTO_APPROVE_IMPORTED);
+            String translateHidden = properties.getProperty(PROPERTY_TRANSLATE_HIDDEN);
+            if (StringUtils.isNotEmpty(importEqSuggestions)) {
+                crowdinProperties.setImportEqSuggestions(Boolean.parseBoolean(importEqSuggestions));
+            }
+            if (StringUtils.isNotEmpty(autoApproveImported)) {
+                crowdinProperties.setAutoApproveImported(Boolean.parseBoolean(autoApproveImported));
+            }
+            if (StringUtils.isNotEmpty(translateHidden)) {
+                crowdinProperties.setTranslateHidden(Boolean.parseBoolean(translateHidden));
+            }
         }
 
         if (!errors.isEmpty()) {
