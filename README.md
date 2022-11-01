@@ -8,15 +8,18 @@ Also, it allows you to track your Crowdin project translation and proofreading p
 
 The plugin is compatible with all the **JetBrains IDE's** such as PHPStorm, IntelliJ Idea and other :rocket:
 
-## Status
+<div align="center">
 
 [![Build Status](https://dev.azure.com/crowdin/Android%20Studio%20Plugin/_apis/build/status/Build?branchName=master&cacheSeconds=1000)](https://dev.azure.com/crowdin/Android%20Studio%20Plugin/_build/latest?definitionId=23&branchName=master)
 [![JetBrains IntelliJ plugins](https://img.shields.io/jetbrains/plugin/d/9463-crowdin?cacheSeconds=50000)](https://plugins.jetbrains.com/plugin/9463-crowdin)
 [![JetBrains IntelliJ Plugins](https://img.shields.io/jetbrains/plugin/r/stars/9463-crowdin?cacheSeconds=50000)](https://plugins.jetbrains.com/plugin/9463-crowdin)
+![GitHub contributors](https://img.shields.io/github/contributors/crowdin/android-studio-plugin?logo=github&cacheSeconds=50000)
 [![GitHub](https://img.shields.io/github/license/crowdin/android-studio-plugin?cacheSeconds=50000)](https://github.com/crowdin/android-studio-plugin/blob/master/LICENSE)
 
 [![Azure DevOps tests (branch)](https://img.shields.io/azure-devops/tests/crowdin/Android%20Studio%20Plugin/23/master?cacheSeconds=1000)](https://dev.azure.com/crowdin/Android%20Studio%20Plugin/_build/latest?definitionId=23&branchName=master)
 [![codecov](https://codecov.io/gh/crowdin/android-studio-plugin/branch/master/graph/badge.svg)](https://codecov.io/gh/crowdin/android-studio-plugin)
+
+</div>
 
 ## Getting started
 
@@ -188,19 +191,10 @@ The below properties can be used to configure the import options to the uploaded
 `translate-hidden` - Allow translations upload to hidden source strings
 
 ```ini
-# Applies to the default behavior and all filegroups that do not have such a configuration
+# Applies to the default behavior and all filegroups
 import-eq-suggestions=true/false
 auto-approve-imported=true/false
 translate-hidden=true/false
-
-# Ability to configure for specific file groups
-# higher priority
-files.1.import-eq-suggestions=true/false
-files.1.auto-approve-imported=true/false
-files.1.translate-hidden=true/false
-
-files.2.import-eq-suggestions=true/false
-...
 ```
 
 ### Strings autocompletion
