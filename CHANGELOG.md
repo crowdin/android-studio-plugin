@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.1]
+
+- Add import options for translations upload ([#81](https://github.com/crowdin/android-studio-plugin/pull/81))
+- Fixed typo in UIUtil:confirmDialog method name ([#80](https://github.com/crowdin/android-studio-plugin/pull/80))
+- Added unit tests to improve code coverage for the CrowdinFileUtil.java ([#87](https://github.com/crowdin/android-studio-plugin/pull/87))
+- Added unit tests to improve code coverage for RetryUtil.java ([#88](https://github.com/crowdin/android-studio-plugin/pull/88))
+- Add LanguageMapping tests ([#89](https://github.com/crowdin/android-studio-plugin/pull/89))
+- Added Test cases for PlaceholderUtil.class ([#90](https://github.com/crowdin/android-studio-plugin/pull/90))
+- Added unit tests to improve code coverage for FileUtil.java ([#94](https://github.com/crowdin/android-studio-plugin/pull/94))
+- Added unit test for util.java ([#96](https://github.com/crowdin/android-studio-plugin/pull/96))
+- Added Unit Test Case For CrowdinProjectCacheProvider ([#98](https://github.com/crowdin/android-studio-plugin/pull/98))
+- Added Unit Test Case For CrowdinPropertiesLoader ([#101](https://github.com/crowdin/android-studio-plugin/pull/101))
+- Added unit tests for CrowdinSettings.java ([#103](https://github.com/crowdin/android-studio-plugin/pull/103))
+
 ## [1.6.0]
 
 - Added: String keys autocompletion ([#75](https://github.com/crowdin/android-studio-plugin/pull/75))
