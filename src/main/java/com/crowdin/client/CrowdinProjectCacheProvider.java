@@ -10,7 +10,12 @@ import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.LanguageMapping;
+import com.google.common.annotations.VisibleForTesting;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,9 +24,15 @@ import java.util.Map;
 
 public class CrowdinProjectCacheProvider {
 
+    @Getter(AccessLevel.PACKAGE)
+    @Setter(AccessLevel.PACKAGE)
+    @VisibleForTesting
     private static CrowdinProjectCache crowdinProjectCache;
 
     private static boolean outdated = false;
+
+    @Getter(AccessLevel.PACKAGE)
+    @VisibleForTesting
     private static List<String> outdatedBranches = new ArrayList<>();
 
     @Data
@@ -93,7 +104,7 @@ public class CrowdinProjectCacheProvider {
 
     }
 
-    public synchronized static CrowdinProjectCache getInstance(Crowdin crowdin, String branchName, boolean update) {
+    public synchronized static CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
         if (crowdinProjectCache == null) {
             crowdinProjectCache = new CrowdinProjectCache();
         }
@@ -133,7 +144,7 @@ public class CrowdinProjectCacheProvider {
                 || outdatedBranches.contains(branchName)
                 || update) {
             Long branchId = (branch != null) ? branch.getId() : null;
-            List<com.crowdin.client.sourcefiles.model.FileInfo> files = crowdin.getFiles(branchId);
+            List<FileInfo> files = crowdin.getFiles(branchId);
             Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
             crowdinProjectCache.getFileInfos().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
             crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
@@ -145,5 +156,12 @@ public class CrowdinProjectCacheProvider {
     public synchronized static void outdateBranch(String branchName) {
         outdated = true;
         outdatedBranches.add(branchName);
+    }
+
+    @TestOnly
+    static void reset() {
+        outdated = false;
+        outdatedBranches.clear();
+        crowdinProjectCache = null;
     }
 }
