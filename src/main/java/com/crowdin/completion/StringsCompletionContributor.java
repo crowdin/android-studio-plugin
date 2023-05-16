@@ -58,7 +58,7 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
-        Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+        Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
         BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
         String branchName = branchLogic.acquireBranchName(true);

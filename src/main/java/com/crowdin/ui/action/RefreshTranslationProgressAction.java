@@ -13,9 +13,7 @@ import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.ui.TranslationProgressWindow;
 import com.crowdin.ui.TranslationProgressWindowFactory;
 import com.crowdin.util.ActionUtils;
-import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.FileUtil;
-import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -71,7 +69,7 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));

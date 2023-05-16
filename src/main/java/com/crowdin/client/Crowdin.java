@@ -16,7 +16,6 @@ import com.crowdin.client.translationstatus.model.FileProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.util.RetryUtil;
 import com.crowdin.util.Util;
-import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -38,12 +37,9 @@ public class Crowdin {
 
     private final Long projectId;
 
-    private final Project project;
-
     private final com.crowdin.client.Client client;
 
-    public Crowdin(@NotNull Project project, @NotNull Long projectId, @NotNull String apiToken, String baseUrl) {
-        this.project = project;
+    public Crowdin(@NotNull Long projectId, @NotNull String apiToken, String baseUrl) {
         this.projectId = projectId;
         Credentials credentials = new Credentials(apiToken, null, baseUrl);
         ClientConfig clientConfig = ClientConfig.builder()

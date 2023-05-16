@@ -47,7 +47,7 @@ public class UploadTranslationsAction extends BackgroundAction {
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
             indicator.checkCanceled();
 
             BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);

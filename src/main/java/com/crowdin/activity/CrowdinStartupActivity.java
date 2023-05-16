@@ -6,7 +6,6 @@ import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
 import com.crowdin.util.ActionUtils;
-import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -28,7 +27,7 @@ public class CrowdinStartupActivity implements StartupActivity {
             }
             //config validation
             properties = CrowdinPropertiesLoader.load(project);
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             String branchName = ActionUtils.getBranchName(project, properties, false);
 

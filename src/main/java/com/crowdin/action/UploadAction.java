@@ -41,7 +41,7 @@ public class UploadAction extends BackgroundAction {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
 
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             NotificationUtil.setLogDebugLevel(properties.isDebug());
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
