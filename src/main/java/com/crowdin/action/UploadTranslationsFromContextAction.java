@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -49,7 +47,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
             VirtualFile root = FileUtil.getProjectBaseDir(project);
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
             String branchName = branchLogic.acquireBranchName(true);
@@ -135,7 +133,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
             VirtualFile root = FileUtil.getProjectBaseDir(project);
-            Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             String branchName = ActionUtils.getBranchName(project, properties, false);
 

@@ -1,7 +1,6 @@
 package com.crowdin.event;
 
 import com.crowdin.client.*;
-import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
@@ -19,7 +18,6 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -71,7 +69,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         return;
                     }
                     indicator.checkCanceled();
-                    Crowdin crowdin = new Crowdin(project, properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+                    Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
                     BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
                     String branchName = branchLogic.acquireBranchName(true);
