@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
-public class Crowdin {
+public class Crowdin implements CrowdinClient {
 
     private final Long projectId;
 
@@ -48,6 +48,7 @@ public class Crowdin {
         this.client = new Client(credentials, clientConfig);
     }
 
+    @Override
     public Long addStorage(String fileName, InputStream content) {
         return executeRequest(() -> this.client.getStorageApi()
             .addStorage(fileName, content)
@@ -55,72 +56,85 @@ public class Crowdin {
             .getId());
     }
 
+    @Override
     public void updateSource(Long sourceId, UpdateFileRequest request) {
         executeRequest(() -> this.client.getSourceFilesApi()
             .updateOrRestoreFile(this.projectId, sourceId, request));
     }
 
+    @Override
     public URL downloadFile(Long fileId) {
         return url(executeRequest(() -> this.client.getSourceFilesApi()
             .downloadFile(this.projectId, fileId)
             .getData()));
     }
 
+    @Override
     public void addSource(AddFileRequest request) {
         executeRequest(() -> this.client.getSourceFilesApi()
             .addFile(this.projectId, request));
     }
 
+    @Override
     public void editSource(Long fileId, List<PatchRequest> request) {
         executeRequest(() -> this.client.getSourceFilesApi()
             .editFile(this.projectId, fileId, request));
     }
 
+    @Override
     public void uploadTranslation(String languageId, UploadTranslationsRequest request) {
         executeRequest(() -> this.client.getTranslationsApi()
             .uploadTranslations(this.projectId, languageId, request));
     }
 
+    @Override
     public Directory addDirectory(AddDirectoryRequest request) {
         return executeRequest(() -> this.client.getSourceFilesApi()
             .addDirectory(this.projectId, request)
             .getData());
     }
 
+    @Override
     public com.crowdin.client.projectsgroups.model.Project getProject() {
         return executeRequest(() -> this.client.getProjectsGroupsApi()
             .getProject(this.projectId)
             .getData());
     }
 
+    @Override
     public List<Language> extractProjectLanguages(com.crowdin.client.projectsgroups.model.Project crowdinProject) {
         return crowdinProject.getTargetLanguages();
     }
 
+    @Override
     public ProjectBuild startBuildingTranslation(BuildProjectTranslationRequest request) {
         return executeRequest(() -> this.client.getTranslationsApi()
             .buildProjectTranslation(this.projectId, request)
             .getData());
     }
 
+    @Override
     public ProjectBuild checkBuildingStatus(Long buildId) {
         return executeRequest(() -> this.client.getTranslationsApi()
             .checkBuildStatus(projectId, buildId)
             .getData());
     }
 
+    @Override
     public URL downloadProjectTranslations(Long buildId) {
         return url(executeRequest(() -> this.client.getTranslationsApi()
             .downloadProjectTranslations(this.projectId, buildId)
             .getData()));
     }
 
+    @Override
     public URL downloadFileTranslation(Long fileId, BuildProjectFileTranslationRequest request) {
         return url(executeRequest(() -> client.getTranslationsApi()
             .buildProjectFileTranslation(this.projectId, fileId, null, request)
             .getData()));
     }
 
+    @Override
     public List<Language> getSupportedLanguages() {
         return executeRequest(() -> client.getLanguagesApi().listSupportedLanguages(500, 0)
             .getData()
@@ -129,6 +143,7 @@ public class Crowdin {
             .collect(Collectors.toList()));
     }
 
+    @Override
     public Map<Long, Directory> getDirectories(Long branchId) {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceFilesApi()
@@ -141,6 +156,7 @@ public class Crowdin {
             .collect(Collectors.toMap(Directory::getId, Function.identity()));
     }
 
+    @Override
     public List<com.crowdin.client.sourcefiles.model.FileInfo> getFiles(Long branchId) {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceFilesApi()
@@ -153,6 +169,7 @@ public class Crowdin {
             .collect(Collectors.toList());
     }
 
+    @Override
     public List<SourceString> getStrings() {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceStringsApi().listSourceStrings(
@@ -188,6 +205,7 @@ public class Crowdin {
         return models;
     }
 
+    @Override
     public Branch addBranch(AddBranchRequest request) {
         try {
             return executeRequest(() -> this.client.getSourceFilesApi()
@@ -202,6 +220,7 @@ public class Crowdin {
         }
     }
 
+    @Override
     public Optional<Branch> getBranch(String name) {
         List<ResponseObject<Branch>> branches = executeRequest(() -> this.client.getSourceFilesApi().listBranches(this.projectId, name, 500, null).getData());
         return branches.stream()
@@ -210,6 +229,7 @@ public class Crowdin {
                 .findFirst();
     }
 
+    @Override
     public Map<String, Branch> getBranches() {
         return executeRequestFullList((limit, offset) ->
             this.client.getSourceFilesApi()
@@ -221,6 +241,7 @@ public class Crowdin {
             .collect(Collectors.toMap(Branch::getName, Function.identity()));
     }
 
+    @Override
     public List<LanguageProgress> getProjectProgress() {
         return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
             .getProjectProgress(this.projectId, limit, offset, null)
@@ -230,6 +251,7 @@ public class Crowdin {
             .collect(Collectors.toList()));
     }
 
+    @Override
     public List<FileProgress> getLanguageProgress(String languageId) {
         return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
             .getLanguageProgress(this.projectId, languageId, limit, offset)
@@ -239,6 +261,7 @@ public class Crowdin {
             .collect(Collectors.toList()));
     }
 
+    @Override
     public List<Label> listLabels() {
         return executeRequestFullList((limit, offset) -> this.client.getLabelsApi()
             .listLabels(this.projectId, limit, offset)
@@ -248,6 +271,7 @@ public class Crowdin {
             .collect(Collectors.toList()));
     }
 
+    @Override
     public Label addLabel(AddLabelRequest request) {
         return executeRequest(() ->this.client.getLabelsApi()
             .addLabel(this.projectId, request)
