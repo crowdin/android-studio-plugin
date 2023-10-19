@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://support.crowdin.com/assets/logos/symbol/png/crowdin-symbol-cWhite.png">
     <source media="(prefers-color-scheme: light)" srcset="https://support.crowdin.com/assets/logos/symbol/png/crowdin-symbol-cDark.png">
-    <img width="150" height="150" width=""src="[https://support.crowdin.com/assets/logos/symbol/png/crowdin-symbol-cDark.png](https://crowdin.com)">
+    <img width="150" height="150" src="https://support.crowdin.com/assets/logos/symbol/png/crowdin-symbol-cDark.png">
   </picture>
 </p>
 
@@ -221,17 +221,11 @@ completion-disabled=true
 
 If you find any problems or would like to suggest a feature, please read the [How can I contribute](/CONTRIBUTING.md#how-can-i-contribute) section in our contributing guidelines.
 
-Need help working with Crowdin Android Studio Plugin or have any questions? [Contact](https://crowdin.com/contacts) Customer Success Service.
+Need help working with Crowdin Android Studio Plugin or have a question? Visit our [Community Forum](https://community.crowdin.com/).
 
 ## Contributing
 
-If you want to contribute please read the [Contributing](/CONTRIBUTING.md) guidelines.
-
-## Authors
-
-* Ihor Popyk (ihor.popyk@crowdin.com)
-* Yevheniy Oliynyk (evgen41293@gmail.com)
-* Daniil Barabash (dbarabash42@gmail.com)
+If you would like to contribute please read the [Contributing](/CONTRIBUTING.md) guidelines.
 
 ## License
 <pre>
