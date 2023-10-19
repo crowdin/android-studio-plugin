@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.2]
+
+- ci: use GH Actions ([#106](https://github.com/crowdin/android-studio-plugin/pull/106))
+- Remove Project constructor argument of Crowdin ([#100](https://github.com/crowdin/android-studio-plugin/pull/100))
+- Introduce CrowdinClient as base type ([#100](https://github.com/crowdin/android-studio-plugin/pull/100))
+- Add tests for CrowdinProjectCacheProvider.getInstance() ([#100](https://github.com/crowdin/android-studio-plugin/pull/100))
+- updated to new logo ([#111](https://github.com/crowdin/android-studio-plugin/pull/111))
+
 ## [1.6.1]
 
 - Add import options for translations upload ([#81](https://github.com/crowdin/android-studio-plugin/pull/81))
