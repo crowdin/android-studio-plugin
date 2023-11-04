@@ -1,20 +1,29 @@
 package com.crowdin.util;
 
+import com.crowdin.client.BranchInfo;
 import com.intellij.openapi.project.Project;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public final class GitUtil {
+
+    private static final Set<Character> BRANCH_UNALLOWED_SYMBOLS = new HashSet<>(
+            Arrays.asList('/', '\\', ':', '*', '?', '"', '<', '>', '|')
+    );
 
     private GitUtil() {
         throw new UnsupportedOperationException();
     }
 
-    public static String getCurrentBranch(@NotNull final Project project) {
+    public static BranchInfo getCurrentBranch(@NotNull final Project project) {
         GitRepository repository;
         GitLocalBranch localBranch;
         String branchName = "";
@@ -31,6 +40,18 @@ public final class GitUtil {
         } catch (Exception e) {
             throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.get_git_branch_name"), e.getMessage()), e);
         }
-        return branchName;
+        return new BranchInfo(normalizeBranchName(branchName), branchName);
+    }
+
+    public static String normalizeBranchName(String branch) {
+        StringBuilder res = new StringBuilder();
+        for (char character : branch.toCharArray()) {
+            if (BRANCH_UNALLOWED_SYMBOLS.contains(character)) {
+                res.append(".");
+            } else {
+                res.append(character);
+            }
+        }
+        return res.toString();
     }
 }

@@ -36,9 +36,10 @@ public class RequestBuilder {
         return request;
     }
 
-    public static AddBranchRequest addBranch(String name) {
+    public static AddBranchRequest addBranch(String name, String title) {
         AddBranchRequest request = new AddBranchRequest();
         request.setName(name);
+        request.setTitle(title);
         return request;
     }
 
