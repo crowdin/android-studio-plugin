@@ -147,7 +147,7 @@ public class Crowdin implements CrowdinClient {
     public Map<Long, Directory> getDirectories(Long branchId) {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceFilesApi()
-                    .listDirectories(this.projectId, branchId, null, true, limit, offset)
+                    .listDirectories(this.projectId, branchId, null, null, true, limit, offset)
                     .getData()
             )
             .stream()
@@ -174,6 +174,7 @@ public class Crowdin implements CrowdinClient {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceStringsApi().listSourceStrings(
                         this.projectId,
+                        null,
                         null,
                         null,
                         null,
