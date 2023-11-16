@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.3]
+
+- fix: branch remove special characters ([#114](https://github.com/crowdin/android-studio-plugin/pull/114))
+- chore: bump com.github.crowdin:crowdin-api-client-java ([#116](https://github.com/crowdin/android-studio-plugin/pull/116))
+
 ## [1.6.2]
 
 - ci: use GH Actions ([#106](https://github.com/crowdin/android-studio-plugin/pull/106))
