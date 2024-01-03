@@ -16,7 +16,7 @@ import com.crowdin.util.PlaceholderUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -97,14 +97,19 @@ public class DownloadTranslationsLogic {
 
     public void extractArchive(File archive, String dirPath) {
         NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.extract_files"), archive));
+
         if (archive == null) {
             return;
         }
-        ZipFile zipFile = null;
-        try {
-            zipFile = new ZipFile(archive);
-        } catch (ZipException e) {
+
+        ZipFile zipFile;
+
+        try (ZipFile file = new ZipFile(archive)) {
+            zipFile = file;
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException("Unexpected error: couldn't find zip file", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected error: couldn't read zip file", e);
         }
 
         try {
