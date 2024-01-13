@@ -33,19 +33,27 @@
   </change-notes>
 
   <extensions defaultExtensionNs="com.intellij">
-    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"></postStartupActivity>
+    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
     <projectService serviceImplementation="com.crowdin.logic.CrowdinSettings"/>
-    <toolWindow factoryClass="com.crowdin.ui.TranslationProgressWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
-    <projectService serviceImplementation="com.crowdin.ui.TranslationProgressWindowFactory$ProjectService"/>
+    <toolWindow factoryClass="com.crowdin.ui.panel.CrowdinPanelWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
+    <projectService serviceImplementation="com.crowdin.ui.panel.CrowdinPanelWindowFactory$ProjectService"/>
     <completion.contributor language="any" implementationClass="com.crowdin.completion.StringsCompletionContributor" />
   </extensions>
 
   <actions>
 
     <group id="Crowdin.TranslationProgressToolbar">
-      <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.action.GroupProgressByFiles"/>
+      <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.panel.progress.action.GroupProgressByFiles"/>
       <separator/>
-      <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.action.RefreshTranslationProgressAction"/>
+      <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.panel.progress.action.RefreshTranslationProgressAction"/>
+    </group>
+
+    <group id="Crowdin.UploadToolbar">
+      <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
+    </group>
+
+    <group id="Crowdin.DownloadToolbar">
+      <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
     </group>
 
     <action icon="/icons/icon.svg" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">
@@ -65,7 +73,7 @@
     </action>
 
     <group icon="/icons/icon.svg" id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
-      <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
       <action id="Crowdin.UploadSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
       <action id="Crowdin.UploadTranslations" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations" description="Upload Translation Files"/>
       <action id="Crowdin.DownloadSources" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" description="Download Sources" />

@@ -1,7 +1,7 @@
-package com.crowdin.ui.action;
+package com.crowdin.ui.panel.progress.action;
 
-import com.crowdin.ui.TranslationProgressWindow;
-import com.crowdin.ui.TranslationProgressWindowFactory;
+import com.crowdin.ui.panel.progress.TranslationProgressWindow;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.ToggleAction;
@@ -39,8 +39,8 @@ public class GroupProgressByFiles extends ToggleAction implements DumbAware {
         if (project == null) {
             return null;
         }
-        TranslationProgressWindowFactory.ProjectService projectService =
-            ServiceManager.getService(project, TranslationProgressWindowFactory.ProjectService.class);
+        CrowdinPanelWindowFactory.ProjectService projectService =
+            ServiceManager.getService(project, CrowdinPanelWindowFactory.ProjectService.class);
         return projectService.getTranslationProgressWindow();
     }
 }

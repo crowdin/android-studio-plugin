@@ -1,4 +1,4 @@
-package com.crowdin.ui.action;
+package com.crowdin.ui.panel.progress.action;
 
 import com.crowdin.action.BackgroundAction;
 import com.crowdin.client.Crowdin;
@@ -10,8 +10,8 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translationstatus.model.FileProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
-import com.crowdin.ui.TranslationProgressWindow;
-import com.crowdin.ui.TranslationProgressWindowFactory;
+import com.crowdin.ui.panel.progress.TranslationProgressWindow;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.ActionUtils;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -60,7 +60,7 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
-            TranslationProgressWindow window = ServiceManager.getService(project, TranslationProgressWindowFactory.ProjectService.class)
+            TranslationProgressWindow window = ServiceManager.getService(project, CrowdinPanelWindowFactory.ProjectService.class)
                 .getTranslationProgressWindow();
             if (window == null) {
                 return;

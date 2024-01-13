@@ -1,4 +1,4 @@
-package com.crowdin.ui;
+package com.crowdin.ui.panel.progress;
 
 import com.crowdin.client.translationstatus.model.FileProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;

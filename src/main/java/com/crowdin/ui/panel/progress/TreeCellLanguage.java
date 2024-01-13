@@ -1,4 +1,4 @@
-package com.crowdin.ui;
+package com.crowdin.ui.panel.progress;
 
 import com.intellij.openapi.util.IconLoader;
 
