@@ -23,6 +23,8 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Supplier;
+
 public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
 
     private static final String PROGRESS_TOOLBAR_ID = "Crowdin.TranslationProgressToolbar";
@@ -38,90 +40,87 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         ActionManager actionManager = ActionManager.getInstance();
         ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
 
-        Content progressPanel = this.setupProgressPanel(actionManager, contentFactory, projectService);
+        Content progressPanel = this.setupPanel(
+                () -> {
+                    TranslationProgressWindow translationProgressWindow = new TranslationProgressWindow();
+                    projectService.setTranslationProgressWindow(translationProgressWindow);
+                    return translationProgressWindow;
+                },
+                actionManager,
+                contentFactory,
+                "Translation Progress",
+                PROGRESS_TOOLBAR_ID
+        );
 
-        Content uploadPanel = this.setupUploadPanel(actionManager, contentFactory, projectService);
+        Content uploadPanel = this.setupPanel(
+                () -> {
+                    UploadWindow uploadWindow = new UploadWindow();
+                    projectService.setUploadWindow(uploadWindow);
+                    return uploadWindow;
+                },
+                actionManager,
+                contentFactory,
+                "Upload",
+                UPLOAD_TOOLBAR_ID
+        );
 
-        Content downloadPanel = this.setupDownloadPanel(actionManager, contentFactory, projectService);
+        Content downloadPanel = this.setupPanel(
+                () -> {
+                    DownloadWindow downloadWindow = new DownloadWindow();
+                    projectService.setDownloadWindow(downloadWindow);
+                    return downloadWindow;
+                },
+                actionManager,
+                contentFactory,
+                "Download",
+                DOWNLOAD_TOOLBAR_ID
+        );
 
         toolWindow.getContentManager().addContent(progressPanel, 0);
         toolWindow.getContentManager().addContent(uploadPanel, 1);
         toolWindow.getContentManager().addContent(downloadPanel, 2);
 
         //refresh
-        DataContext dataContext = DataManager.getInstance().getDataContext(progressPanel.getComponent());
-        if (dataContext.getData(CommonDataKeys.PROJECT) != null) {
-            //refresh progress
-            TranslationProgressWindow translationProgressWindow = projectService.getTranslationProgressWindow();
-            AnAction refreshAction = actionManager.getAction(PROGRESS_REFRESH_ACTION);
-            refreshAction.actionPerformed(new AnActionEvent(
-                    null, DataManager.getInstance().getDataContext(translationProgressWindow.getContent()),
-                    ActionPlaces.UNKNOWN, new Presentation(), ActionManager.getInstance(), 0));
-            translationProgressWindow.setPlug("Loading...");
-            //refresh upload
-            UploadWindow uploadWindow = projectService.getUploadWindow();
-            AnAction refreshUploadAction = actionManager.getAction(UPLOAD_REFRESH_ACTION);
-            refreshUploadAction.actionPerformed(new AnActionEvent(
-                    null, DataManager.getInstance().getDataContext(uploadWindow.getContent()),
-                    ActionPlaces.UNKNOWN, new Presentation(), ActionManager.getInstance(), 0));
-            //refresh download
-            DownloadWindow downloadWindow = projectService.getDownloadWindow();
-            AnAction refreshDownloadAction = actionManager.getAction(DOWNLOAD_REFRESH_ACTION);
-            refreshDownloadAction.actionPerformed(new AnActionEvent(
-                    null, DataManager.getInstance().getDataContext(downloadWindow.getContent()),
-                    ActionPlaces.UNKNOWN, new Presentation(), ActionManager.getInstance(), 0));
+        this.runRefresh(progressPanel, actionManager, PROGRESS_REFRESH_ACTION, projectService.getTranslationProgressWindow(), () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
+        this.runRefresh(uploadPanel, actionManager, UPLOAD_REFRESH_ACTION, projectService.getUploadWindow());
+        this.runRefresh(downloadPanel, actionManager, DOWNLOAD_REFRESH_ACTION, projectService.getDownloadWindow());
+    }
 
+    private void runRefresh(Content panel, ActionManager actionManager, String action, ContentTab contentTab) {
+        this.runRefresh(panel, actionManager, action, contentTab, null);
+    }
+
+    private void runRefresh(Content panel, ActionManager actionManager, String action, ContentTab contentTab, Runnable onRefresh) {
+        DataContext dataContext = DataManager.getInstance().getDataContext(panel.getComponent());
+        if (dataContext.getData(CommonDataKeys.PROJECT) != null) {
+            AnAction refreshDownloadAction = actionManager.getAction(action);
+            refreshDownloadAction.actionPerformed(new AnActionEvent(
+                    null, DataManager.getInstance().getDataContext(contentTab.getContent()),
+                    ActionPlaces.UNKNOWN, new Presentation(), ActionManager.getInstance(), 0));
+            if (onRefresh != null) {
+                onRefresh.run();
+            }
         }
     }
 
-    private Content setupProgressPanel(ActionManager actionManager, ContentFactory contentFactory, ProjectService projectService) {
-        SimpleToolWindowPanel progressPanel = new SimpleToolWindowPanel(true, true);
-        TranslationProgressWindow translationProgressWindow = new TranslationProgressWindow();
+    private Content setupPanel(
+            Supplier<ContentTab> tabSupplier,
+            ActionManager actionManager,
+            ContentFactory contentFactory,
+            String name,
+            String actionId
+    ) {
+        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
+        ContentTab contentTab = tabSupplier.get();
 
-        projectService.setTranslationProgressWindow(translationProgressWindow);
+        panel.setContent(contentTab.getContent());
 
-        progressPanel.setContent(translationProgressWindow.getContent());
-
-        ActionGroup group = (ActionGroup) actionManager.getAction(PROGRESS_TOOLBAR_ID);
-
-        ActionToolbar toolbar = actionManager.createActionToolbar(ActionPlaces.TOOLBAR, group, true);
-        progressPanel.setToolbar(toolbar.getComponent());
-
-        return contentFactory.createContent(progressPanel, "Translation Progress", false);
-    }
-
-    private Content setupDownloadPanel(ActionManager actionManager, ContentFactory contentFactory, ProjectService projectService) {
-        SimpleToolWindowPanel downloadPanel = new SimpleToolWindowPanel(true, true);
-
-        DownloadWindow downloadWindow = new DownloadWindow();
-
-        projectService.setDownloadWindow(downloadWindow);
-
-        downloadPanel.setContent(downloadWindow.getContent());
-
-        ActionGroup group = (ActionGroup) actionManager.getAction(DOWNLOAD_TOOLBAR_ID);
+        ActionGroup group = (ActionGroup) actionManager.getAction(actionId);
 
         ActionToolbar toolbar = actionManager.createActionToolbar(ActionPlaces.TOOLBAR, group, true);
-        downloadPanel.setToolbar(toolbar.getComponent());
+        panel.setToolbar(toolbar.getComponent());
 
-        return contentFactory.createContent(downloadPanel, "Download", false);
-    }
-
-    private Content setupUploadPanel(ActionManager actionManager, ContentFactory contentFactory, ProjectService projectService) {
-        SimpleToolWindowPanel uploadPanel = new SimpleToolWindowPanel(true, true);
-
-        UploadWindow uploadWindow = new UploadWindow();
-
-        projectService.setUploadWindow(uploadWindow);
-
-        uploadPanel.setContent(uploadWindow.getContent());
-
-        ActionGroup group = (ActionGroup) actionManager.getAction(UPLOAD_TOOLBAR_ID);
-
-        ActionToolbar toolbar = actionManager.createActionToolbar(ActionPlaces.TOOLBAR, group, true);
-        uploadPanel.setToolbar(toolbar.getComponent());
-
-        return contentFactory.createContent(uploadPanel, "Upload", false);
+        return contentFactory.createContent(panel, name, false);
     }
 
     public static class ProjectService {

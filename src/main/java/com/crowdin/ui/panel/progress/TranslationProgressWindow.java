@@ -2,6 +2,7 @@ package com.crowdin.ui.panel.progress;
 
 import com.crowdin.client.translationstatus.model.FileProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
+import com.crowdin.ui.panel.ContentTab;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.JBColor;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class TranslationProgressWindow {
+public class TranslationProgressWindow implements ContentTab {
     private JPanel panel1;
     private Tree tree1;
     private JLabel translatedTip;
@@ -41,6 +42,7 @@ public class TranslationProgressWindow {
         tree1.setCellRenderer(new TranslationProgressCellRenderer());
     }
 
+    @Override
     public JPanel getContent() {
         return panel1;
     }
