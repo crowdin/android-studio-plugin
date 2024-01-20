@@ -49,10 +49,18 @@
     </group>
 
     <group id="Crowdin.UploadToolbar">
+      <action icon="/icons/upload-sources.svg" class="com.crowdin.action.UploadAction" text="Upload Sources" />
+      <separator/>
+      <action icon="/icons/upload.svg" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations"/>
+      <separator/>
       <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
     </group>
 
     <group id="Crowdin.DownloadToolbar">
+      <action icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
+      <separator/>
+      <action icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
+      <separator/>
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
     </group>
 

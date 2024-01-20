@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
     <style type="text/css">.icon-canvas-transparent{opacity:0;fill:#9d9d9d;} .icon-vs-out{opacity:0;fill:#9d9d9d;}
-        .icon-vs-fg{opacity:0;fill:#6E6E6E;} .icon-folder{fill:#6E6E6E;}
+        .icon-vs-fg{opacity:0;fill:#6E6E6E;} .icon-folder{fill:#AFB1B3;}
     </style>
     <path class="icon-canvas-transparent" d="M16 16h-16v-16h16v16z" id="canvas"/>
     <path class="icon-vs-out"
