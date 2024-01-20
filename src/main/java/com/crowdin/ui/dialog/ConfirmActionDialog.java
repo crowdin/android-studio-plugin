@@ -1,4 +1,4 @@
-package com.crowdin.ui;
+package com.crowdin.ui.dialog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
