@@ -44,5 +44,11 @@ public class CellData {
         return isFile;
     }
 
-
+    @Override
+    public String toString() {
+        return "CellData{" +
+                "text='" + text + '\'' +
+                ", isFile=" + isFile +
+                '}';
+    }
 }
