@@ -1,5 +1,6 @@
 package com.crowdin.ui.panel.download;
 
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.ui.panel.ContentTab;
 import com.crowdin.ui.tree.CellData;
 import com.crowdin.ui.tree.CellRenderer;
@@ -33,8 +34,13 @@ public class DownloadWindow implements ContentTab {
         return panel1;
     }
 
-    public void rebuildTree(String projectName, List<String> files) {
-        //TODO handle bundles tree
+    public void rebuildFileTree(String projectName, List<String> files) {
         tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+    }
+
+    public void rebuildBundlesTree(String projectName, List<Bundle> bundles) {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
+        //TODO implement bundle list (probably use different form as JTree not suitable for editable nodes)
+        tree1.setModel(new DefaultTreeModel(root));
     }
 }

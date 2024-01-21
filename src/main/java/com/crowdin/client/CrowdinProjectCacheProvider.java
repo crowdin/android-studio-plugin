@@ -1,8 +1,10 @@
 package com.crowdin.client;
 
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.client.projectsgroups.model.ProjectSettings;
+import com.crowdin.client.projectsgroups.model.Type;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
@@ -46,9 +48,15 @@ public class CrowdinProjectCacheProvider {
         private Map<Branch, Map<String, ? extends FileInfo>> fileInfos;
         private LanguageMapping languageMapping;
         private List<SourceString> strings;
+        private List<Bundle> bundles;
+
+        public boolean isStringsBased() {
+            return Type.STRINGS_BASED == this.project.getType();
+        }
 
         /**
          * Returns project information with additional information. Should be checked for managerAccess before accessing this value
+         *
          * @return Project information with additional information
          */
         public ProjectSettings getProjectSettings() {
@@ -69,6 +77,7 @@ public class CrowdinProjectCacheProvider {
 
         /**
          * Returns list of files with additional information. Should be checked for managerAccess before accessing this values
+         *
          * @return List of files with additional information
          */
         @SuppressWarnings("unchecked")
@@ -85,6 +94,7 @@ public class CrowdinProjectCacheProvider {
 
         /**
          * Returns server language mapping. Should be checked for managerAccess before accessing this value
+         *
          * @return Langauge Mapping from server
          */
         public LanguageMapping getLanguageMapping() {
@@ -114,7 +124,7 @@ public class CrowdinProjectCacheProvider {
             crowdinProjectCache.setManagerAccess(crowdinProjectCache.getProject() instanceof ProjectSettings);
             if (crowdinProjectCache.isManagerAccess()) {
                 crowdinProjectCache.setLanguageMapping(
-                    LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
+                        LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
             }
         }
         if (crowdinProjectCache.getStrings() == null) {
@@ -125,6 +135,9 @@ public class CrowdinProjectCacheProvider {
         }
         if (crowdinProjectCache.getProjectLanguages() == null || update) {
             crowdinProjectCache.setProjectLanguages(crowdin.extractProjectLanguages(crowdinProjectCache.getProject()));
+        }
+        if (crowdinProjectCache.getBundles() == null && crowdinProjectCache.isStringsBased()) {
+            crowdinProjectCache.setBundles(crowdin.getBundles());
         }
         if (crowdinProjectCache.getBranches() == null || outdated || update) {
             crowdinProjectCache.setBranches(crowdin.getBranches());
@@ -145,10 +158,12 @@ public class CrowdinProjectCacheProvider {
                 || outdatedBranches.contains(branchName)
                 || update) {
             Long branchId = (branch != null) ? branch.getId() : null;
-            List<FileInfo> files = crowdin.getFiles(branchId);
-            Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
-            crowdinProjectCache.getFileInfos().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
-            crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
+            if (!crowdinProjectCache.isStringsBased()) {
+                List<FileInfo> files = crowdin.getFiles(branchId);
+                Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
+                crowdinProjectCache.getFileInfos().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
+                crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
+            }
             outdatedBranches.remove(branchName);
         }
         return crowdinProjectCache;

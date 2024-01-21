@@ -1,6 +1,6 @@
 package com.crowdin.ui.panel.progress;
 
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.ui.panel.ContentTab;
 import com.intellij.icons.AllIcons;
@@ -30,7 +30,7 @@ public class TranslationProgressWindow implements ContentTab {
     private boolean groupByFiles = false;
 
     private String projectName;
-    private Map<LanguageProgress, List<FileProgress>> progressData;
+    private Map<LanguageProgress, List<FileBranchProgress>> progressData;
     private Map<Long, String> fileNames;
     private Map<String, String> languageNames;
 
@@ -55,7 +55,7 @@ public class TranslationProgressWindow implements ContentTab {
         this.groupByFiles = groupByFiles;
     }
 
-    public void setData(String projectName, Map<LanguageProgress, List<FileProgress>> progressData, Map<Long, String> fileNames, Map<String, String> languageNames) {
+    public void setData(String projectName, Map<LanguageProgress, List<FileBranchProgress>> progressData, Map<Long, String> fileNames, Map<String, String> languageNames) {
         this.projectName = projectName;
         this.progressData = progressData;
         this.fileNames = fileNames;
@@ -82,7 +82,7 @@ public class TranslationProgressWindow implements ContentTab {
             Map<String, DefaultMutableTreeNode> fileGroups = new TreeMap<>();
             for (LanguageProgress langProgress : sortedLanguageProgresses) {
                 String languageName = languageNames.get(langProgress.getLanguageId());
-                for (FileProgress fileProgress : progressData.get(langProgress)) {
+                for (FileBranchProgress fileProgress : progressData.get(langProgress)) {
                     String fileName = fileNames.get(fileProgress.getFileId());
                     if (fileName == null) {
                         continue;

@@ -1,5 +1,6 @@
 package com.crowdin.client;
 
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
@@ -17,7 +18,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 
 import java.io.InputStream;
@@ -73,9 +74,11 @@ public interface CrowdinClient {
 
     List<LanguageProgress> getProjectProgress();
 
-    List<FileProgress> getLanguageProgress(String languageId);
+    List<FileBranchProgress> getLanguageProgress(String languageId);
 
     List<Label> listLabels();
 
     Label addLabel(AddLabelRequest request);
+
+    List<Bundle> getBundles();
 }

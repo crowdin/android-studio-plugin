@@ -4,6 +4,7 @@ import static java.util.Collections.singletonMap;
 
 import com.crowdin.api.model.BranchBuilder;
 import com.crowdin.api.model.LanguageBuilder;
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
@@ -22,7 +23,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import org.jetbrains.annotations.NotNull;
 
@@ -163,7 +164,7 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
-    public List<FileProgress> getLanguageProgress(String languageId) {
+    public List<FileBranchProgress> getLanguageProgress(String languageId) {
         return null;
     }
 
@@ -174,6 +175,11 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public Label addLabel(AddLabelRequest request) {
+        return null;
+    }
+
+    @Override
+    public List<Bundle> getBundles() {
         return null;
     }
 }

@@ -1,5 +1,6 @@
 package com.crowdin.client;
 
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.model.*;
@@ -12,7 +13,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.util.RetryUtil;
 import com.crowdin.util.Util;
@@ -253,7 +254,7 @@ public class Crowdin implements CrowdinClient {
     }
 
     @Override
-    public List<FileProgress> getLanguageProgress(String languageId) {
+    public List<FileBranchProgress> getLanguageProgress(String languageId) {
         return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
             .getLanguageProgress(this.projectId, languageId, limit, offset)
             .getData()
@@ -265,7 +266,7 @@ public class Crowdin implements CrowdinClient {
     @Override
     public List<Label> listLabels() {
         return executeRequestFullList((limit, offset) -> this.client.getLabelsApi()
-            .listLabels(this.projectId, limit, offset)
+            .listLabels(this.projectId, limit, offset, null)
             .getData()
             .stream()
             .map(ResponseObject::getData)
@@ -277,6 +278,16 @@ public class Crowdin implements CrowdinClient {
         return executeRequest(() ->this.client.getLabelsApi()
             .addLabel(this.projectId, request)
             .getData());
+    }
+
+    @Override
+    public List<Bundle> getBundles() {
+        return this.client.getBundlesApi()
+                .listBundles(this.projectId)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList());
     }
 
     private boolean concurrentIssue(Exception error) {

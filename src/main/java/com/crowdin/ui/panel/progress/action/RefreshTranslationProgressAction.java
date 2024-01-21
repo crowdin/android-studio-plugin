@@ -8,7 +8,7 @@ import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
@@ -80,7 +80,7 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
 
-            Map<LanguageProgress, List<FileProgress>> progress = crowdin.getProjectProgress()
+            Map<LanguageProgress, List<FileBranchProgress>> progress = crowdin.getProjectProgress()
                 .parallelStream()
                 .collect(Collectors.toMap(Function.identity(), langProgress -> crowdin.getLanguageProgress(langProgress.getLanguageId())));
 

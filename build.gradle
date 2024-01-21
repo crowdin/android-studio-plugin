@@ -21,7 +21,7 @@ dependencies {
 
     testCompile group: 'junit', name: 'junit', version: '4.13.1'
     compile group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.3'
-    compile 'com.github.crowdin:crowdin-api-client-java:1.12.0'
+    compile 'com.github.crowdin:crowdin-api-client-java:1.14.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 //    compile group: 'commons-io', name: 'commons-io', version: '2.6' //to run '2017.1.6' idea
 
