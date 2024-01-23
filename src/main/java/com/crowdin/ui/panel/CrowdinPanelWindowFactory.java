@@ -10,7 +10,6 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.components.ServiceManager;
@@ -19,20 +18,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Supplier;
+
+import static com.crowdin.Constants.DOWNLOAD_REFRESH_ACTION;
+import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
+import static com.crowdin.Constants.PROGRESS_REFRESH_ACTION;
+import static com.crowdin.Constants.PROGRESS_TOOLBAR_ID;
+import static com.crowdin.Constants.TOOLWINDOW_ID;
+import static com.crowdin.Constants.UPLOAD_REFRESH_ACTION;
+import static com.crowdin.Constants.UPLOAD_TOOLBAR_ID;
 
 public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
 
-    private static final String PROGRESS_TOOLBAR_ID = "Crowdin.TranslationProgressToolbar";
-    private static final String UPLOAD_TOOLBAR_ID = "Crowdin.UploadToolbar";
-    private static final String DOWNLOAD_TOOLBAR_ID = "Crowdin.DownloadToolbar";
-    private static final String PROGRESS_REFRESH_ACTION = "Crowdin.RefreshTranslationProgressAction";
-    private static final String UPLOAD_REFRESH_ACTION = "Crowdin.RefreshUploadAction";
-    private static final String DOWNLOAD_REFRESH_ACTION = "Crowdin.RefreshDownloadAction";
+    public static final String PLACE_ID = CrowdinPanelWindowFactory.class.getName();
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -80,26 +85,41 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         toolWindow.getContentManager().addContent(uploadPanel, 1);
         toolWindow.getContentManager().addContent(downloadPanel, 2);
 
-        //refresh
-        this.runRefresh(progressPanel, actionManager, PROGRESS_REFRESH_ACTION, projectService.getTranslationProgressWindow(), () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
-        this.runRefresh(uploadPanel, actionManager, UPLOAD_REFRESH_ACTION, projectService.getUploadWindow());
-        this.runRefresh(downloadPanel, actionManager, DOWNLOAD_REFRESH_ACTION, projectService.getDownloadWindow());
+        reloadPanels(project);
     }
 
-    private void runRefresh(Content panel, ActionManager actionManager, String action, ContentTab contentTab) {
-        this.runRefresh(panel, actionManager, action, contentTab, null);
+    public static void reloadPanels(Project project) {
+        Optional
+                .ofNullable(ToolWindowManager.getInstance(project))
+                .map(toolWindowManager -> toolWindowManager.getToolWindow(TOOLWINDOW_ID))
+                .map(ToolWindow::getContentManager)
+                .ifPresent(manager -> {
+                    ActionManager actionManager = ActionManager.getInstance();
+                    ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
+                    runRefresh(project, actionManager, PROGRESS_REFRESH_ACTION, () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
+                    runRefresh(project, actionManager, UPLOAD_REFRESH_ACTION);
+                    runRefresh(project, actionManager, DOWNLOAD_REFRESH_ACTION);
+                });
     }
 
-    private void runRefresh(Content panel, ActionManager actionManager, String action, ContentTab contentTab, Runnable onRefresh) {
-        DataContext dataContext = DataManager.getInstance().getDataContext(panel.getComponent());
-        if (dataContext.getData(CommonDataKeys.PROJECT) != null) {
-            AnAction refreshDownloadAction = actionManager.getAction(action);
-            refreshDownloadAction.actionPerformed(new AnActionEvent(
-                    null, DataManager.getInstance().getDataContext(contentTab.getContent()),
-                    ActionPlaces.UNKNOWN, new Presentation(), ActionManager.getInstance(), 0));
-            if (onRefresh != null) {
-                onRefresh.run();
-            }
+    private static void runRefresh(Project project, ActionManager actionManager, String action) {
+        runRefresh(project, actionManager, action, null);
+    }
+
+    private static void runRefresh(Project project, ActionManager actionManager, String action, Runnable onRefresh) {
+        AnAction refreshAction = actionManager.getAction(action);
+        DataContext context = dataId -> project;
+        AnActionEvent anActionEvent = new AnActionEvent(
+                null,
+                context,
+                PLACE_ID,
+                new Presentation(),
+                actionManager,
+                0
+        );
+        refreshAction.actionPerformed(anActionEvent);
+        if (onRefresh != null) {
+            onRefresh.run();
         }
     }
 

@@ -31,7 +31,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class RefreshAction extends BackgroundAction {
 
-    private AtomicBoolean isInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean isInProgress = new AtomicBoolean(false);
 
     public RefreshAction() {
         super("Refresh data", "Refresh data", AllIcons.Actions.Refresh);
@@ -46,11 +46,13 @@ public class RefreshAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator) {
         System.out.println("e.getProject() = " + e.getProject());
+        boolean forceRefresh = !CrowdinPanelWindowFactory.PLACE_ID.equals(e.getPlace());
         Project project = e.getProject();
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
-            UploadWindow window = ServiceManager.getService(project, CrowdinPanelWindowFactory.ProjectService.class)
+            UploadWindow window = ServiceManager
+                    .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
                     .getUploadWindow();
 
             if (window == null) {
@@ -77,7 +79,7 @@ public class RefreshAction extends BackgroundAction {
             String branchName = branchLogic.acquireBranchName(true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, forceRefresh);
 
             List<String> files = new ArrayList<>();
 
@@ -93,7 +95,7 @@ public class RefreshAction extends BackgroundAction {
         } catch (ProcessCanceledException ex) {
             throw ex;
         } catch (Exception ex) {
-            if (project != null) {
+            if (project != null && forceRefresh) {
                 NotificationUtil.logErrorMessage(project, ex);
                 NotificationUtil.showErrorMessage(project, ex.getMessage());
             }

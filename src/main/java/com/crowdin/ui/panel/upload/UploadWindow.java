@@ -10,6 +10,7 @@ import com.intellij.ui.treeStructure.Tree;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeSelectionModel;
 import java.util.List;
 
 public class UploadWindow implements ContentTab {
@@ -20,6 +21,7 @@ public class UploadWindow implements ContentTab {
     public UploadWindow() {
         scrollPane.getViewport().setBackground(JBColor.WHITE);
         tree1.setCellRenderer(new CellRenderer());
+        tree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         this.setPlug("Refresh tree");
     }
 

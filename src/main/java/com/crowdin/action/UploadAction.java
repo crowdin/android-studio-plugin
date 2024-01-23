@@ -61,6 +61,8 @@ public class UploadAction extends BackgroundAction {
             Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
             indicator.checkCanceled();
 
+            //TODO handle SB project
+
             Map<FileBean, List<VirtualFile>> sources = properties.getFiles().stream()
                 .collect(Collectors.toMap(Function.identity(), fileBean -> FileUtil.getSourceFilesRec(root, fileBean.getSource())));
             SourceLogic.processSources(project, root, crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), sources);

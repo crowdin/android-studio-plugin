@@ -10,8 +10,8 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
-import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.util.ActionUtils;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -41,7 +41,7 @@ import static com.crowdin.util.FileUtil.unixPath;
 
 public class RefreshTranslationProgressAction extends BackgroundAction {
 
-    private AtomicBoolean isInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean isInProgress = new AtomicBoolean(false);
 
     public RefreshTranslationProgressAction() {
         super("Refresh data", "Refresh data", AllIcons.Actions.Refresh);
@@ -56,15 +56,18 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator) {
         System.out.println("e.getProject() = " + e.getProject());
+        boolean forceRefresh = !CrowdinPanelWindowFactory.PLACE_ID.equals(e.getPlace());
         Project project = e.getProject();
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
-            TranslationProgressWindow window = ServiceManager.getService(project, CrowdinPanelWindowFactory.ProjectService.class)
-                .getTranslationProgressWindow();
+            TranslationProgressWindow window = ServiceManager
+                    .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
+                    .getTranslationProgressWindow();
             if (window == null) {
                 return;
             }
+
 
             VirtualFile root = FileUtil.getProjectBaseDir(project);
 
@@ -77,40 +80,40 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
             String branchName = ActionUtils.getBranchName(project, properties, true);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, forceRefresh);
             Branch branch = crowdinProjectCache.getBranches().get(branchName);
 
             Map<LanguageProgress, List<FileBranchProgress>> progress = crowdin.getProjectProgress()
-                .parallelStream()
-                .collect(Collectors.toMap(Function.identity(), langProgress -> crowdin.getLanguageProgress(langProgress.getLanguageId())));
+                    .parallelStream()
+                    .collect(Collectors.toMap(Function.identity(), langProgress -> crowdin.getLanguageProgress(langProgress.getLanguageId())));
 
 
             List<String> crowdinFilePaths = properties.getFiles().stream()
-                .flatMap((fileBean) -> {
-                    List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, fileBean.getSource());
-                    return sourceFiles.stream().map(sourceFile -> {
-                        if (properties.isPreserveHierarchy()) {
-                            VirtualFile pathToPattern = FileUtil.getBaseDir(sourceFile, fileBean.getSource());
+                    .flatMap((fileBean) -> {
+                        List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(root, fileBean.getSource());
+                        return sourceFiles.stream().map(sourceFile -> {
+                            if (properties.isPreserveHierarchy()) {
+                                VirtualFile pathToPattern = FileUtil.getBaseDir(sourceFile, fileBean.getSource());
 
-                            String relativePathToPattern = FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern);
-                            String patternPathToFile = FileUtil.findRelativePath(pathToPattern, sourceFile.getParent());
+                                String relativePathToPattern = FileUtil.findRelativePath(FileUtil.getProjectBaseDir(project), pathToPattern);
+                                String patternPathToFile = FileUtil.findRelativePath(pathToPattern, sourceFile.getParent());
 
-                            return  unixPath(sepAtStart(normalizePath(joinPaths(relativePathToPattern, patternPathToFile, sourceFile.getName()))));
-                        } else {
-                            return unixPath(sepAtStart(sourceFile.getName()));
-                        }
-                    });
-                })
-                .collect(Collectors.toList());
+                                return unixPath(sepAtStart(normalizePath(joinPaths(relativePathToPattern, patternPathToFile, sourceFile.getName()))));
+                            } else {
+                                return unixPath(sepAtStart(sourceFile.getName()));
+                            }
+                        });
+                    })
+                    .collect(Collectors.toList());
 
 
             Map<Long, String> fileNames = crowdinProjectCache.getFileInfos(branch).values()
-                .stream()
-                .filter((fileInfo) -> crowdinFilePaths.contains(removeBranchNameInPath(fileInfo.getPath(), branchName)))
-                .collect(Collectors.toMap(FileInfo::getId, file -> removeBranchNameInPath(file.getPath(), branchName)));
+                    .stream()
+                    .filter((fileInfo) -> crowdinFilePaths.contains(removeBranchNameInPath(fileInfo.getPath(), branchName)))
+                    .collect(Collectors.toMap(FileInfo::getId, file -> removeBranchNameInPath(file.getPath(), branchName)));
             Map<String, String> languageNames = crowdinProjectCache.getProjectLanguages()
-                .stream()
-                .collect(Collectors.toMap(Language::getId, Language::getName));
+                    .stream()
+                    .collect(Collectors.toMap(Language::getId, Language::getName));
 
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 window.setData(crowdinProjectCache.getProject().getName(), progress, fileNames, languageNames);
@@ -119,7 +122,7 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
         } catch (ProcessCanceledException ex) {
             throw ex;
         } catch (Exception ex) {
-            if (project != null) {
+            if (project != null && forceRefresh) {
                 NotificationUtil.logErrorMessage(project, ex);
                 NotificationUtil.showErrorMessage(project, ex.getMessage());
             }

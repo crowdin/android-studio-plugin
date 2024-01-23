@@ -114,7 +114,6 @@ public class CrowdinProjectCacheProvider {
 
     }
 
-    //TODO handle strings-based projects
     public synchronized static CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
         if (crowdinProjectCache == null) {
             crowdinProjectCache = new CrowdinProjectCache();

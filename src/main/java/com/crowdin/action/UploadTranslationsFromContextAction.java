@@ -63,6 +63,8 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
             Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
 
+            //TODO handle SB project
+
             Map<String, File> filePaths = crowdinProjectCache.getFiles(branch);
 
             indicator.checkCanceled();

@@ -28,6 +28,7 @@ import java.net.URL;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
+//TODO hide for SB project
 public class DownloadTranslationFromContextAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {

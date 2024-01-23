@@ -63,6 +63,8 @@ public class UploadTranslationsAction extends BackgroundAction {
 
             Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
+            //TODO handle SB project
+
             Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
 
             NotificationUtil.logDebugMessage(project, "Project files: " + filePaths.keySet());

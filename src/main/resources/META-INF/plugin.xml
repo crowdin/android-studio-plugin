@@ -49,17 +49,17 @@
     </group>
 
     <group id="Crowdin.UploadToolbar">
-      <action icon="/icons/upload-sources.svg" class="com.crowdin.action.UploadAction" text="Upload Sources" />
+      <action id="Crowdin.UploadSource" icon="/icons/upload-sources.svg" class="com.crowdin.action.UploadAction" text="Upload Sources" />
       <separator/>
-      <action icon="/icons/upload.svg" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations"/>
+      <action id="Crowdin.UploadTranslations" icon="/icons/upload.svg" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations"/>
       <separator/>
       <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
     </group>
 
     <group id="Crowdin.DownloadToolbar">
-      <action icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
+      <action id="Crowdin.DownloadSources" icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
       <separator/>
-      <action icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
+      <action id="Crowdin.DownloadTranslations" icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
       <separator/>
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
     </group>
@@ -79,14 +79,6 @@
     <action icon="/icons/icon.svg" id="Crowdin.DownloadTranslationContextAction" class="com.crowdin.action.DownloadTranslationFromContextAction" text="Download Translation File from Crowdin" description="Download this translation file from Crowdin">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
-
-    <group icon="/icons/icon.svg" id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
-      <add-to-group group-id="ToolsMenu" anchor="last"/>
-      <action id="Crowdin.UploadSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
-      <action id="Crowdin.UploadTranslations" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations" description="Upload Translation Files"/>
-      <action id="Crowdin.DownloadSources" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" description="Download Sources" />
-      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download Translations" description="Download Translations" />
-    </group>
 
   </actions>
   <depends>com.intellij.modules.vcs</depends>

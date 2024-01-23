@@ -19,6 +19,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +32,28 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class DownloadSourcesAction extends BackgroundAction {
+
+    private boolean enabled = false;
+    private boolean visible = false;
+    private String text = "";
+
+    private final AtomicBoolean isInProgress = new AtomicBoolean(false);
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        if (e.getPlace().equals(DOWNLOAD_TOOLBAR_ID)) {
+            this.enabled = e.getPresentation().isEnabled();
+            this.visible = e.getPresentation().isVisible();
+            this.text = e.getPresentation().getText();
+        }
+        e.getPresentation().setEnabled(!isInProgress.get() && enabled);
+        e.getPresentation().setVisible(visible);
+        e.getPresentation().setText(text);
+    }
 
     @Override
     protected String loadingText(AnActionEvent e) {
@@ -43,6 +63,7 @@ public class DownloadSourcesAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
+        isInProgress.set(true);
         try {
             VirtualFile root = FileUtil.getProjectBaseDir(project);
 
@@ -71,7 +92,7 @@ public class DownloadSourcesAction extends BackgroundAction {
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
             Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
@@ -82,15 +103,15 @@ public class DownloadSourcesAction extends BackgroundAction {
             for (FileBean fileBean : properties.getFiles()) {
                 Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), properties.isPreserveHierarchy());
                 Map<String, VirtualFile> localSourceFiles = (properties.isPreserveHierarchy())
-                    ? Collections.emptyMap()
-                    : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
-                    .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
+                        ? Collections.emptyMap()
+                        : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
+                        .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
                 List<String> foundSources = filePaths.keySet().stream()
-                    .map(FileUtil::unixPath)
-                    .filter(sourcePredicate)
-                    .map(FileUtil::normalizePath)
-                    .sorted()
-                    .collect(Collectors.toList());
+                        .map(FileUtil::unixPath)
+                        .filter(sourcePredicate)
+                        .map(FileUtil::normalizePath)
+                        .sorted()
+                        .collect(Collectors.toList());
 
                 if (foundSources.isEmpty()) {
                     NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), fileBean.getSource()));
@@ -103,8 +124,8 @@ public class DownloadSourcesAction extends BackgroundAction {
                         isAnyFileDownloaded.set(true);
                     } else {
                         List<String> fittingSources = localSourceFiles.keySet().stream()
-                            .filter(localSourceFilePath -> localSourceFilePath.endsWith(foundSourceFilePath))
-                            .collect(Collectors.toList());
+                                .filter(localSourceFilePath -> localSourceFilePath.endsWith(foundSourceFilePath))
+                                .collect(Collectors.toList());
                         if (fittingSources.isEmpty()) {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.file_no_representative"), foundSourceFilePath));
                             continue;
@@ -132,6 +153,8 @@ public class DownloadSourcesAction extends BackgroundAction {
         } catch (Exception e) {
             NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
+        } finally {
+            isInProgress.set(false);
         }
     }
 

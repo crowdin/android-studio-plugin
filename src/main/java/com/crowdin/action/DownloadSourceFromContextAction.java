@@ -25,6 +25,7 @@ import java.util.Objects;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
+//TODO hide for SB project
 public class DownloadSourceFromContextAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {

@@ -47,4 +47,16 @@ public final class Constants {
     public static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto-approve-imported";
 
     public static final String PROPERTY_TRANSLATE_HIDDEN = "translate-hidden";
+
+    public static final String PROGRESS_TOOLBAR_ID = "Crowdin.TranslationProgressToolbar";
+
+    public static final String TOOLWINDOW_ID = "Crowdin";
+    public static final String UPLOAD_TOOLBAR_ID = "Crowdin.UploadToolbar";
+    public static final String DOWNLOAD_TOOLBAR_ID = "Crowdin.DownloadToolbar";
+
+    public static final String PROGRESS_REFRESH_ACTION = "Crowdin.RefreshTranslationProgressAction";
+    public static final String UPLOAD_REFRESH_ACTION = "Crowdin.RefreshUploadAction";
+    public static final String DOWNLOAD_REFRESH_ACTION = "Crowdin.RefreshDownloadAction";
+    public static final String DOWNLOAD_TRANSLATIONS_ACTION = "Crowdin.DownloadTranslations";
+    public static final String DOWNLOAD_SOURCES_ACTION = "Crowdin.DownloadSources";
 }
