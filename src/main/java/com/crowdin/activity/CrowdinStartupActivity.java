@@ -14,6 +14,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import org.jetbrains.annotations.NotNull;
 
 public class CrowdinStartupActivity implements StartupActivity {
@@ -30,23 +31,35 @@ public class CrowdinStartupActivity implements StartupActivity {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            //TODO fixme, Git util does not return repository on bootstrap so code below always fail
-            String branchName = ActionUtils.getBranchName(project, properties, false);
+            if (properties.isDisabledBranches()) {
+                this.reloadPlugin(project, crowdin, properties);
+                return;
+            }
 
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
-                @Override
-                public void run(@NotNull ProgressIndicator indicator) {
-                    try {
-                        indicator.setText("Updating Crowdin cache");
-                        CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-                        CrowdinPanelWindowFactory.reloadPanels(project, true);
-                    } catch (Exception e) {
-                        NotificationUtil.showErrorMessage(project, e.getMessage());
-                    }
-                }
-            });
+            //if branch is required then we need to wait when VCS will be fully initialized, otherwise GitBranchUtil will give us `null`
+            project
+                    .getMessageBus()
+                    .connect()
+                    .subscribe(ProjectLevelVcsManager.VCS_CONFIGURATION_CHANGED, () -> this.reloadPlugin(project, crowdin, properties));
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
+    }
+
+    private void reloadPlugin(Project project, Crowdin crowdin, CrowdinProperties properties) {
+        String branchName = ActionUtils.getBranchName(project, properties, false);
+
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setText("Updating Crowdin cache");
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    CrowdinPanelWindowFactory.reloadPanels(project, true);
+                } catch (Exception e) {
+                    NotificationUtil.showErrorMessage(project, e.getMessage());
+                }
+            }
+        });
     }
 }
