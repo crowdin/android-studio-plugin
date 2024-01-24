@@ -26,9 +26,9 @@ public class FileTree {
             for (int j = 0; j < subParts.size(); j++) {
                 for (int k = 0; k < j; k++) {
                     String parent = subParts.get(k);
-                    Enumeration<DefaultMutableTreeNode> children = prev.children();
+                    Enumeration children = prev.children();
                     while (children.hasMoreElements()) {
-                        DefaultMutableTreeNode child = children.nextElement();
+                        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
                         CellData data = CellRenderer.getData(child);
                         if (data.getText().equals(parent)) {
                             prev = child;
@@ -42,9 +42,9 @@ public class FileTree {
                 if (j + 1 != subParts.size()) {
                     //check if folder already created
                     boolean alreadyCreated = false;
-                    Enumeration<DefaultMutableTreeNode> children = prev.children();
+                    Enumeration children = prev.children();
                     while (children.hasMoreElements()) {
-                        DefaultMutableTreeNode child = children.nextElement();
+                        DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
                         CellData data = CellRenderer.getData(child);
                         if (data.getText().equals(part)) {
                             alreadyCreated = true;

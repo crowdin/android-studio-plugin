@@ -20,6 +20,8 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.sourcestrings.model.SourceString;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
@@ -95,6 +97,16 @@ public class MockCrowdin implements CrowdinClient {
     @Override
     public List<Language> extractProjectLanguages(Project crowdinProject) {
         return Collections.singletonList(LanguageBuilder.DEU.build());
+    }
+
+    @Override
+    public UploadStringsProgress uploadStrings(UploadStringsRequest request) {
+        return null;
+    }
+
+    @Override
+    public UploadStringsProgress checkUploadStringsStatus(String id) {
+        return null;
     }
 
     @Override

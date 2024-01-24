@@ -84,9 +84,9 @@ public class FileTreeTest {
 
     private List<DefaultMutableTreeNode> childNodes(DefaultMutableTreeNode parent) {
         List<DefaultMutableTreeNode> res = new ArrayList<>();
-        Enumeration<DefaultMutableTreeNode> children = parent.children();
+        Enumeration children = parent.children();
         while (children.hasMoreElements()) {
-            res.add(children.nextElement());
+            res.add((DefaultMutableTreeNode) children.nextElement());
         }
         return res;
     }
