@@ -136,7 +136,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         ActionGroup group = (ActionGroup) actionManager.getAction(actionId);
 
         ActionToolbar toolbar = actionManager.createActionToolbar(ActionPlaces.TOOLBAR, group, true);
-        panel.setToolbar(toolbar.getComponent());
+        toolbar.setTargetComponent(toolbar.getComponent());
 
         return contentFactory.createContent(panel, name, false);
     }
