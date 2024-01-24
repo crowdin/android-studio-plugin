@@ -8,6 +8,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.ContextLogic;
 import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.util.ActionUtils;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.UIUtil;
@@ -25,7 +26,6 @@ import java.util.Objects;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
-//TODO hide for SB project
 public class DownloadSourceFromContextAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
@@ -88,7 +88,13 @@ public class DownloadSourceFromContextAction extends BackgroundAction {
         boolean isSourceFile = false;
         try {
             CrowdinProperties properties = CrowdinPropertiesLoader.load(project);
-            isSourceFile = properties.getFiles()
+            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+            String branchName = ActionUtils.getBranchName(project, properties, false);
+            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+
+            //hide for SB
+            isSourceFile = !crowdinProjectCache.isStringsBased() && properties.getFiles()
                 .stream()
                 .flatMap(fb -> FileUtil.getSourceFilesRec(FileUtil.getProjectBaseDir(project), fb.getSource()).stream())
                 .anyMatch(f -> Objects.equals(file, f));

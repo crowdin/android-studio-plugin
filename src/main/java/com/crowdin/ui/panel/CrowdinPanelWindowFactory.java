@@ -3,7 +3,6 @@ package com.crowdin.ui.panel;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.upload.UploadWindow;
-import com.intellij.ide.DataManager;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -22,7 +21,6 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -85,10 +83,10 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         toolWindow.getContentManager().addContent(uploadPanel, 1);
         toolWindow.getContentManager().addContent(downloadPanel, 2);
 
-        reloadPanels(project);
+        reloadPanels(project, true);
     }
 
-    public static void reloadPanels(Project project) {
+    public static void reloadPanels(Project project, boolean fullReload) {
         Optional
                 .ofNullable(ToolWindowManager.getInstance(project))
                 .map(toolWindowManager -> toolWindowManager.getToolWindow(TOOLWINDOW_ID))
@@ -96,7 +94,9 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                 .ifPresent(manager -> {
                     ActionManager actionManager = ActionManager.getInstance();
                     ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
-                    runRefresh(project, actionManager, PROGRESS_REFRESH_ACTION, () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
+                    if (fullReload) {
+                        runRefresh(project, actionManager, PROGRESS_REFRESH_ACTION, () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
+                    }
                     runRefresh(project, actionManager, UPLOAD_REFRESH_ACTION);
                     runRefresh(project, actionManager, DOWNLOAD_REFRESH_ACTION);
                 });

@@ -6,6 +6,9 @@ import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import lombok.NonNull;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
@@ -48,7 +51,7 @@ public final class FileUtil {
 
     public static String findRelativePath(@NonNull VirtualFile baseDir, @NonNull VirtualFile file) {
         return StringUtils.removeStart(file.getCanonicalPath(), baseDir.getCanonicalPath())
-            .replaceAll("^[\\\\/]+", "");
+                .replaceAll("^[\\\\/]+", "");
 //        @AvailableSince("181.2784.17")
 //        return VfsUtil.findRelativePath(baseDir, file, java.io.File.separatorChar);
     }
@@ -83,14 +86,14 @@ public final class FileUtil {
                 if (!child.isDirectory() && !isDir && child.getName().matches(searchableRegex)) {
                     files.add(child);
                 } else if (child.isDirectory() && isDir && child.getName().matches(searchableRegex)) {
-                    files.addAll(getSourceFilesRec(child, source.substring(sepIndex+1)));
+                    files.addAll(getSourceFilesRec(child, source.substring(sepIndex + 1)));
                 }
             }
         } else {
             VirtualFile foundChild = root.findChild(searchable);
             if (foundChild != null) {
                 if (foundChild.isDirectory() && isDir) {
-                    files.addAll(getSourceFilesRec(foundChild, source.substring(sepIndex+1)));
+                    files.addAll(getSourceFilesRec(foundChild, source.substring(sepIndex + 1)));
                 } else if (!foundChild.isDirectory() && !isDir) {
                     files.add(foundChild);
                 }
@@ -115,16 +118,16 @@ public final class FileUtil {
             return Pattern.compile("^" + PlaceholderUtil.formatSourcePatternForRegex(noSepAtStart(filePathPattern)) + "$").asPredicate();
         } else {
             List<String> sourcePatternSplits = Arrays.stream(splitPath(noSepAtStart(filePathPattern)))
-                .map(PlaceholderUtil::formatSourcePatternForRegex)
-                .collect(Collectors.toList());
+                    .map(PlaceholderUtil::formatSourcePatternForRegex)
+                    .collect(Collectors.toList());
 
             StringBuilder sourcePatternRegex = new StringBuilder();
-            for (int i = 0; i < sourcePatternSplits.size()-1; i++) {
+            for (int i = 0; i < sourcePatternSplits.size() - 1; i++) {
                 sourcePatternRegex.insert(0, "(")
-                    .append(sourcePatternSplits.get(i)).append(PATH_SEPARATOR_REGEX).append(")?");
+                        .append(sourcePatternSplits.get(i)).append(PATH_SEPARATOR_REGEX).append(")?");
             }
             sourcePatternRegex.insert(0, FileUtil.PATH_SEPARATOR_REGEX).insert(0, "^")
-                .append(sourcePatternSplits.get(sourcePatternSplits.size()-1)).append("$");
+                    .append(sourcePatternSplits.get(sourcePatternSplits.size() - 1)).append("$");
 
             return Pattern.compile(sourcePatternRegex.toString()).asPredicate();
         }
@@ -164,8 +167,8 @@ public final class FileUtil {
                 VirtualFile child = dir.findChild(splitFilePath[i]);
                 dir = (child != null) ? child : dir.createChildDirectory(requestor, splitFilePath[i]);
             }
-            VirtualFile file = dir.findChild(splitFilePath[splitFilePath.length-1]);
-            return (file != null) ? file : dir.createChildData(requestor, splitFilePath[splitFilePath.length-1]);
+            VirtualFile file = dir.findChild(splitFilePath[splitFilePath.length - 1]);
+            return (file != null) ? file : dir.createChildData(requestor, splitFilePath[splitFilePath.length - 1]);
         });
     }
 
@@ -199,5 +202,43 @@ public final class FileUtil {
 
     public static String sepAtEnd(String path) {
         return noSepAtEnd(path) + PATH_SEPARATOR;
+    }
+
+    public static void extractArchive(File archive, String dirPath) {
+        if (archive == null) {
+            return;
+        }
+
+        ZipFile zipFile;
+
+        try (ZipFile file = new ZipFile(archive)) {
+            zipFile = file;
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Unexpected error: couldn't find zip file", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected error: couldn't read zip file", e);
+        }
+
+        try {
+            zipFile.extractAll(dirPath);
+        } catch (ZipException e) {
+            throw new RuntimeException("Unexpected error: couldn't extract zip file", e);
+        }
+    }
+
+    public static void clear(VirtualFile root, File archive, String tempDir) {
+        if (archive != null) {
+            archive.delete();
+        }
+        if (tempDir != null) {
+            try {
+                FileUtils.deleteDirectory(new File(tempDir));
+            } catch (IOException e) {
+                throw new RuntimeException("Couldn't delete temporary directory", e);
+            }
+        }
+        if (root != null) {
+            root.refresh(true, true);
+        }
     }
 }

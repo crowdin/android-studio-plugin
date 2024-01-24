@@ -16,9 +16,6 @@ import com.crowdin.util.PlaceholderUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
@@ -45,7 +42,7 @@ public class DownloadTranslationsLogic {
     private final Branch branch;
 
     public DownloadTranslationsLogic(
-        Project project, Crowdin crowdin, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, Branch branch
+            Project project, Crowdin crowdin, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, Branch branch
     ) {
         this.project = project;
         this.crowdin = crowdin;
@@ -62,7 +59,9 @@ public class DownloadTranslationsLogic {
             archive = downloadArchive();
             tempDir = archive.getParent() + File.separator + "all" + System.nanoTime();
 
-            extractArchive(archive, tempDir);
+            NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.extract_files"), archive));
+
+            FileUtil.extractArchive(archive, tempDir);
 
             List<File> files = FileUtil.walkDir(Paths.get(tempDir));
 
@@ -71,7 +70,8 @@ public class DownloadTranslationsLogic {
 
             notifyAboutOmittedFiles(targets, files, tempDir);
         } finally {
-            clear(archive, tempDir);
+            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.clearing"));
+            FileUtil.clear(root, archive, tempDir);
         }
     }
 
@@ -95,30 +95,6 @@ public class DownloadTranslationsLogic {
         }
     }
 
-    public void extractArchive(File archive, String dirPath) {
-        NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.extract_files"), archive));
-
-        if (archive == null) {
-            return;
-        }
-
-        ZipFile zipFile;
-
-        try (ZipFile file = new ZipFile(archive)) {
-            zipFile = file;
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Unexpected error: couldn't find zip file", e);
-        } catch (IOException e) {
-            throw new RuntimeException("Unexpected error: couldn't read zip file", e);
-        }
-
-        try {
-            zipFile.extractAll(dirPath);
-        } catch (ZipException e) {
-            throw new RuntimeException("Unexpected error: couldn't extract zip file", e);
-        }
-    }
-
     public List<Pair<File, File>> findAllTranslations(String tempDir, List<java.io.File> files) {
         List<Pair<File, File>> targets = new ArrayList<>();
         for (FileBean fileBean : properties.getFiles()) {
@@ -126,21 +102,21 @@ public class DownloadTranslationsLogic {
                 VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
                 String sourceRelativePath = StringUtils.removeStart(source.getPath(), root.getPath());
                 String relativePathToPattern = (properties.isPreserveHierarchy())
-                    ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
-                    : File.separator;
+                        ? File.separator + FileUtil.findRelativePath(root, pathToPattern)
+                        : File.separator;
                 Map<Language, String> translationPaths =
-                    PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(),
-                        projectCache.getProjectLanguages(), projectCache.getLanguageMapping());
+                        PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(),
+                                projectCache.getProjectLanguages(), projectCache.getLanguageMapping());
                 for (Map.Entry<Language, String> translationPathEntry : translationPaths.entrySet()) {
                     File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
                     File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), translationPathEntry.getValue()));
                     if (!files.contains(fromFile)) {
                         NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.file_not_found"),
-                            FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
+                                FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
                         continue;
                     }
                     NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.file_found"),
-                        FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
+                            FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
                     targets.add(Pair.create(fromFile, toFile));
                 }
             }
@@ -159,35 +135,18 @@ public class DownloadTranslationsLogic {
         }
     }
 
-    public void clear(File archive, String tempDir) {
-        NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.download.clearing"));
-        if (archive != null) {
-            archive.delete();
-        }
-        if (tempDir != null) {
-            try {
-                FileUtils.deleteDirectory(new File(tempDir));
-            } catch (IOException e) {
-                throw new RuntimeException("Couldn't delete temporary directory", e);
-            }
-        }
-        if (root != null) {
-            root.refresh(true, true);
-        }
-    }
-
     public void notifyAboutOmittedFiles(List<Pair<File, File>> targets, List<java.io.File> files, String tempDir) {
         Map<String, String> allCrowdinTranslationsWithSources = CrowdinFileUtil.buildAllProjectTranslationsWithSources(
-            new ArrayList<>(projectCache.getFiles(branch).values()),
-            CrowdinFileUtil.revDirPaths(projectCache.getDirs().getOrDefault(branch, new HashMap<>())),
-            projectCache.getProjectLanguages(),
-            projectCache.getLanguageMapping()
+                new ArrayList<>(projectCache.getFiles(branch).values()),
+                CrowdinFileUtil.revDirPaths(projectCache.getDirs().getOrDefault(branch, new HashMap<>())),
+                projectCache.getProjectLanguages(),
+                projectCache.getLanguageMapping()
         );
 
         List<File> foundTranslations = targets.stream().map(p -> p.getFirst()).collect(Collectors.toList());
         List<File> omittedTranslations = files.stream()
-            .filter(f -> !foundTranslations.contains(f))
-            .collect(Collectors.toList());
+                .filter(f -> !foundTranslations.contains(f))
+                .collect(Collectors.toList());
 
         Set<String> omittedSources = new HashSet<>();
         Set<String> notFoundTranslations = new HashSet<>();
@@ -204,14 +163,14 @@ public class DownloadTranslationsLogic {
 
         if (!omittedSources.isEmpty() || !notFoundTranslations.isEmpty()) {
             String omittedSourcesText = omittedSources.isEmpty()
-                ? ""
-                : MESSAGES_BUNDLE.getString("messages.omitted_sources") + omittedSources.stream()
+                    ? ""
+                    : MESSAGES_BUNDLE.getString("messages.omitted_sources") + omittedSources.stream()
                     .map(source -> "\n\t- " + source)
                     .collect(Collectors.joining());
             String translationsWithNoSourcesText = notFoundTranslations.isEmpty()
-                ? ""
-                : (omittedSourcesText.isEmpty() ? "" : "\n")
-                + MESSAGES_BUNDLE.getString("messages.omitted_translations_with_unfound_sources") + notFoundTranslations.stream()
+                    ? ""
+                    : (omittedSourcesText.isEmpty() ? "" : "\n")
+                    + MESSAGES_BUNDLE.getString("messages.omitted_translations_with_unfound_sources") + notFoundTranslations.stream()
                     .map(translation -> "\n\t- " + translation)
                     .collect(Collectors.joining());
             String omittedFilesText = omittedSourcesText + translationsWithNoSourcesText;

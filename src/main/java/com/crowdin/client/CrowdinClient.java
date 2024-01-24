@@ -1,6 +1,7 @@
 package com.crowdin.client;
 
 import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.bundles.model.BundleExport;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
@@ -55,6 +56,12 @@ public interface CrowdinClient {
     ProjectBuild checkBuildingStatus(Long buildId);
 
     URL downloadProjectTranslations(Long buildId);
+
+    BundleExport startBuildingBundle(Long bundleId);
+
+    BundleExport checkBundleBuildingStatus(Long buildId, String exportId);
+
+    URL downloadBundle(Long buildId, String exportId);
 
     URL downloadFileTranslation(Long fileId, BuildProjectFileTranslationRequest request);
 

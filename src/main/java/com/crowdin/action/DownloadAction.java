@@ -8,6 +8,7 @@ import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.logic.DownloadBundleLogic;
 import com.crowdin.logic.DownloadTranslationsLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.download.DownloadWindow;
@@ -89,6 +90,11 @@ public class DownloadAction extends BackgroundAction {
             Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
 
             if (crowdinProjectCache.isStringsBased()) {
+                if (branch == null) {
+                    NotificationUtil.showErrorMessage(project, "Branch is missing");
+                    return;
+                }
+
                 DownloadWindow window = ServiceManager
                         .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
                         .getDownloadWindow();
@@ -103,8 +109,7 @@ public class DownloadAction extends BackgroundAction {
                     return;
                 }
 
-                //TODO download bundle
-                System.out.println("Downloading bundle" + bundle);
+                (new DownloadBundleLogic(project, crowdin, root, bundle)).process();
                 return;
             }
 

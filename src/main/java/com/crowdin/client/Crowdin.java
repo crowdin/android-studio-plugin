@@ -1,6 +1,7 @@
 package com.crowdin.client;
 
 import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.bundles.model.BundleExport;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.model.*;
@@ -126,6 +127,28 @@ public class Crowdin implements CrowdinClient {
         return url(executeRequest(() -> this.client.getTranslationsApi()
             .downloadProjectTranslations(this.projectId, buildId)
             .getData()));
+    }
+
+
+    @Override
+    public BundleExport startBuildingBundle(Long bundleId) {
+        return executeRequest(() -> this.client.getBundlesApi()
+                .exportBundle(this.projectId, bundleId)
+                .getData());
+    }
+
+    @Override
+    public BundleExport checkBundleBuildingStatus(Long buildId, String exportId) {
+        return executeRequest(() -> this.client.getBundlesApi()
+                .checkBundleExportStatus(projectId, buildId, exportId)
+                .getData());
+    }
+
+    @Override
+    public URL downloadBundle(Long buildId, String exportId) {
+        return url(executeRequest(() -> this.client.getBundlesApi()
+                .downloadBundle(this.projectId, buildId, exportId)
+                .getData()));
     }
 
     @Override

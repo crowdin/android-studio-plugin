@@ -28,7 +28,6 @@ import java.net.URL;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
-//TODO hide for SB project
 public class DownloadTranslationFromContextAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
@@ -115,7 +114,8 @@ public class DownloadTranslationFromContextAction extends BackgroundAction {
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
                 CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
 
-            isTranslationFile = ContextLogic.findSourceFileFromTranslationFile(file, properties, root, crowdinProjectCache).isPresent();
+            //hide for SB
+            isTranslationFile = !crowdinProjectCache.isStringsBased() && ContextLogic.findSourceFileFromTranslationFile(file, properties, root, crowdinProjectCache).isPresent();
         } catch (Exception exception) {
 //            do nothing
         } finally {

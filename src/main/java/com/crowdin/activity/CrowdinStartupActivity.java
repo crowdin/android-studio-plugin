@@ -38,7 +38,7 @@ public class CrowdinStartupActivity implements StartupActivity {
                     try {
                         indicator.setText("Updating Crowdin cache");
                         CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-                        CrowdinPanelWindowFactory.reloadPanels(project);
+                        CrowdinPanelWindowFactory.reloadPanels(project, true);
                     } catch (Exception e) {
                         NotificationUtil.showErrorMessage(project, e.getMessage());
                     }

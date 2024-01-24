@@ -5,6 +5,7 @@ import static java.util.Collections.singletonMap;
 import com.crowdin.api.model.BranchBuilder;
 import com.crowdin.api.model.LanguageBuilder;
 import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.bundles.model.BundleExport;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
@@ -108,6 +109,21 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public URL downloadProjectTranslations(Long buildId) {
+        return null;
+    }
+
+    @Override
+    public BundleExport startBuildingBundle(Long bundleId) {
+        return null;
+    }
+
+    @Override
+    public BundleExport checkBundleBuildingStatus(Long buildId, String exportId) {
+        return null;
+    }
+
+    @Override
+    public URL downloadBundle(Long buildId, String exportId) {
         return null;
     }
 
