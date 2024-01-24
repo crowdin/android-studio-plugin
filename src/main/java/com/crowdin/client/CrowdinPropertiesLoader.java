@@ -190,6 +190,8 @@ public class CrowdinPropertiesLoader {
         for (String ident : foundKeys) {
             String source = properties.getProperty(String.format(PROPERTY_FILES_SOURCES_PATTERN, ident));
             String translation = properties.getProperty(String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident));
+            String updateStrings = properties.getProperty(String.format(PROPERTY_FILES_UPDATE_STRINGS_PATTERN, ident));
+            String cleanupMode = properties.getProperty(String.format(PROPERTY_FILES_CLEANUP_MODE_PATTERN, ident));
             List<String> labels = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_LABELS_PATTERN, ident)));
             List<String> excludedTargetLanguages = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_EXCLUDED_TARGET_LANGUAGES_PATTERN, ident)));
             if (StringUtils.isNotEmpty(source) && StringUtils.isNotEmpty(translation)) {
@@ -198,6 +200,16 @@ public class CrowdinPropertiesLoader {
                 fb.setTranslation(FileUtil.unixPath(translation));
                 fb.setLabels(labels);
                 fb.setExcludedTargetLanguages(excludedTargetLanguages);
+                Optional
+                        .ofNullable(updateStrings)
+                        .filter(s -> !s.isEmpty())
+                        .map(Boolean::parseBoolean)
+                        .ifPresent(fb::setUpdateStrings);
+                Optional
+                        .ofNullable(cleanupMode)
+                        .filter(s -> !s.isEmpty())
+                        .map(Boolean::parseBoolean)
+                        .ifPresent(fb::setCleanupMode);
                 fileBeans.add(fb);
             } else if (StringUtils.isEmpty(translation)) {
                 errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), String.format(PROPERTY_FILES_TRANSLATIONS_PATTERN, ident)));

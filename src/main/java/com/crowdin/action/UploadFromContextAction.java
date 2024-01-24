@@ -55,8 +55,6 @@ public class UploadFromContextAction extends BackgroundAction {
             Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
             indicator.checkCanceled();
 
-            //TODO handle SB project
-
             FileBean foundFileBean = properties.getFiles()
                 .stream()
                 .filter(fb -> FileUtil.getSourceFilesRec(root, fb.getSource()).contains(file))

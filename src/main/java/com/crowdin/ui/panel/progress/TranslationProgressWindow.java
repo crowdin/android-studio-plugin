@@ -93,7 +93,7 @@ public class TranslationProgressWindow implements ContentTab {
                         fileProgress.getTranslationProgress() + "%", fileProgress.getApprovalProgress() + "%")));
                 }
             }
-            System.out.println(fileGroups);
+
             for (DefaultMutableTreeNode fileNode : fileGroups.values()) {
                 root.add(fileNode);
             }

@@ -15,6 +15,8 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.sourcestrings.model.SourceString;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
@@ -50,6 +52,10 @@ public interface CrowdinClient {
     Project getProject();
 
     List<Language> extractProjectLanguages(Project crowdinProject);
+
+    UploadStringsProgress uploadStrings(UploadStringsRequest request);
+
+    UploadStringsProgress checkUploadStringsStatus(String id);
 
     ProjectBuild startBuildingTranslation(BuildProjectTranslationRequest request);
 

@@ -115,7 +115,6 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testBuildAllProjectTranslationsWithSources(List<File> files, Map<Long, String> dirPaths, List<Language> languages, LanguageMapping languageMapping, Map<String, String> expected) {
         Map<String, String> result = CrowdinFileUtil.buildAllProjectTranslationsWithSources(files, dirPaths, languages, languageMapping);
-        System.out.println(result);
         assertEquals("dirPaths: " + dirPaths + ", files: " + files, expected, result);
     }
 

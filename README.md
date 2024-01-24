@@ -184,6 +184,13 @@ files.1.excluded-target-languages=uk   # For a specific filegroup, high priority
 files.2.excluded-target-languages=fr   # For a specific filegroup, high priority
 ```
 
+To specify cleanup mode or update strings flags for Strings-based projects use `cleanup-mode` and `update-strings`:
+
+```ini
+files.1.cleanup-mode=true
+files.1.update-strings=true
+```
+
 ### Translations Upload Options
 
 The below properties can be used to configure the import options to the uploaded translations

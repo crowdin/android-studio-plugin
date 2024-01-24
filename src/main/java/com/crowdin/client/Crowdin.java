@@ -10,6 +10,8 @@ import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.sourcestrings.model.SourceString;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
@@ -106,6 +108,20 @@ public class Crowdin implements CrowdinClient {
     @Override
     public List<Language> extractProjectLanguages(com.crowdin.client.projectsgroups.model.Project crowdinProject) {
         return crowdinProject.getTargetLanguages();
+    }
+
+    @Override
+    public UploadStringsProgress uploadStrings(UploadStringsRequest request) {
+        return executeRequest(() -> this.client.getSourceStringsApi()
+            .uploadStrings(this.projectId, request)
+            .getData());
+    }
+
+    @Override
+    public UploadStringsProgress checkUploadStringsStatus(String id) {
+        return executeRequest(() -> this.client.getSourceStringsApi()
+            .uploadStringsStatus(projectId, id)
+            .getData());
     }
 
     @Override

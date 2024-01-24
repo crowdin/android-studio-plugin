@@ -30,6 +30,7 @@ public class CrowdinStartupActivity implements StartupActivity {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
+            //TODO fixme, Git util does not return repository on bootstrap so code below always fail
             String branchName = ActionUtils.getBranchName(project, properties, false);
 
             ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {

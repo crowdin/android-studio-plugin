@@ -27,6 +27,8 @@ public final class Constants {
     public static final String PROPERTY_FILES_TRANSLATIONS_PATTERN = "files.%stranslation";
     public static final Pattern PROPERTY_FILES_TRANSLATIONS_REGEX = Pattern.compile("^files\\.(|\\d+\\.)translation$");
     public static final String PROPERTY_FILES_EXCLUDED_TARGET_LANGUAGES_PATTERN = "files.%sexcluded-target-languages";
+    public static final String PROPERTY_FILES_CLEANUP_MODE_PATTERN = "files.%scleanup-mode";
+    public static final String PROPERTY_FILES_UPDATE_STRINGS_PATTERN = "files.%supdate-strings";
     public static final String PROPERTY_FILES_LABELS_PATTERN = "files.%slabels";
     public static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";

@@ -45,7 +45,6 @@ public class RefreshAction extends BackgroundAction {
 
     @Override
     protected void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator) {
-        System.out.println("e.getProject() = " + e.getProject());
         boolean forceRefresh = !CrowdinPanelWindowFactory.PLACE_ID.equals(e.getPlace());
         Project project = e.getProject();
         e.getPresentation().setEnabled(false);

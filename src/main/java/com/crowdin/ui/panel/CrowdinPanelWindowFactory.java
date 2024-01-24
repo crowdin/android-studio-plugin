@@ -82,8 +82,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         toolWindow.getContentManager().addContent(progressPanel, 0);
         toolWindow.getContentManager().addContent(uploadPanel, 1);
         toolWindow.getContentManager().addContent(downloadPanel, 2);
-
-        reloadPanels(project, true);
     }
 
     public static void reloadPanels(Project project, boolean fullReload) {
