@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import lombok.NonNull;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.io.FileUtils;
@@ -49,7 +48,7 @@ public final class FileUtil {
         return LocalFileSystem.getInstance().findFileByPath(path);
     }
 
-    public static String findRelativePath(@NonNull VirtualFile baseDir, @NonNull VirtualFile file) {
+    public static String findRelativePath(VirtualFile baseDir, VirtualFile file) {
         return StringUtils.removeStart(file.getCanonicalPath(), baseDir.getCanonicalPath())
                 .replaceAll("^[\\\\/]+", "");
 //        @AvailableSince("181.2784.17")

@@ -5,7 +5,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -18,7 +17,7 @@ public abstract class BackgroundAction extends AnAction {
         super(text, description, icon);
     }
 
-    protected abstract void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator);
+    protected abstract void performInBackground(@NotNull AnActionEvent e, @NotNull ProgressIndicator indicator);
 
     protected abstract String loadingText(AnActionEvent e);
 

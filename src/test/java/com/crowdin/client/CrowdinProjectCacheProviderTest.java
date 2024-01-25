@@ -36,7 +36,9 @@ public class CrowdinProjectCacheProviderTest {
 
     @BeforeEach
     void setUp() {
-        CrowdinProjectCacheProvider.reset();
+        CrowdinProjectCacheProvider.setOutdated(false);
+        CrowdinProjectCacheProvider.setCrowdinProjectCache(null);
+        CrowdinProjectCacheProvider.getOutdatedBranches().clear();
     }
 
     @ParameterizedTest

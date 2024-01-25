@@ -55,7 +55,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                 },
                 (ActionGroup) actionManager.getAction(PROGRESS_TOOLBAR_ID),
                 contentFactory,
-                "Translation Pr"
+                "Translation Progress"
         );
 
         Content uploadPanel = this.setupPanel(

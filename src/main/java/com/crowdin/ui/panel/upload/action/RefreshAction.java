@@ -19,7 +19,6 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Paths;
@@ -44,7 +43,7 @@ public class RefreshAction extends BackgroundAction {
     }
 
     @Override
-    protected void performInBackground(@NonNull AnActionEvent e, @NonNull ProgressIndicator indicator) {
+    protected void performInBackground(@NotNull AnActionEvent e, @NotNull ProgressIndicator indicator) {
         boolean forceRefresh = !CrowdinPanelWindowFactory.PLACE_ID.equals(e.getPlace());
         Project project = e.getProject();
         e.getPresentation().setEnabled(false);

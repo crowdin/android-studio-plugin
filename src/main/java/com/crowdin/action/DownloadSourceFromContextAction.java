@@ -19,7 +19,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.util.Objects;
@@ -28,7 +28,7 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class DownloadSourceFromContextAction extends BackgroundAction {
     @Override
-    protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
+    protected void performInBackground(@NotNull AnActionEvent anActionEvent, @NotNull ProgressIndicator indicator) {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(anActionEvent.getDataContext());
         if (file == null) {
             return;

@@ -3,12 +3,10 @@ package com.crowdin.logic;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import lombok.Data;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Data
 @State(name = "CrowdinSettings", storages = @Storage("crowdin_settings.xml"))
 public class CrowdinSettings implements PersistentStateComponent<Element> {
 
@@ -16,6 +14,14 @@ public class CrowdinSettings implements PersistentStateComponent<Element> {
     private static final String DO_NOT_SHOW_CONFIRMS = "DoNotShowConfirms";
 
     private boolean doNotShowConfirms;
+
+    public boolean isDoNotShowConfirms() {
+        return doNotShowConfirms;
+    }
+
+    public void setDoNotShowConfirms(boolean doNotShowConfirms) {
+        this.doNotShowConfirms = doNotShowConfirms;
+    }
 
     @Nullable
     @Override

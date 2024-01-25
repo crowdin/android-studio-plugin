@@ -1,13 +1,10 @@
 package com.crowdin.util;
 
-import com.crowdin.Constants;
 import com.crowdin.client.languages.model.Language;
-import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -77,7 +74,7 @@ public class PlaceholderUtil {
             .collect(toMap(lang -> lang, lang -> PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, languageMapping)));
     }
 
-    public static String replaceLanguagePlaceholders(@NonNull String pattern, @NonNull Language lang, LanguageMapping langMapping) {
+    public static String replaceLanguagePlaceholders(String pattern, Language lang, LanguageMapping langMapping) {
         return pattern
             .replaceAll(PLACEHOLDER_LANGUAGE_ID,
                 langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_LANGUAGE_ID_NAME, lang.getId()))
@@ -100,7 +97,7 @@ public class PlaceholderUtil {
                 langMapping.getValueOrDefault(lang.getId(), PLACEHOLDER_OSX_CODE_NAME, lang.getOsxCode()));
     }
 
-    public static String replaceFilePlaceholders(@NonNull String toFormat, @NonNull String sourcePath) {
+    public static String replaceFilePlaceholders(String toFormat, String sourcePath) {
         return toFormat
             .replace(PLACEHOLDER_ORIGINAL_FILE_NAME, FilenameUtils.getName(sourcePath))
             .replace(PLACEHOLDER_FILE_NAME, FilenameUtils.getBaseName(sourcePath))

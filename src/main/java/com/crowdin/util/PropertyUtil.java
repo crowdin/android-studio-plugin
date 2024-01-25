@@ -3,7 +3,6 @@ package com.crowdin.util;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 

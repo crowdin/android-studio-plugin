@@ -16,9 +16,6 @@ repositories {
 
 dependencies {
 
-    compileOnly 'org.projectlombok:lombok:1.18.10'
-    annotationProcessor 'org.projectlombok:lombok:1.18.10'
-
     compile 'net.lingala.zip4j:zip4j:2.11.3'
     compile 'com.github.crowdin:crowdin-api-client-java:1.14.0'
 

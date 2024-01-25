@@ -7,8 +7,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.treeStructure.Tree;
-import lombok.Data;
-
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -117,16 +115,11 @@ public class TranslationProgressWindow implements ContentTab {
 
     public static class TranslationProgressCellRenderer extends DefaultTreeCellRenderer {
 
-        @Data
         public static class CellData {
             private Icon icon;
-            private String text;
+            private final String text;
             private String translatedProgressText;
             private String approvedProgressText;
-
-            public CellData(String text) {
-                this.text = text;
-            }
 
             public CellData(Icon icon, String text) {
                 this.icon = icon;
@@ -144,6 +137,22 @@ public class TranslationProgressWindow implements ContentTab {
                 this.text = text;
                 this.translatedProgressText = translatedProgressText;
                 this.approvedProgressText = approvedProgressText;
+            }
+
+            public Icon getIcon() {
+                return icon;
+            }
+
+            public String getText() {
+                return text;
+            }
+
+            public String getTranslatedProgressText() {
+                return translatedProgressText;
+            }
+
+            public String getApprovedProgressText() {
+                return approvedProgressText;
             }
         }
 
