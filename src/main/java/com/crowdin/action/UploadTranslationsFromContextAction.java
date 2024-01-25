@@ -1,14 +1,24 @@
 package com.crowdin.action;
 
-import com.crowdin.client.*;
+import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProjectCacheProvider;
+import com.crowdin.client.CrowdinProperties;
+import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.FileBean;
+import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.ContextLogic;
 import com.crowdin.logic.CrowdinSettings;
-import com.crowdin.util.*;
+import com.crowdin.util.ActionUtils;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.PlaceholderUtil;
+import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.components.ServiceManager;
@@ -22,9 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.util.Util.isFileFormatNotAllowed;
 
 /**
  * Created by ihor on 1/27/17.
@@ -54,7 +66,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             indicator.checkCanceled();
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
 
             if (!crowdinProjectCache.isManagerAccess()) {
                 NotificationUtil.showErrorMessage(project, "You need to have manager access to perform this action");
@@ -63,9 +75,14 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
 
             Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
 
-            //TODO handle SB project
+            if (crowdinProjectCache.isStringsBased() && branch == null) {
+                NotificationUtil.showErrorMessage(project, "Branch is missing");
+                return;
+            }
 
-            Map<String, File> filePaths = crowdinProjectCache.getFiles(branch);
+            Map<String, File> filePaths = crowdinProjectCache.isStringsBased()
+                    ? Collections.emptyMap()
+                    : crowdinProjectCache.getFiles(branch);
 
             indicator.checkCanceled();
             for (FileBean fileBean : properties.getFiles()) {
@@ -73,14 +90,14 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
 
                     String relativePathToPattern = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
-                        : "";
+                            ? java.io.File.separator + FileUtil.findRelativePath(root, pathToPattern)
+                            : "";
                     String patternPathToFile = (properties.isPreserveHierarchy())
-                        ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
-                        : "";
+                            ? java.io.File.separator + FileUtil.findRelativePath(pathToPattern, source.getParent())
+                            : "";
 
                     File crowdinSource = filePaths.get(FileUtil.normalizePath(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
-                    if (crowdinSource == null) {
+                    if (!crowdinProjectCache.isStringsBased() && crowdinSource == null) {
                         NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), (branchName != null ? branchName : "") + FileUtil.sepAtStart(FileUtil.joinPaths(relativePathToPattern, patternPathToFile, source.getName()))));
                         return;
                     }
@@ -91,19 +108,35 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
                         int compare = translationFile.compareTo(Paths.get(file.getPath()));
                         if (compare == 0) {
                             Long storageId;
-                            try (InputStream translationFileStrem = new FileInputStream(translationFile.toFile())) {
-                                storageId = crowdin.addStorage(translationFile.toFile().getName(), translationFileStrem);
+                            try (InputStream translationFileStream = new FileInputStream(translationFile.toFile())) {
+                                storageId = crowdin.addStorage(translationFile.toFile().getName(), translationFileStream);
                             } catch (IOException exception) {
                                 throw new RuntimeException("Unhandled exception with File '" + translationFile + "'", exception);
                             }
-                            UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId, properties.isImportEqSuggestions(), properties.isAutoApproveImported(), properties.isTranslateHidden());
+
                             try {
-                                crowdin.uploadTranslation(lang.getId(), request);
+
+                                if (crowdinProjectCache.isStringsBased()) {
+                                    UploadTranslationsStringsRequest request = RequestBuilder.uploadStringsTranslation(branch.getId(), storageId, properties.isImportEqSuggestions(), properties.isAutoApproveImported(), properties.isTranslateHidden());
+                                    crowdin.uploadStringsTranslation(lang.getId(), request);
+                                } else {
+                                    UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId, properties.isImportEqSuggestions(), properties.isAutoApproveImported(), properties.isTranslateHidden());
+                                    crowdin.uploadTranslation(lang.getId(), request);
+                                }
+
                                 NotificationUtil.showInformationMessage(project,
-                                    String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translation"),
-                                        FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, builtPattern))));
+                                        String.format(MESSAGES_BUNDLE.getString("messages.success.upload_translation"),
+                                                FileUtil.noSepAtStart(FileUtil.joinPaths(relativePathToPattern, builtPattern))));
                             } catch (Exception exception) {
-                                NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
+                                if (isFileFormatNotAllowed(exception)) {
+                                    String message = String.format(
+                                            "*.%s files are not allowed to upload in strings-based projects",
+                                            source.getExtension()
+                                    );
+                                    NotificationUtil.showWarningMessage(project, message);
+                                } else {
+                                    NotificationUtil.showErrorMessage(project, "Couldn't upload translation file '" + translationFile + "': " + exception.getMessage());
+                                }
                             }
                         }
                     }
@@ -140,7 +173,7 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
             String branchName = ActionUtils.getBranchName(project, properties, false);
 
             CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
 
             isTranslationFile = ContextLogic.findSourceFileFromTranslationFile(file, properties, root, crowdinProjectCache).isPresent();
         } catch (Exception exception) {

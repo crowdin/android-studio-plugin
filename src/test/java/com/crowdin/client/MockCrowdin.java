@@ -26,6 +26,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import org.jetbrains.annotations.NotNull;
@@ -82,6 +83,10 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public void uploadTranslation(String languageId, UploadTranslationsRequest request) {
+    }
+
+    @Override
+    public void uploadStringsTranslation(String languageId, UploadTranslationsStringsRequest request) {
     }
 
     @Override

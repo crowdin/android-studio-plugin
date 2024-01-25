@@ -3,6 +3,7 @@
   <name>Crowdin</name>
   <version>1.6.3</version>
 <!--  https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html#platformVersions-->
+<!--  https://www.jetbrains.com/idea/download/other.html-->
   <idea-version since-build="212.*"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[

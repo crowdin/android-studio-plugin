@@ -16,6 +16,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.util.RetryUtil;
@@ -89,6 +90,12 @@ public class Crowdin implements CrowdinClient {
     public void uploadTranslation(String languageId, UploadTranslationsRequest request) {
         executeRequest(() -> this.client.getTranslationsApi()
             .uploadTranslations(this.projectId, languageId, request));
+    }
+
+    @Override
+    public void uploadStringsTranslation(String languageId, UploadTranslationsStringsRequest request) {
+        executeRequest(() -> this.client.getTranslationsApi()
+            .uploadTranslationStringsBased(this.projectId, languageId, request));
     }
 
     @Override

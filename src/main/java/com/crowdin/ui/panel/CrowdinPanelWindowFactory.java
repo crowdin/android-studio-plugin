@@ -40,10 +40,11 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        //should be replaced to ContentFactory factory = ContentFactory.getInstance(); in newer version
+        //TODO use ContentFactory factory = ContentFactory.getInstance();
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         ContentManager contentManager = toolWindow.getContentManager();
         ActionManager actionManager = ActionManager.getInstance();
+        //TODO use ComponentManager (https://plugins.jetbrains.com/docs/intellij/plugin-services.html#example)
         ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
 
         Content progressPanel = this.setupPanel(

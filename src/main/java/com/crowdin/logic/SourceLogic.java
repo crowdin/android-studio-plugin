@@ -35,6 +35,7 @@ import static com.crowdin.util.FileUtil.joinPaths;
 import static com.crowdin.util.FileUtil.normalizePath;
 import static com.crowdin.util.FileUtil.sepAtStart;
 import static com.crowdin.util.FileUtil.unixPath;
+import static com.crowdin.util.Util.isFileFormatNotAllowed;
 
 public class SourceLogic {
 
@@ -214,7 +215,7 @@ public class SourceLogic {
             NotificationUtil.showInformationMessage(project, "File '" + outputName + "' is uploaded");
 
         } catch (Exception e) {
-            if (e.getMessage().contains("files are not allowed to upload in strings-based projects")) {
+            if (isFileFormatNotAllowed(e)) {
                 String message = String.format(
                         "*.%s files are not allowed to upload in strings-based projects",
                         source.getExtension()

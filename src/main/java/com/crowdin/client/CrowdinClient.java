@@ -21,6 +21,7 @@ import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 
@@ -46,6 +47,8 @@ public interface CrowdinClient {
     void editSource(Long fileId, List<PatchRequest> request);
 
     void uploadTranslation(String languageId, UploadTranslationsRequest request);
+
+    void uploadStringsTranslation(String languageId, UploadTranslationsStringsRequest request);
 
     Directory addDirectory(AddDirectoryRequest request);
 

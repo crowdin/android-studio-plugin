@@ -8,8 +8,6 @@ import com.intellij.openapi.extensions.PluginId;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.MESSAGES_BUNDLE;
-
 public class Util {
 
     private static final String PLUGIN_NAME = "crowdin-android-studio-plugin";
@@ -30,13 +28,18 @@ public class Util {
     public static String getUserAgent() {
         ApplicationInfo appInfo = ApplicationInfo.getInstance();
         return String.format("%s/%s %s/%s %s/%s",
-            PLUGIN_NAME, getPluginVersion(),
-            appInfo.getVersionName(), appInfo.getApiVersion(),
-            System.getProperty("os.name"), System.getProperty("os.version"));
+                PLUGIN_NAME, getPluginVersion(),
+                appInfo.getVersionName(), appInfo.getApiVersion(),
+                System.getProperty("os.name"), System.getProperty("os.version"));
     }
 
     public static String prepareListMessageText(String mainText, List<String> items) {
         String itemsInOne = "<ul>" + items.stream().map(s -> "<li>" + s + "</li>\n").collect(Collectors.joining()) + "</ul>";
         return "<body><p>" + mainText + "</p>" + itemsInOne + "</body>";
+    }
+
+    public static boolean isFileFormatNotAllowed(Exception e) {
+        return e.getMessage().contains("files are not allowed to upload in string-based projects") ||
+                e.getMessage().contains("files are not allowed to upload in strings-based projects");
     }
 }
