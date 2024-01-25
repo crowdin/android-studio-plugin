@@ -6,11 +6,11 @@ import com.crowdin.ui.panel.upload.UploadWindow;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -20,6 +20,7 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -39,7 +40,9 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        //should be replaced to ContentFactory factory = ContentFactory.getInstance(); in newer version
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentManager contentManager = toolWindow.getContentManager();
         ActionManager actionManager = ActionManager.getInstance();
         ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
 
@@ -49,10 +52,9 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                     projectService.setTranslationProgressWindow(translationProgressWindow);
                     return translationProgressWindow;
                 },
-                actionManager,
+                (ActionGroup) actionManager.getAction(PROGRESS_TOOLBAR_ID),
                 contentFactory,
-                "Translation Progress",
-                PROGRESS_TOOLBAR_ID
+                "Translation Pr"
         );
 
         Content uploadPanel = this.setupPanel(
@@ -61,10 +63,9 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                     projectService.setUploadWindow(uploadWindow);
                     return uploadWindow;
                 },
-                actionManager,
+                (ActionGroup) actionManager.getAction(UPLOAD_TOOLBAR_ID),
                 contentFactory,
-                "Upload",
-                UPLOAD_TOOLBAR_ID
+                "Upload"
         );
 
         Content downloadPanel = this.setupPanel(
@@ -73,15 +74,31 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                     projectService.setDownloadWindow(downloadWindow);
                     return downloadWindow;
                 },
-                actionManager,
+                (ActionGroup) actionManager.getAction(DOWNLOAD_TOOLBAR_ID),
                 contentFactory,
-                "Download",
-                DOWNLOAD_TOOLBAR_ID
+                "Download"
         );
 
-        toolWindow.getContentManager().addContent(progressPanel, 0);
-        toolWindow.getContentManager().addContent(uploadPanel, 1);
-        toolWindow.getContentManager().addContent(downloadPanel, 2);
+        contentManager.addContent(progressPanel, 0);
+        contentManager.addContent(uploadPanel, 1);
+        contentManager.addContent(downloadPanel, 2);
+    }
+
+    private Content setupPanel(
+            Supplier<ContentTab> tabSupplier,
+            ActionGroup group,
+            ContentFactory contentFactory,
+            String name
+    ) {
+        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
+        ActionToolbarImpl actionToolbar = new ActionToolbarImpl(ActionPlaces.TOOLBAR, group, true);
+
+        actionToolbar.setTargetComponent(panel);
+
+        panel.setToolbar(actionToolbar);
+        panel.setContent(tabSupplier.get().getContent());
+
+        return contentFactory.createContent(panel, name, false);
     }
 
     public static void reloadPanels(Project project, boolean fullReload) {
@@ -119,26 +136,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         if (onRefresh != null) {
             onRefresh.run();
         }
-    }
-
-    private Content setupPanel(
-            Supplier<ContentTab> tabSupplier,
-            ActionManager actionManager,
-            ContentFactory contentFactory,
-            String name,
-            String actionId
-    ) {
-        SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
-        ContentTab contentTab = tabSupplier.get();
-
-        panel.setContent(contentTab.getContent());
-
-        ActionGroup group = (ActionGroup) actionManager.getAction(actionId);
-
-        ActionToolbar toolbar = actionManager.createActionToolbar(ActionPlaces.TOOLBAR, group, true);
-        toolbar.setTargetComponent(toolbar.getComponent());
-
-        return contentFactory.createContent(panel, name, false);
     }
 
     public static class ProjectService {
