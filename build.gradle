@@ -1,13 +1,13 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.7.3'
+    id 'org.jetbrains.intellij' version '1.17.0'
     id 'jacoco'
 }
 
 group 'com.crowdin.crowdin-idea'
 version '1.6.3'
 
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
@@ -16,14 +16,14 @@ repositories {
 
 dependencies {
 
-    compile 'net.lingala.zip4j:zip4j:2.11.3'
-    compile 'com.github.crowdin:crowdin-api-client-java:1.14.0'
-    compile 'commons-io:commons-io:2.15.1'
+    implementation 'net.lingala.zip4j:zip4j:2.11.3'
+    implementation 'com.github.crowdin:crowdin-api-client-java:1.14.0'
+    implementation 'commons-io:commons-io:2.15.1'
 
-    testCompile 'junit:junit:4.13.1'
-    testCompile 'org.junit.jupiter:junit-jupiter:5.5.2'
-    testCompile 'org.hamcrest:hamcrest:2.2'
-    testCompile 'org.mockito:mockito-core:2.1.0'
+    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation 'org.mockito:mockito-core:2.1.0'
 }
 
 test {
@@ -31,35 +31,30 @@ test {
 }
 
 intellij {
-    version '2021.3.3' //TODO up to 2022.3.3
-    //change to 'Git4Idea' in higher version
-    plugins 'git4idea'
-    updateSinceUntilBuild false
+    version = '2022.3.3'
+    plugins = ['Git4Idea']
+    updateSinceUntilBuild = false
 }
 patchPluginXml {
-    changeNotes """
+    changeNotes = """
       - Bugfixes"""
 }
 
 wrapper {
-    gradleVersion = '5.2.1'
+    gradleVersion = '8.5'
 }
 
 jacoco {
-    toolVersion = "0.8.5"
-    reportsDir = file("$buildDir/reports")
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir('reports')
 }
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        csv.enabled false
-        xml.destination file("${buildDir}/coverage.xml")
+        xml.required = true
+        csv.required = false
+        xml.outputLocation = layout.buildDirectory.file('coverage.xml')
     }
 
-    getExecutionData().setFrom("$buildDir/jacoco/test.exec")
-}
-
-tasks.test {
-    systemProperty("idea.force.use.core.classloader", "true")
+    getExecutionData().setFrom(layout.buildDirectory.file('jacoco/test.exec'))
 }

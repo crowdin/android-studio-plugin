@@ -40,8 +40,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        //TODO use ContentFactory factory = ContentFactory.getInstance();
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        ContentFactory contentFactory = ContentFactory.getInstance();
         ContentManager contentManager = toolWindow.getContentManager();
         ActionManager actionManager = ActionManager.getInstance();
         ProjectService projectService = project.getService(ProjectService.class);
@@ -84,7 +83,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         contentManager.addContent(downloadPanel, 2);
 
         projectService.getPanelsLoaded().set(true);
-        reloadPanels(project, false);
+        reloadPanels(project, true);
     }
 
     private Content setupPanel(
@@ -109,7 +108,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
             //in case if reload was triggered from startup activity and panels were not initialized yet
             //ToolWindow.getContentManager() will invoke createToolWindowContent() and contentManager.addContent(..) will throw an error
             //because this is not a proper event for adding a UI content
-            //TODO think about how to postpone startup reload until UI panels are ready
             return;
         }
 

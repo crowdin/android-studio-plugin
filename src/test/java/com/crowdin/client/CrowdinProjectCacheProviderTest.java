@@ -241,6 +241,9 @@ public class CrowdinProjectCacheProviderTest {
     void testSetsConfigurationForUpdate() {
         //Set the initial state of the underlying project cache. Using empty collections to have simpler test data.
         CrowdinProjectCache cache = new CrowdinProjectCache();
+        Project prj = new Project();
+        prj.setId(1L);
+        cache.setProject(prj);
         crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         //Using ProjectSettings because that would set manager access to true,
@@ -250,7 +253,7 @@ public class CrowdinProjectCacheProviderTest {
         cache.setProjectLanguages(new ArrayList<>());
         cache.setBranches(new HashMap<>());
 
-        CrowdinClient crowdin = new MockCrowdin(1L);
+        CrowdinClient crowdin = new MockCrowdin(prj.getId());
         cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", true);
 
         //Test that no configuration was overwritten with data from the mock Crowdin client

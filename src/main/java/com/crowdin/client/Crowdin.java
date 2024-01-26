@@ -54,6 +54,11 @@ public class Crowdin implements CrowdinClient {
     }
 
     @Override
+    public Long getProjectId() {
+        return this.projectId;
+    }
+
+    @Override
     public Long addStorage(String fileName, InputStream content) {
         return executeRequest(() -> this.client.getStorageApi()
             .addStorage(fileName, content)

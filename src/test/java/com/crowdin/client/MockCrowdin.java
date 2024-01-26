@@ -60,6 +60,11 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
+    public Long getProjectId() {
+        return project != null ? project.getId() : null;
+    }
+
+    @Override
     public Long addStorage(String fileName, InputStream content) {
         return null;
     }

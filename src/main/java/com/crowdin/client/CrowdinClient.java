@@ -36,6 +36,8 @@ import java.util.Optional;
  */
 public interface CrowdinClient {
 
+    Long getProjectId();
+
     Long addStorage(String fileName, InputStream content);
 
     void updateSource(Long sourceId, UpdateFileRequest request);

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CrowdinProjectCacheProvider {
 
@@ -187,7 +188,12 @@ public class CrowdinProjectCacheProvider {
     }
 
     public synchronized CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
-        if (crowdinProjectCache.getProject() == null || update) {
+        boolean differentProject = Optional
+                .ofNullable(crowdinProjectCache.getProject())
+                .map(Project::getId)
+                .map(id -> !crowdin.getProjectId().equals(id))
+                .orElse(false);
+        if (crowdinProjectCache.getProject() == null || update || differentProject) {
             crowdinProjectCache.setProject(crowdin.getProject());
             crowdinProjectCache.setManagerAccess(crowdinProjectCache.getProject() instanceof ProjectSettings);
             if (crowdinProjectCache.isManagerAccess()) {
@@ -195,26 +201,26 @@ public class CrowdinProjectCacheProvider {
                         LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
             }
         }
-        if (crowdinProjectCache.getStrings() == null) {
+        if (crowdinProjectCache.getStrings() == null || differentProject) {
             crowdinProjectCache.setStrings(crowdin.getStrings());
         }
-        if (crowdinProjectCache.getSupportedLanguages() == null) {
+        if (crowdinProjectCache.getSupportedLanguages() == null || differentProject) {
             crowdinProjectCache.setSupportedLanguages(crowdin.getSupportedLanguages());
         }
-        if (crowdinProjectCache.getProjectLanguages() == null || update) {
+        if (crowdinProjectCache.getProjectLanguages() == null || update || differentProject) {
             crowdinProjectCache.setProjectLanguages(crowdin.extractProjectLanguages(crowdinProjectCache.getProject()));
         }
-        if (crowdinProjectCache.getBundles() == null && crowdinProjectCache.isStringsBased()) {
+        if ((crowdinProjectCache.getBundles() == null || differentProject) && crowdinProjectCache.isStringsBased()) {
             crowdinProjectCache.setBundles(crowdin.getBundles());
         }
-        if (crowdinProjectCache.getBranches() == null || outdated || update) {
+        if (crowdinProjectCache.getBranches() == null || outdated || update || differentProject) {
             crowdinProjectCache.setBranches(crowdin.getBranches());
             outdated = false;
         }
-        if (crowdinProjectCache.getFileInfos() == null) {
+        if (crowdinProjectCache.getFileInfos() == null || differentProject) {
             crowdinProjectCache.setFileInfos(new HashMap<>());
         }
-        if (crowdinProjectCache.getDirs() == null) {
+        if (crowdinProjectCache.getDirs() == null || differentProject) {
             crowdinProjectCache.setDirs(new HashMap<>());
         }
         if ((branchName != null && !branchName.isEmpty()) && !crowdinProjectCache.getBranches().containsKey(branchName)) {

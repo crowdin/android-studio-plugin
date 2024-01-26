@@ -14,7 +14,6 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
-import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import org.jetbrains.annotations.NotNull;
 
 public class CrowdinStartupActivity implements StartupActivity {
@@ -31,16 +30,7 @@ public class CrowdinStartupActivity implements StartupActivity {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            if (properties.isDisabledBranches()) {
-                this.reloadPlugin(project, crowdin, properties);
-                return;
-            }
-
-            //if branch is required then we need to wait when VCS will be fully initialized, otherwise GitBranchUtil will give us `null`
-            project
-                    .getMessageBus()
-                    .connect()
-                    .subscribe(ProjectLevelVcsManager.VCS_CONFIGURATION_CHANGED, () -> this.reloadPlugin(project, crowdin, properties));
+            this.reloadPlugin(project, crowdin, properties);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
