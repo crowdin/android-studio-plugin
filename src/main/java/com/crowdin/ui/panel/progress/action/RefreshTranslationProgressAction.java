@@ -6,6 +6,7 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.util.FileUtil;
@@ -14,7 +15,6 @@ import com.crowdin.util.StringUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -58,9 +58,8 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
-            TranslationProgressWindow window = ServiceManager
-                    .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
-                    .getTranslationProgressWindow();
+
+            TranslationProgressWindow window = project.getService(ProjectService.class).getTranslationProgressWindow();
             if (window == null) {
                 return;
             }

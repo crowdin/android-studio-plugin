@@ -1,4 +1,4 @@
-package com.crowdin.logic;
+package com.crowdin.service;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;

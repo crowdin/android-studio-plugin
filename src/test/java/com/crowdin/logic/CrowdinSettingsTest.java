@@ -1,7 +1,6 @@
 package com.crowdin.logic;
 
-import com.crowdin.util.FileUtil;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.crowdin.service.CrowdinSettings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;

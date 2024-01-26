@@ -36,10 +36,15 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
-    <projectService serviceImplementation="com.crowdin.logic.CrowdinSettings"/>
+
+    <projectService serviceImplementation="com.crowdin.service.CrowdinSettings"/>
+    <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
+
     <toolWindow factoryClass="com.crowdin.ui.panel.CrowdinPanelWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
-    <projectService serviceImplementation="com.crowdin.ui.panel.CrowdinPanelWindowFactory$ProjectService"/>
     <completion.contributor language="any" implementationClass="com.crowdin.completion.StringsCompletionContributor" />
+
+    <notificationGroup displayType="BALLOON" id="Crowdin BALLON" isLogByDefault="true"/>
+    <notificationGroup displayType="NONE" id="Crowdin NONE" isLogByDefault="true"/>
   </extensions>
 
   <actions>

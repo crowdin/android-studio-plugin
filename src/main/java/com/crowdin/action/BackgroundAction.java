@@ -6,14 +6,13 @@ import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
-import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.service.CrowdinSettings;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.StringUtils;
 import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -50,7 +49,7 @@ public abstract class BackgroundAction extends AnAction {
     ) {
         VirtualFile root = FileUtil.getProjectBaseDir(project);
 
-        CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
+        CrowdinSettings crowdinSettings = project.getService(CrowdinSettings.class);
 
         if (!StringUtils.isEmpty(question) && !StringUtils.isEmpty(okBtn)) {
             boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString(question), okBtn);

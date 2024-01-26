@@ -4,6 +4,7 @@ import com.crowdin.action.ActionContext;
 import com.crowdin.action.BackgroundAction;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.languages.model.Language;
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.util.FileUtil;
@@ -13,7 +14,6 @@ import com.crowdin.util.StringUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -52,9 +52,7 @@ public class RefreshAction extends BackgroundAction {
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
-            DownloadWindow window = ServiceManager
-                    .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
-                    .getDownloadWindow();
+            DownloadWindow window = project.getService(ProjectService.class).getDownloadWindow();
             if (window == null) {
                 return;
             }

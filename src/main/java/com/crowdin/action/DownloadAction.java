@@ -3,11 +3,10 @@ package com.crowdin.action;
 import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.logic.DownloadBundleLogic;
 import com.crowdin.logic.DownloadTranslationsLogic;
-import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -69,9 +68,7 @@ public class DownloadAction extends BackgroundAction {
                     return;
                 }
 
-                DownloadWindow window = ServiceManager
-                        .getService(project, CrowdinPanelWindowFactory.ProjectService.class)
-                        .getDownloadWindow();
+                DownloadWindow window = project.getService(ProjectService.class).getDownloadWindow();
                 if (window == null) {
                     return;
                 }

@@ -1,5 +1,6 @@
 package com.crowdin.ui.panel;
 
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.upload.UploadWindow;
@@ -11,7 +12,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -44,8 +44,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
         ContentManager contentManager = toolWindow.getContentManager();
         ActionManager actionManager = ActionManager.getInstance();
-        //TODO use ComponentManager (https://plugins.jetbrains.com/docs/intellij/plugin-services.html#example)
-        ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
+        ProjectService projectService = project.getService(ProjectService.class);
 
         Content progressPanel = this.setupPanel(
                 () -> {
@@ -55,7 +54,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                 },
                 (ActionGroup) actionManager.getAction(PROGRESS_TOOLBAR_ID),
                 contentFactory,
-                "Translation Progress"
+                "Progress"
         );
 
         Content uploadPanel = this.setupPanel(
@@ -109,7 +108,7 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                 .map(ToolWindow::getContentManager)
                 .ifPresent(manager -> {
                     ActionManager actionManager = ActionManager.getInstance();
-                    ProjectService projectService = ServiceManager.getService(project, ProjectService.class);
+                    ProjectService projectService = project.getService(ProjectService.class);
                     if (fullReload) {
                         runRefresh(project, actionManager, PROGRESS_REFRESH_ACTION, () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
                     }
@@ -136,37 +135,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         refreshAction.actionPerformed(anActionEvent);
         if (onRefresh != null) {
             onRefresh.run();
-        }
-    }
-
-    public static class ProjectService {
-
-        private TranslationProgressWindow translationProgressWindow;
-        private UploadWindow uploadWindow;
-        private DownloadWindow downloadWindow;
-
-        public void setTranslationProgressWindow(TranslationProgressWindow translationProgressWindow) {
-            this.translationProgressWindow = translationProgressWindow;
-        }
-
-        public TranslationProgressWindow getTranslationProgressWindow() {
-            return translationProgressWindow;
-        }
-
-        public UploadWindow getUploadWindow() {
-            return uploadWindow;
-        }
-
-        public void setUploadWindow(UploadWindow uploadWindow) {
-            this.uploadWindow = uploadWindow;
-        }
-
-        public DownloadWindow getDownloadWindow() {
-            return downloadWindow;
-        }
-
-        public void setDownloadWindow(DownloadWindow downloadWindow) {
-            this.downloadWindow = downloadWindow;
         }
     }
 

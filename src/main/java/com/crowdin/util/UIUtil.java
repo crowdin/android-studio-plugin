@@ -1,6 +1,6 @@
 package com.crowdin.util;
 
-import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.service.CrowdinSettings;
 import com.crowdin.ui.dialog.ConfirmActionDialog;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
