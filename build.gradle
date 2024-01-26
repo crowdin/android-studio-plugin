@@ -45,11 +45,21 @@ wrapper {
 }
 
 jacoco {
-    toolVersion = "0.8.9"
+    toolVersion = '0.8.10'
     reportsDirectory = layout.buildDirectory.dir('reports')
 }
 
+//https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin-faq.html#jacoco-reports-0-coverage
+test {
+    jacoco {
+        includeNoLocationClasses = true
+        excludes = ["jdk.internal.*"]
+    }
+}
+
 jacocoTestReport {
+    classDirectories.setFrom(instrumentCode)
+
     reports {
         xml.required = true
         csv.required = false
@@ -57,4 +67,8 @@ jacocoTestReport {
     }
 
     getExecutionData().setFrom(layout.buildDirectory.file('jacoco/test.exec'))
+}
+
+jacocoTestCoverageVerification {
+  classDirectories.setFrom(instrumentCode)
 }
