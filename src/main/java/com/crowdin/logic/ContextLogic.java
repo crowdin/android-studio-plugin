@@ -8,10 +8,10 @@ import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.PlaceholderUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,8 +21,8 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class ContextLogic {
 
-    public static Optional<Pair<VirtualFile, Language>> findSourceFileFromTranslationFile(
-        VirtualFile file, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache
+    public static Optional<Map.Entry<VirtualFile, Language>> findSourceFileFromTranslationFile(
+            VirtualFile file, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache
     ) {
         Path filePath = Paths.get(file.getPath());
         for (FileBean fileBean : properties.getFiles()) {
@@ -34,7 +34,7 @@ public class ContextLogic {
                     String builtPattern = PlaceholderUtil.replaceLanguagePlaceholders(basePattern, lang, crowdinProjectCache.getLanguageMapping());
                     Path translationFile = Paths.get(baseDir.getPath(), builtPattern);
                     if (filePath.equals(translationFile)) {
-                        return Optional.of(Pair.of(source, lang));
+                        return Optional.of(new AbstractMap.SimpleImmutableEntry<>(source, lang));
                     }
                 }
             }
@@ -43,16 +43,20 @@ public class ContextLogic {
     }
 
     public static Long findSourceIdFromSourceFile(
-        CrowdinProperties properties, Map<String, FileInfo> filePaths, VirtualFile file, VirtualFile root
+            CrowdinProperties properties, Map<String, FileInfo> filePaths, VirtualFile file, VirtualFile root
     ) {
         if (properties.isPreserveHierarchy()) {
             String fileRelativePath = FileUtil.sepAtStart(FileUtil.findRelativePath(root, file));
-            FileInfo foundSource = filePaths.get(fileRelativePath);
-            return foundSource.getId();
+            if (filePaths.containsKey(fileRelativePath)) {
+                FileInfo foundSource = filePaths.get(fileRelativePath);
+                return foundSource.getId();
+            } else {
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"));
+            }
         } else {
             List<String> foundCrowdinSources = filePaths.keySet().stream()
-                .filter(crowdinFilePath -> file.getPath().endsWith(crowdinFilePath))
-                .collect(Collectors.toList());
+                    .filter(crowdinFilePath -> file.getPath().endsWith(crowdinFilePath))
+                    .collect(Collectors.toList());
             if (foundCrowdinSources.isEmpty()) {
                 throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"));
             } else if (foundCrowdinSources.size() > 1) {

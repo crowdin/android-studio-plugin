@@ -13,10 +13,10 @@ import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PlaceholderUtil;
+import com.crowdin.util.StringUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

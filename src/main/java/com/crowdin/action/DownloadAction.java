@@ -1,28 +1,19 @@
 package com.crowdin.action;
 
-import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.bundles.model.Bundle;
-import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.logic.BranchLogic;
-import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.logic.DownloadBundleLogic;
 import com.crowdin.logic.DownloadTranslationsLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.download.DownloadWindow;
-import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
@@ -49,48 +40,31 @@ public class DownloadAction extends BackgroundAction {
     }
 
     @Override
-    public void performInBackground(AnActionEvent anActionEvent, ProgressIndicator indicator) {
+    public void performInBackground(AnActionEvent anActionEvent, @NotNull ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
+
+        if (project == null) {
+            return;
+        }
+
         isInProgress.set(true);
         try {
-            VirtualFile root = FileUtil.getProjectBaseDir(project);
+            Optional<ActionContext> contextOptional = super.prepare(
+                    project,
+                    indicator,
+                    true,
+                    false,
+                    true,
+                    "messages.confirm.download",
+                    "Download"
+            );
 
-            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
-
-            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
-            if (!confirmation) {
-                return;
-            }
-            indicator.checkCanceled();
-
-            CrowdinProperties properties;
-            try {
-                properties = CrowdinPropertiesLoader.load(project);
-            } catch (Exception e) {
-                NotificationUtil.showErrorMessage(project, e.getMessage());
-                return;
-            }
-            NotificationUtil.setLogDebugLevel(properties.isDebug());
-            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
-
-            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-
-            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-            String branchName = branchLogic.acquireBranchName(true);
-            indicator.checkCanceled();
-
-            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-
-            if (!crowdinProjectCache.isManagerAccess()) {
-                NotificationUtil.showErrorMessage(project, "You need to have manager access to perform this action");
+            if (contextOptional.isEmpty()) {
                 return;
             }
 
-            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
-
-            if (crowdinProjectCache.isStringsBased()) {
-                if (branch == null) {
+            if (contextOptional.get().crowdinProjectCache.isStringsBased()) {
+                if (contextOptional.get().branch == null) {
                     NotificationUtil.showErrorMessage(project, "Branch is missing");
                     return;
                 }
@@ -109,12 +83,12 @@ public class DownloadAction extends BackgroundAction {
                     return;
                 }
 
-                (new DownloadBundleLogic(project, crowdin, root, bundle)).process();
+                (new DownloadBundleLogic(project, contextOptional.get().crowdin, contextOptional.get().root, bundle)).process();
                 return;
             }
 
 
-            (new DownloadTranslationsLogic(project, crowdin, properties, root, crowdinProjectCache, branch)).process();
+            (new DownloadTranslationsLogic(project, contextOptional.get().crowdin, contextOptional.get().properties, contextOptional.get().root, contextOptional.get().crowdinProjectCache, contextOptional.get().branch)).process();
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {

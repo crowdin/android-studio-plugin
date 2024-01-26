@@ -1,19 +1,11 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
-import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
-import com.crowdin.logic.BranchLogic;
-import com.crowdin.logic.CrowdinSettings;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -26,6 +18,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -62,48 +55,35 @@ public class DownloadSourcesAction extends BackgroundAction {
     @Override
     protected void performInBackground(@NotNull AnActionEvent anActionEvent, @NotNull ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
+        if (project == null) {
+            return;
+        }
+
         isInProgress.set(true);
         try {
-            VirtualFile root = FileUtil.getProjectBaseDir(project);
+            Optional<ActionContext> context = super.prepare(
+                    project,
+                    indicator,
+                    false,
+                    false,
+                    true,
+                    "messages.confirm.download_sources",
+                    "Download"
+            );
 
-            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
-
-            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
-            if (!confirmation) {
+            if (context.isEmpty()) {
                 return;
             }
-            indicator.checkCanceled();
 
-            CrowdinProperties properties;
-            try {
-                properties = CrowdinPropertiesLoader.load(project);
-            } catch (Exception e) {
-                NotificationUtil.showErrorMessage(project, e.getMessage());
-                return;
-            }
-            NotificationUtil.setLogDebugLevel(properties.isDebug());
-            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
-
-            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-
-            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-            String branchName = branchLogic.acquireBranchName(true);
-            indicator.checkCanceled();
-
-            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-
-            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
-
-            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
+            Map<String, FileInfo> filePaths = context.get().crowdinProjectCache.getFileInfos(context.get().branch);
 
             AtomicBoolean isAnyFileDownloaded = new AtomicBoolean(false);
 
-            for (FileBean fileBean : properties.getFiles()) {
-                Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), properties.isPreserveHierarchy());
-                Map<String, VirtualFile> localSourceFiles = (properties.isPreserveHierarchy())
+            for (FileBean fileBean : context.get().properties.getFiles()) {
+                Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), context.get().properties.isPreserveHierarchy());
+                Map<String, VirtualFile> localSourceFiles = (context.get().properties.isPreserveHierarchy())
                         ? Collections.emptyMap()
-                        : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
+                        : FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource()).stream()
                         .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
                 List<String> foundSources = filePaths.keySet().stream()
                         .map(FileUtil::unixPath)
@@ -116,10 +96,11 @@ public class DownloadSourcesAction extends BackgroundAction {
                     NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), fileBean.getSource()));
                     return;
                 }
+
                 for (String foundSourceFilePath : foundSources) {
-                    if (properties.isPreserveHierarchy()) {
+                    if (context.get().properties.isPreserveHierarchy()) {
                         Long fileId = filePaths.get(foundSourceFilePath).getId();
-                        this.downloadFile(crowdin, fileId, root, foundSourceFilePath);
+                        this.downloadFile(context.get().crowdin, fileId, context.get().root, foundSourceFilePath);
                         isAnyFileDownloaded.set(true);
                     } else {
                         List<String> fittingSources = localSourceFiles.keySet().stream()
@@ -134,7 +115,7 @@ public class DownloadSourcesAction extends BackgroundAction {
                         }
                         Long fileId = filePaths.get(foundSourceFilePath).getId();
                         VirtualFile file = localSourceFiles.get(fittingSources.get(0));
-                        this.downloadFile(crowdin, fileId, file);
+                        this.downloadFile(context.get().crowdin, fileId, file);
                         isAnyFileDownloaded.set(true);
                     }
                     NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download_sources.file_downloaded"), foundSourceFilePath));

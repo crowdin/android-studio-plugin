@@ -7,9 +7,10 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -23,7 +24,7 @@ public final class NotificationUtil {
         new NotificationGroup("Crowdin",
             NotificationDisplayType.NONE, true);
     private static boolean isDebug = false;
-    private static SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 
     private static final String TITLE = "Crowdin";
@@ -60,8 +61,10 @@ public final class NotificationUtil {
     }
 
     public static void logErrorMessage(@NotNull Project project, @NotNull Exception e) {
-        Throwable rootCause = ExceptionUtils.getRootCause(e);
-        logMessage(project, ExceptionUtils.getStackTrace((rootCause != null) ? rootCause : e), NotificationType.ERROR, "ERROR");
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        e.printStackTrace(pw);
+        logMessage(project, sw.getBuffer().toString(), NotificationType.ERROR, "ERROR");
     }
 
     private static void logMessage(@NotNull Project project, @NotNull String message, @NotNull NotificationType type, String level) {

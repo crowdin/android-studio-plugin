@@ -10,8 +10,8 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.StringUtils;
 import com.intellij.openapi.project.Project;
-import org.apache.commons.lang.StringUtils;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
@@ -27,6 +27,10 @@ public class BranchLogic {
         this.crowdin = crowdin;
         this.project = project;
         this.properties = properties;
+    }
+
+    public String acquireBranchName() {
+        return this.acquireBranchName(false);
     }
 
     public String acquireBranchName(boolean performCheck) {
@@ -47,10 +51,10 @@ public class BranchLogic {
 
     public Branch getBranch(CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, boolean createIfNotExists) {
         if (this.branchInfo == null) {
-            this.acquireBranchName(true);
+            this.acquireBranchName();
         }
         Branch branch = projectCache.getBranches().get(this.branchInfo.getName());
-        if (branch == null && StringUtils.isNotEmpty(this.branchInfo.getName())) {
+        if (branch == null && !StringUtils.isEmpty(this.branchInfo.getName())) {
             if (createIfNotExists) {
                 AddBranchRequest addBranchRequest = RequestBuilder.addBranch(this.branchInfo.getName(), this.branchInfo.getTitle());
                 branch = crowdin.addBranch(addBranchRequest);

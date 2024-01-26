@@ -5,8 +5,8 @@ import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
-import com.crowdin.util.ActionUtils;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -47,7 +47,8 @@ public class CrowdinStartupActivity implements StartupActivity {
     }
 
     private void reloadPlugin(Project project, Crowdin crowdin, CrowdinProperties properties) {
-        String branchName = ActionUtils.getBranchName(project, properties, false);
+        BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+        String branchName = branchLogic.acquireBranchName(false);
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
             @Override

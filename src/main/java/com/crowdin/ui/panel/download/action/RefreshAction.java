@@ -1,18 +1,15 @@
 package com.crowdin.ui.panel.download.action;
 
+import com.crowdin.action.ActionContext;
 import com.crowdin.action.BackgroundAction;
-import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.logic.BranchLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PlaceholderUtil;
+import com.crowdin.util.StringUtils;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -21,16 +18,14 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class RefreshAction extends BackgroundAction {
 
@@ -50,6 +45,10 @@ public class RefreshAction extends BackgroundAction {
     protected void performInBackground(@NotNull AnActionEvent e, @NotNull ProgressIndicator indicator) {
         boolean forceRefresh = !CrowdinPanelWindowFactory.PLACE_ID.equals(e.getPlace());
         Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
+
         e.getPresentation().setEnabled(false);
         isInProgress.set(true);
         try {
@@ -60,48 +59,32 @@ public class RefreshAction extends BackgroundAction {
                 return;
             }
 
-            VirtualFile root = FileUtil.getProjectBaseDir(project);
+            Optional<ActionContext> context = super.prepare(project, indicator, false, false, forceRefresh, null, null);
 
-            CrowdinProperties properties;
-            try {
-                properties = CrowdinPropertiesLoader.load(project);
-            } catch (Exception err) {
-                NotificationUtil.showErrorMessage(project, err.getMessage());
+            if (context.isEmpty()) {
                 return;
             }
 
-            NotificationUtil.setLogDebugLevel(properties.isDebug());
-            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
-
-            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-
-            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-            String branchName = branchLogic.acquireBranchName(true);
-            indicator.checkCanceled();
-
-            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, forceRefresh);
-
-            if (crowdinProjectCache.isStringsBased()) {
+            if (context.get().crowdinProjectCache.isStringsBased()) {
                 ApplicationManager.getApplication()
-                        .invokeAndWait(() -> window.rebuildBundlesTree(crowdinProjectCache.getProject().getName(), crowdinProjectCache.getBundles()));
+                        .invokeAndWait(() -> window.rebuildBundlesTree(context.get().crowdinProjectCache.getProject().getName(), context.get().crowdinProjectCache.getBundles()));
                 return;
             }
 
             List<String> files = new ArrayList<>();
 
-            for (FileBean fileBean : properties.getFiles()) {
-                for (VirtualFile source : FileUtil.getSourceFilesRec(root, fileBean.getSource())) {
+            for (FileBean fileBean : context.get().properties.getFiles()) {
+                for (VirtualFile source : FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource())) {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
-                    String sourceRelativePath = properties.isPreserveHierarchy() ? StringUtils.removeStart(source.getPath(), root.getPath()) : FileUtil.sepAtStart(source.getName());
+                    String sourceRelativePath = context.get().properties.isPreserveHierarchy() ? StringUtils.removeStart(source.getPath(), context.get().root.getPath()) : FileUtil.sepAtStart(source.getName());
 
                     Map<Language, String> translationPaths =
-                            PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(), crowdinProjectCache.getProjectLanguages(), crowdinProjectCache.getLanguageMapping());
+                            PlaceholderUtil.buildTranslationPatterns(sourceRelativePath, fileBean.getTranslation(), context.get().crowdinProjectCache.getProjectLanguages(), context.get().crowdinProjectCache.getLanguageMapping());
 
                     for (Map.Entry<Language, String> translationPath : translationPaths.entrySet()) {
                         java.io.File translationFile = Paths.get(pathToPattern.getPath(), translationPath.getValue()).toFile();
                         if (translationFile.exists()) {
-                            String file = Paths.get(root.getPath()).relativize(Paths.get(translationFile.getPath())).toString();
+                            String file = Paths.get(context.get().root.getPath()).relativize(Paths.get(translationFile.getPath())).toString();
                             files.add(file);
                         }
                     }
@@ -109,11 +92,11 @@ public class RefreshAction extends BackgroundAction {
             }
 
             ApplicationManager.getApplication()
-                    .invokeAndWait(() -> window.rebuildFileTree(crowdinProjectCache.getProject().getName(), files));
+                    .invokeAndWait(() -> window.rebuildFileTree(context.get().crowdinProjectCache.getProject().getName(), files));
         } catch (ProcessCanceledException ex) {
             throw ex;
         } catch (Exception ex) {
-            if (project != null && forceRefresh) {
+            if (forceRefresh) {
                 NotificationUtil.logErrorMessage(project, ex);
                 NotificationUtil.showErrorMessage(project, ex.getMessage());
             }

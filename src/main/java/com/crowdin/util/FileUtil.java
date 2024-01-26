@@ -7,10 +7,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,9 +16,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -34,6 +33,9 @@ public final class FileUtil {
 
     public static final String PATH_SEPARATOR = FileSystems.getDefault().getSeparator();
     public static final String PATH_SEPARATOR_REGEX = "\\".equals(PATH_SEPARATOR) ? "\\\\" : PATH_SEPARATOR;
+
+    public static final String OS_NAME = System.getProperty("os.name");
+    public static final boolean IS_WINDOWS = OS_NAME != null && OS_NAME.startsWith("Windows");
 
     private FileUtil() {
         throw new UnsupportedOperationException();
@@ -151,7 +153,7 @@ public final class FileUtil {
     }
 
     public static File downloadTempFile(InputStream data) throws IOException {
-        File tempFile = FileUtilRt.createTempFile(RandomStringUtils.randomAlphanumeric(9), ".crowdin.tmp", true);
+        File tempFile = FileUtilRt.createTempFile(String.valueOf(System.currentTimeMillis()), ".crowdin.tmp", true);
         try (OutputStream tempFileOutput = new FileOutputStream(tempFile)) {
             FileUtilRt.copy(data, tempFileOutput);
         }
@@ -172,7 +174,7 @@ public final class FileUtil {
     }
 
     public static String normalizePath(String path) {
-        return path.replaceAll("[\\\\/]+", SystemUtils.IS_OS_WINDOWS ? "\\\\" : "/");
+        return path.replaceAll("[\\\\/]+", IS_WINDOWS ? "\\\\" : "/");
     }
 
     public static String unixPath(String path) {
@@ -230,8 +232,11 @@ public final class FileUtil {
             archive.delete();
         }
         if (tempDir != null) {
-            try {
-                FileUtils.deleteDirectory(new File(tempDir));
+            try (var dirStream = Files.walk(Paths.get(tempDir))) {
+                dirStream
+                        .map(Path::toFile)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(File::delete);
             } catch (IOException e) {
                 throw new RuntimeException("Couldn't delete temporary directory", e);
             }

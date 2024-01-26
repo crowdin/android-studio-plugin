@@ -2,9 +2,9 @@ package com.crowdin.client;
 
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.PropertyUtil;
+import com.crowdin.util.StringUtils;
 import com.crowdin.util.Util;
 import com.intellij.openapi.project.Project;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,13 +28,13 @@ public class CrowdinPropertiesLoader {
         } else {
             String propProjectId = properties.getProperty(PROJECT_ID);
             String propProjectIdEnv = properties.getProperty(PROJECT_ID_ENV);
-            if (StringUtils.isNotEmpty(propProjectId)) {
+            if (!StringUtils.isEmpty(propProjectId)) {
                 try {
                     crowdinProperties.setProjectId(Long.valueOf(propProjectId));
                 } catch (NumberFormatException e) {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.property_is_not_number"), PROJECT_ID));
                 }
-            } else if (StringUtils.isNotEmpty(propProjectIdEnv)) {
+            } else if (!StringUtils.isEmpty(propProjectIdEnv)) {
                 String propProjectIdEnvValue = System.getenv(propProjectIdEnv);
                 if (propProjectIdEnvValue == null) {
                     notExistEnvVars.add(propProjectIdEnv);
@@ -50,9 +50,9 @@ public class CrowdinPropertiesLoader {
             }
             String propApiToken = properties.getProperty(API_TOKEN);
             String propApiTokenEnv = properties.getProperty(API_TOKEN_ENV);
-            if (StringUtils.isNotEmpty(propApiToken)) {
+            if (!StringUtils.isEmpty(propApiToken)) {
                 crowdinProperties.setApiToken(propApiToken);
-            } else if (StringUtils.isNotEmpty(propApiTokenEnv)) {
+            } else if (!StringUtils.isEmpty(propApiTokenEnv)) {
                 String propApiTokenEnvValue = System.getenv(propApiTokenEnv);
                 if (propApiTokenEnvValue != null) {
                     crowdinProperties.setApiToken(propApiTokenEnvValue);
@@ -64,13 +64,13 @@ public class CrowdinPropertiesLoader {
             }
             String propBaseUrl = properties.getProperty(BASE_URL);
             String propBaseUrlEnv = properties.getProperty(BASE_URL_ENV);
-            if (StringUtils.isNotEmpty(propBaseUrl)) {
+            if (!StringUtils.isEmpty(propBaseUrl)) {
                 if (isBaseUrlValid(propBaseUrl)) {
                     crowdinProperties.setBaseUrl(propBaseUrl);
                 } else {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_url_property"), BASE_URL));
                 }
-            } else if (StringUtils.isNotEmpty(propBaseUrlEnv)) {
+            } else if (!StringUtils.isEmpty(propBaseUrlEnv)) {
                 String propBaseUrlEnvValue = System.getenv(propBaseUrlEnv);
                 if (propBaseUrlEnvValue == null) {
                     notExistEnvVars.add(propBaseUrlEnv);
@@ -83,7 +83,7 @@ public class CrowdinPropertiesLoader {
             if (notExistEnvVars.size() == 1) {
                 errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist.single"), notExistEnvVars.get(0)));
             } else if (!notExistEnvVars.isEmpty()) {
-                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist.plural"), StringUtils.join(notExistEnvVars, ", ")));
+                errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist.plural"), String.join(", ", notExistEnvVars)));
             }
             String disabledBranches = properties.getProperty(PROPERTY_DISABLE_BRANCHES);
             if (disabledBranches != null) {
@@ -115,13 +115,13 @@ public class CrowdinPropertiesLoader {
             String importEqSuggestions = properties.getProperty(PROPERTY_IMPORT_EQ_SUGGESTIONS);
             String autoApproveImported = properties.getProperty(PROPERTY_AUTO_APPROVE_IMPORTED);
             String translateHidden = properties.getProperty(PROPERTY_TRANSLATE_HIDDEN);
-            if (StringUtils.isNotEmpty(importEqSuggestions)) {
+            if (!StringUtils.isEmpty(importEqSuggestions)) {
                 crowdinProperties.setImportEqSuggestions(Boolean.parseBoolean(importEqSuggestions));
             }
-            if (StringUtils.isNotEmpty(autoApproveImported)) {
+            if (!StringUtils.isEmpty(autoApproveImported)) {
                 crowdinProperties.setAutoApproveImported(Boolean.parseBoolean(autoApproveImported));
             }
-            if (StringUtils.isNotEmpty(translateHidden)) {
+            if (!StringUtils.isEmpty(translateHidden)) {
                 crowdinProperties.setTranslateHidden(Boolean.parseBoolean(translateHidden));
             }
         }
@@ -162,7 +162,7 @@ public class CrowdinPropertiesLoader {
         }
         return Arrays.stream(sources.split(","))
             .map(String::trim)
-            .filter(StringUtils::isNotEmpty)
+            .filter(e -> !StringUtils.isEmpty(e))
             .map(s -> STANDARD_SOURCE_PATH + s)
             .map(source -> {
                 FileBean fb = new FileBean();
@@ -194,7 +194,7 @@ public class CrowdinPropertiesLoader {
             String cleanupMode = properties.getProperty(String.format(PROPERTY_FILES_CLEANUP_MODE_PATTERN, ident));
             List<String> labels = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_LABELS_PATTERN, ident)));
             List<String> excludedTargetLanguages = parsePropertyToList(properties.getProperty(String.format(PROPERTY_FILES_EXCLUDED_TARGET_LANGUAGES_PATTERN, ident)));
-            if (StringUtils.isNotEmpty(source) && StringUtils.isNotEmpty(translation)) {
+            if (!StringUtils.isEmpty(source) && !StringUtils.isEmpty(translation)) {
                 FileBean fb = new FileBean();
                 fb.setSource(FileUtil.noSepAtStart(FileUtil.unixPath(source)));
                 fb.setTranslation(FileUtil.unixPath(translation));
@@ -227,7 +227,7 @@ public class CrowdinPropertiesLoader {
         List<String> parsedProperty = new ArrayList<>();
         for (String part : property.split(",")) {
             part = part.trim();
-            if (StringUtils.isNotEmpty(part)) {
+            if (!StringUtils.isEmpty(part)) {
                 parsedProperty.add(part);
             }
         }

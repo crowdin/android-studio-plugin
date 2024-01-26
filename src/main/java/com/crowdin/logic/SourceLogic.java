@@ -18,9 +18,9 @@ import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
 import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.StringUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
