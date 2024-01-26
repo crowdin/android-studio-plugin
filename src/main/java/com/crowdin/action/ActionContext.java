@@ -1,9 +1,9 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.intellij.openapi.vfs.VirtualFile;
 
 public class ActionContext {

@@ -1,7 +1,6 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.core.model.PatchRequest;
@@ -16,6 +15,7 @@ import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
 import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.StringUtils;

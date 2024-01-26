@@ -1,11 +1,11 @@
 package com.crowdin.activity;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
@@ -55,7 +55,7 @@ public class CrowdinStartupActivity implements StartupActivity {
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
                     indicator.setText("Updating Crowdin cache");
-                    CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
+                    project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, true);
                     CrowdinPanelWindowFactory.reloadPanels(project, true);
                 } catch (Exception e) {
                     NotificationUtil.showErrorMessage(project, e.getMessage());

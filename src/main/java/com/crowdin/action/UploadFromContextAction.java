@@ -1,10 +1,10 @@
 package com.crowdin.action;
 
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
 import com.crowdin.logic.SourceLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -61,7 +61,7 @@ public class UploadFromContextAction extends BackgroundAction {
             Map<FileBean, List<VirtualFile>> source = Collections.singletonMap(foundFileBean, Collections.singletonList(file));
             SourceLogic.processSources(project, context.get().root, context.get().crowdin, context.get().crowdinProjectCache, context.get().branch, context.get().properties.isPreserveHierarchy(), source);
 
-            CrowdinProjectCacheProvider.outdateBranch(context.get().branchName);
+            project.getService(CrowdinProjectCacheProvider.class).outdateBranch(context.get().branchName);
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {

@@ -1,12 +1,12 @@
 package com.crowdin.completion;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -62,8 +62,9 @@ public class StringsCompletionContributor extends CompletionContributor {
 
         BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
         String branchName = branchLogic.acquireBranchName();
+
         CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+                project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, false);
 
         List<SourceString> strings = crowdinProjectCache.getStrings();
         Branch branch = branchLogic.getBranch(crowdinProjectCache, false);

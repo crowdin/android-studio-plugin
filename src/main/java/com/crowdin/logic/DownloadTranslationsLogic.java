@@ -1,7 +1,6 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.RequestBuilder;
@@ -9,6 +8,7 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;

@@ -39,6 +39,7 @@
 
     <projectService serviceImplementation="com.crowdin.service.CrowdinSettings"/>
     <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
+    <projectService serviceImplementation="com.crowdin.service.CrowdinProjectCacheProvider"/>
 
     <toolWindow factoryClass="com.crowdin.ui.panel.CrowdinPanelWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
     <completion.contributor language="any" implementationClass="com.crowdin.completion.StringsCompletionContributor" />

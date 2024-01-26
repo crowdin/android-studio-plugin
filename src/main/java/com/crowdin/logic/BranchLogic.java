@@ -2,11 +2,11 @@ package com.crowdin.logic;
 
 import com.crowdin.client.BranchInfo;
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.GitUtil;
 import com.crowdin.util.NotificationUtil;

@@ -1,11 +1,11 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.service.CrowdinSettings;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -80,7 +80,7 @@ public abstract class BackgroundAction extends AnAction {
         }
 
         CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, realodCrowdinCache);
+                project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, realodCrowdinCache);
 
         if (checkForManagerAccess) {
             if (!crowdinProjectCache.isManagerAccess()) {

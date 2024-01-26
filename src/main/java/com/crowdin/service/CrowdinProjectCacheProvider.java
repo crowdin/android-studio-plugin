@@ -1,5 +1,6 @@
-package com.crowdin.client;
+package com.crowdin.service;
 
+import com.crowdin.client.CrowdinClient;
 import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.projectsgroups.model.Project;
@@ -18,28 +19,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//TODO move to Project-level service
 public class CrowdinProjectCacheProvider {
 
-    private static CrowdinProjectCache crowdinProjectCache;
+    private CrowdinProjectCache crowdinProjectCache = new CrowdinProjectCache();
 
-    private static boolean outdated = false;
+    private boolean outdated = false;
 
-    private static final List<String> outdatedBranches = new ArrayList<>();
+    private final List<String> outdatedBranches = new ArrayList<>();
 
-    public static CrowdinProjectCache getCrowdinProjectCache() {
+    public CrowdinProjectCache getCrowdinProjectCache() {
         return crowdinProjectCache;
     }
 
-    public static void setCrowdinProjectCache(CrowdinProjectCache crowdinProjectCache) {
-        CrowdinProjectCacheProvider.crowdinProjectCache = crowdinProjectCache;
+    public void setCrowdinProjectCache(CrowdinProjectCache crowdinProjectCache) {
+        this.crowdinProjectCache = crowdinProjectCache;
     }
 
-    public static void setOutdated(boolean outdated) {
-        CrowdinProjectCacheProvider.outdated = outdated;
-    }
-
-    public static List<String> getOutdatedBranches() {
+    public List<String> getOutdatedBranches() {
         return outdatedBranches;
     }
 
@@ -190,14 +186,7 @@ public class CrowdinProjectCacheProvider {
         }
     }
 
-    private CrowdinProjectCacheProvider() {
-
-    }
-
-    public synchronized static CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
-        if (crowdinProjectCache == null) {
-            crowdinProjectCache = new CrowdinProjectCache();
-        }
+    public synchronized CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
         if (crowdinProjectCache.getProject() == null || update) {
             crowdinProjectCache.setProject(crowdin.getProject());
             crowdinProjectCache.setManagerAccess(crowdinProjectCache.getProject() instanceof ProjectSettings);
@@ -248,9 +237,8 @@ public class CrowdinProjectCacheProvider {
         return crowdinProjectCache;
     }
 
-    public synchronized static void outdateBranch(String branchName) {
+    public synchronized void outdateBranch(String branchName) {
         outdated = true;
         outdatedBranches.add(branchName);
     }
-
 }

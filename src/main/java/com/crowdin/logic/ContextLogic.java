@@ -1,6 +1,6 @@
 package com.crowdin.logic;
 
-import com.crowdin.client.CrowdinProjectCacheProvider;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.languages.model.Language;

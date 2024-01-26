@@ -1,13 +1,13 @@
 package com.crowdin.event;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -83,7 +83,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     String branchName = branchLogic.acquireBranchName();
 
                     CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                            CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+                            project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, false);
                     indicator.checkCanceled();
 
                     Map<FileBean, List<VirtualFile>> allSources = new HashMap<>();
@@ -126,7 +126,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
                     SourceLogic.processSources(project, FileUtil.getProjectBaseDir(project), crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), changedSources);
 
-                    CrowdinProjectCacheProvider.outdateBranch(branchName);
+                    project.getService(CrowdinProjectCacheProvider.class).outdateBranch(branchName);
                 } catch (ProcessCanceledException e) {
                     throw e;
                 } catch (Exception e) {
