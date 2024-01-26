@@ -30,20 +30,14 @@ public class BranchLogic {
     }
 
     public String acquireBranchName() {
-        return this.acquireBranchName(false);
-    }
-
-    public String acquireBranchName(boolean performCheck) {
         BranchInfo branch;
         if (properties.isDisabledBranches()) {
             branch = new BranchInfo("", "");
         } else {
             branch = GitUtil.getCurrentBranch(project);
         }
-        if (performCheck) {
-            if (!CrowdinFileUtil.isValidBranchName(branch.getName())) {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
-            }
+        if (!CrowdinFileUtil.isValidBranchName(branch.getName())) {
+            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
         }
         this.branchInfo = branch;
         return branch.getName();

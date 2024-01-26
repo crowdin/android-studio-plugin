@@ -48,7 +48,7 @@ public class CrowdinStartupActivity implements StartupActivity {
 
     private void reloadPlugin(Project project, Crowdin crowdin, CrowdinProperties properties) {
         BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-        String branchName = branchLogic.acquireBranchName(false);
+        String branchName = branchLogic.acquireBranchName();
 
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
             @Override
