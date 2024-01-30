@@ -20,6 +20,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +42,25 @@ public class DownloadWindow implements ContentTab {
         tree1.setCellRenderer(new CellRenderer());
         tree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         this.setPlug("Refresh tree");
+
+        tree1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int selRow = tree1.getRowForLocation(e.getX(), e.getY());
+                TreePath selPath = tree1.getPathForLocation(e.getX(), e.getY());
+                if (selRow != -1) {
+                    if (e.getClickCount() == 2) {
+                        Optional
+                                .ofNullable(selPath.getLastPathComponent())
+                                .filter(DefaultMutableTreeNode.class::isInstance)
+                                .map(CellRenderer::getData)
+                                .filter(CellData::isLink)
+                                .ifPresent(cell -> BrowserUtil.browse(cell.getLink()));
+                    }
+                }
+            }
+        });
+
         tree1.addTreeSelectionListener(e -> {
             Optional<DefaultMutableTreeNode> selectedNode = Optional.ofNullable(e.getNewLeadSelectionPath())
                     .map(TreePath::getLastPathComponent)
@@ -56,11 +77,6 @@ public class DownloadWindow implements ContentTab {
             }
 
             CellData cell = CellRenderer.getData(this.selectedElement);
-
-            if (cell.isLink()) {
-                BrowserUtil.browse(cell.getLink());
-                return;
-            }
 
             if (cell.isBundle()) {
                 this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
