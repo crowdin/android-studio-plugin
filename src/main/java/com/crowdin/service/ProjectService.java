@@ -43,6 +43,10 @@ public class ProjectService {
         return initializationItems;
     }
 
+    public EnumSet<InitializationItem> getLoadedComponents() {
+        return initializationItems;
+    }
+
     public static enum InitializationItem {
         STARTUP_ACTIVITY, UI_PANELS
     }

@@ -8,6 +8,7 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -108,7 +109,10 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     VirtualFile crowdinPropertyFile = PropertyUtil.getCrowdinPropertyFile(project);
                     boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
                     if (crowdinPropertiesFileUpdated) {
-                        CrowdinPanelWindowFactory.reloadPanels(project, false);
+                        ProjectService projectService = project.getService(ProjectService.class);
+                        if (projectService.getLoadedComponents().contains(ProjectService.InitializationItem.UI_PANELS)) {
+                            CrowdinPanelWindowFactory.reloadPanels(project, false);
+                        }
                     }
 
                     if (changedSources.isEmpty()) {
