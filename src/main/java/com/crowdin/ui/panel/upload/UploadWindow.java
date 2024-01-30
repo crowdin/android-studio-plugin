@@ -51,5 +51,14 @@ public class UploadWindow implements ContentTab {
     public void rebuildTree(String projectName, List<String> files) {
         this.selectedElement = null;
         tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+        expandAll();
+    }
+
+    public void expandAll() {
+        FileTree.expandAll(tree1);
+    }
+
+    public void collapseAll() {
+        FileTree.collapseAll(tree1);
     }
 }

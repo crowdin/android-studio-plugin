@@ -58,18 +58,20 @@
 
     <group id="Crowdin.UploadToolbar">
       <action id="Crowdin.UploadSource" icon="/icons/upload-sources.svg" class="com.crowdin.action.UploadAction" text="Upload Sources" />
-      <separator/>
       <action id="Crowdin.UploadTranslations" icon="/icons/upload.svg" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations"/>
       <separator/>
       <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
+      <action id="Crowdin.ExpandUploadTree" text="Expand" class="com.crowdin.ui.panel.upload.action.ExpandAction"/>
+      <action id="Crowdin.CollapseUploadTree" text="Collapse" class="com.crowdin.ui.panel.upload.action.CollapseAction"/>
     </group>
 
     <group id="Crowdin.DownloadToolbar">
       <action id="Crowdin.DownloadSources" icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
-      <separator/>
       <action id="Crowdin.DownloadTranslations" icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
       <separator/>
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
+      <action id="Crowdin.ExpandDownloadTree" text="Expand" class="com.crowdin.ui.panel.download.action.ExpandAction"/>
+      <action id="Crowdin.CollapseDownloadTree" text="Collapse" class="com.crowdin.ui.panel.download.action.CollapseAction"/>
     </group>
 
     <action icon="/icons/icon.svg" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">

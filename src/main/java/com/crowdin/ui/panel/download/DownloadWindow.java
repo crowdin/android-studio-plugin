@@ -86,6 +86,7 @@ public class DownloadWindow implements ContentTab {
         this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
         this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
         tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+        FileTree.expandAll(tree1);
     }
 
     public void rebuildBundlesTree(String projectName, List<Bundle> bundles) {
@@ -96,6 +97,7 @@ public class DownloadWindow implements ContentTab {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
         bundles.forEach(bundle -> root.add(new DefaultMutableTreeNode(CellData.bundle(bundle))));
         tree1.setModel(new DefaultTreeModel(root));
+        expandAll();
     }
 
     private void updateToolbar(String actionId, String text, boolean visible, boolean enabled) {
@@ -106,5 +108,13 @@ public class DownloadWindow implements ContentTab {
         presentation.setText(text);
         action.update(AnActionEvent.createFromDataContext(DOWNLOAD_TOOLBAR_ID, presentation, DataContext.EMPTY_CONTEXT));
         ActivityTracker.getInstance().inc();
+    }
+
+    public void expandAll() {
+        FileTree.expandAll(tree1);
+    }
+
+    public void collapseAll() {
+        FileTree.collapseAll(tree1);
     }
 }

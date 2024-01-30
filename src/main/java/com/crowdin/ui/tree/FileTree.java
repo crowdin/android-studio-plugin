@@ -2,6 +2,7 @@ package com.crowdin.ui.tree;
 
 import com.crowdin.util.FileUtil;
 
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.nio.file.Path;
@@ -111,5 +112,27 @@ public class FileTree {
             res.add((DefaultMutableTreeNode) children.nextElement());
         }
         return res;
+    }
+
+    public static void expandAll(JTree tree) {
+        toggleTree(tree, 0, tree.getRowCount(), false);
+    }
+
+    public static void collapseAll(JTree tree) {
+        toggleTree(tree, 0, tree.getRowCount(), true);
+    }
+
+    private static void toggleTree(JTree tree, int startingIndex, int rowCount, boolean collapse) {
+        for (int i = startingIndex; i < rowCount; ++i) {
+            if (collapse) {
+                tree.collapseRow(i);
+            } else {
+                tree.expandRow(i);
+            }
+        }
+
+        if (tree.getRowCount() != rowCount) {
+            toggleTree(tree, rowCount, tree.getRowCount(), collapse);
+        }
     }
 }
