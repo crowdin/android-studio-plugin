@@ -46,9 +46,7 @@ public class DownloadSourceFromContextAction extends BackgroundAction {
                 return;
             }
 
-            Long sourceId = ContextLogic.findSourceIdFromSourceFile(context.get().properties, context.get().crowdinProjectCache.getFileInfos(context.get().branch), file, context.get().root);
-            URL url = context.get().crowdin.downloadFile(sourceId);
-            FileUtil.downloadFile(this, file, url);
+            performDownload(this, file, context.get());
             NotificationUtil.showInformationMessage(project, MESSAGES_BUNDLE.getString("messages.success.download_source"));
         } catch (ProcessCanceledException e) {
             throw e;
@@ -56,6 +54,12 @@ public class DownloadSourceFromContextAction extends BackgroundAction {
             NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
+    }
+
+    public static void performDownload(Object requestor, VirtualFile file, ActionContext context) {
+        Long sourceId = ContextLogic.findSourceIdFromSourceFile(context.properties, context.crowdinProjectCache.getFileInfos(context.branch), file, context.root);
+        URL url = context.crowdin.downloadFile(sourceId);
+        FileUtil.downloadFile(requestor, file, url);
     }
 
     @Override

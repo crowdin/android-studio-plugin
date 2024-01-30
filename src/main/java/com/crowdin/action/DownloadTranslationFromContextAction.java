@@ -51,19 +51,23 @@ public class DownloadTranslationFromContextAction extends BackgroundAction {
                 return;
             }
 
-            Map.Entry<VirtualFile, Language> source = ContextLogic.findSourceFileFromTranslationFile(file, context.get().properties, context.get().root, context.get().crowdinProjectCache)
-                    .orElseThrow(() -> new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_representative_context")));
-
-            Long sourceId = ContextLogic.findSourceIdFromSourceFile(context.get().properties, context.get().crowdinProjectCache.getFileInfos(context.get().branch), source.getKey(), context.get().root);
-
-            URL url = context.get().crowdin.downloadFileTranslation(sourceId, RequestBuilder.buildProjectFileTranslation(source.getValue().getId()));
-            FileUtil.downloadFile(this, file, url);
+            performDownload(this, context.get(), file);
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
             NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
+    }
+
+    public static void performDownload(Object requestor, ActionContext context, VirtualFile file) {
+        Map.Entry<VirtualFile, Language> source = ContextLogic.findSourceFileFromTranslationFile(file, context.properties, context.root, context.crowdinProjectCache)
+                .orElseThrow(() -> new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_representative_context")));
+
+        Long sourceId = ContextLogic.findSourceIdFromSourceFile(context.properties, context.crowdinProjectCache.getFileInfos(context.branch), source.getKey(), context.root);
+
+        URL url = context.crowdin.downloadFileTranslation(sourceId, RequestBuilder.buildProjectFileTranslation(source.getValue().getId()));
+        FileUtil.downloadFile(requestor, file, url);
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.crowdin.action;
 import com.crowdin.client.Crowdin;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.FileInfo;
+import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -15,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +78,28 @@ public class DownloadSourcesAction extends BackgroundAction {
                 return;
             }
 
+            List<String> selectedFiles = Optional
+                    .ofNullable(project.getService(ProjectService.class).getDownloadWindow())
+                    .map(DownloadWindow::getSelectedFiles)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .toList();
+
+            if (!selectedFiles.isEmpty()) {
+                for (String file : selectedFiles) {
+                    try {
+                        VirtualFile virtualFile = FileUtil.findVFileByPath(file);
+                        DownloadSourceFromContextAction.performDownload(this, virtualFile, context.get());
+                        NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download_sources.file_downloaded"), file));
+                    } catch (Exception e) {
+                        NotificationUtil.logErrorMessage(project, e);
+                        NotificationUtil.showWarningMessage(project, e.getMessage());
+                    }
+                }
+                return;
+            }
+
             Map<String, FileInfo> filePaths = context.get().crowdinProjectCache.getFileInfos(context.get().branch);
 
             AtomicBoolean isAnyFileDownloaded = new AtomicBoolean(false);
@@ -90,7 +115,7 @@ public class DownloadSourcesAction extends BackgroundAction {
                         .filter(sourcePredicate)
                         .map(FileUtil::normalizePath)
                         .sorted()
-                        .collect(Collectors.toList());
+                        .toList();
 
                 if (foundSources.isEmpty()) {
                     NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), fileBean.getSource()));
@@ -105,7 +130,8 @@ public class DownloadSourcesAction extends BackgroundAction {
                     } else {
                         List<String> fittingSources = localSourceFiles.keySet().stream()
                                 .filter(localSourceFilePath -> localSourceFilePath.endsWith(foundSourceFilePath))
-                                .collect(Collectors.toList());
+                                .toList();
+
                         if (fittingSources.isEmpty()) {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.file_no_representative"), foundSourceFilePath));
                             continue;
@@ -113,6 +139,7 @@ public class DownloadSourcesAction extends BackgroundAction {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.file_not_one_representative"), foundSourceFilePath));
                             continue;
                         }
+
                         Long fileId = filePaths.get(foundSourceFilePath).getId();
                         VirtualFile file = localSourceFiles.get(fittingSources.get(0));
                         this.downloadFile(context.get().crowdin, fileId, file);

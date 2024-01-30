@@ -32,7 +32,7 @@ public class DownloadWindow implements ContentTab {
     private Tree tree1;
     private JScrollPane scrollPane;
     private boolean isBundlesMode = false;
-    private Bundle selectedBundle;
+    private DefaultMutableTreeNode selectedElement;
 
     public DownloadWindow() {
         scrollPane.getViewport().setBackground(JBColor.WHITE);
@@ -40,22 +40,23 @@ public class DownloadWindow implements ContentTab {
         tree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         this.setPlug("Refresh tree");
         tree1.addTreeSelectionListener(e -> {
-            this.selectedBundle = null;
-            if (!isBundlesMode) {
-                return;
-            }
-
-            Optional<CellData> selectedNode = Optional.ofNullable(e.getNewLeadSelectionPath())
+            Optional<DefaultMutableTreeNode> selectedNode = Optional.ofNullable(e.getNewLeadSelectionPath())
                     .map(TreePath::getLastPathComponent)
-                    .map(CellRenderer::getData);
+                    .map(DefaultMutableTreeNode.class::cast);
 
-            if (!selectedNode.isPresent()) {
+            if (selectedNode.isEmpty()) {
                 return;
             }
 
-            if (selectedNode.get().isBundle()) {
+            this.selectedElement = selectedNode.get();
+
+            if (!this.isBundlesMode) {
+                return;
+            }
+
+            CellData cell = CellRenderer.getData(this.selectedElement);
+            if (cell.isBundle()) {
                 this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
-                this.selectedBundle = selectedNode.get().getBundle();
             } else {
                 this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
             }
@@ -72,11 +73,16 @@ public class DownloadWindow implements ContentTab {
     }
 
     public Bundle getSelectedBundle() {
-        return selectedBundle;
+        return CellRenderer.getData(this.selectedElement).getBundle();
+    }
+
+    public List<String> getSelectedFiles() {
+        return FileTree.getFiles(this.selectedElement);
     }
 
     public void rebuildFileTree(String projectName, List<String> files) {
         isBundlesMode = false;
+        this.selectedElement = null;
         this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
         this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
         tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
@@ -84,6 +90,7 @@ public class DownloadWindow implements ContentTab {
 
     public void rebuildBundlesTree(String projectName, List<Bundle> bundles) {
         isBundlesMode = true;
+        this.selectedElement = null;
         this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
         this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));

@@ -6,6 +6,8 @@ import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
+import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.upload.UploadWindow;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PlaceholderUtil;
@@ -20,8 +22,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,6 +57,14 @@ public class UploadTranslationsAction extends BackgroundAction {
                 return;
             }
 
+            List<String> selectedFiles = Optional
+                    .ofNullable(project.getService(ProjectService.class).getUploadWindow())
+                    .map(UploadWindow::getSelectedFiles)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .toList();
+
             if (context.get().crowdinProjectCache.isStringsBased() && context.get().branch == null) {
                 NotificationUtil.showErrorMessage(project, "Branch is missing");
                 return;
@@ -78,11 +90,23 @@ public class UploadTranslationsAction extends BackgroundAction {
 
                     FileInfo crowdinSource = filePaths.get(FileUtil.normalizePath(sourceRelativePath));
                     if (!context.get().crowdinProjectCache.isStringsBased() && crowdinSource == null) {
-                        NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), FileUtil.normalizePath((context.get().branchName != null ? context.get().branchName + "/" : "") + sourceRelativePath)));
-                        return;
+                        if (selectedFiles.isEmpty()) {
+                            NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_source"), FileUtil.normalizePath((context.get().branchName != null ? context.get().branchName + "/" : "") + sourceRelativePath)));
+                            return;
+                        } else {
+                            continue;
+                        }
                     }
                     for (Map.Entry<Language, String> translationPath : translationPaths.entrySet()) {
-                        java.io.File translationFile = Paths.get(pathToPattern.getPath(), translationPath.getValue()).toFile();
+                        Path translationFilePath = Paths.get(pathToPattern.getPath(), translationPath.getValue());
+                        java.io.File translationFile = translationFilePath.toFile();
+
+                        if (!selectedFiles.isEmpty()) {
+                            if (!selectedFiles.contains(translationFilePath.toString())) {
+                                continue;
+                            }
+                        }
+
                         if (!translationFile.exists()) {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.missing_translation"), FileUtil.noSepAtStart(StringUtils.removeStart(translationFile.getPath(), context.get().root.getPath()))));
                             continue;

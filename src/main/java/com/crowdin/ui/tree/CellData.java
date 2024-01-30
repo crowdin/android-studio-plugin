@@ -14,30 +14,37 @@ public class CellData {
 
     private final String text;
     private final Icon icon;
-    private final boolean isFile;
+    private final String file;
     private final Bundle bundle;
 
+    private final boolean isRoot;
+
     public static CellData root(String text) {
-        return new CellData(text, LOGO, false, null);
+        return new CellData(true, text, LOGO, null, null);
     }
 
     public static CellData folder(String text) {
-        return new CellData(text, FOLDER, false, null);
+        return new CellData(false, text, FOLDER, null, null);
     }
 
-    public static CellData file(String text) {
-        return new CellData(text, FILE, true, null);
+    public static CellData file(String text, String file) {
+        return new CellData(false, text, FILE, file, null);
     }
 
     public static CellData bundle(Bundle bundle) {
-        return new CellData(bundle.getName(), AllIcons.FileTypes.Archive, false, bundle);
+        return new CellData(false, bundle.getName(), AllIcons.FileTypes.Archive, null, bundle);
     }
 
-    private CellData(String text, Icon icon, boolean isFile, Bundle bundle) {
+    private CellData(boolean isRoot, String text, Icon icon, String file, Bundle bundle) {
+        this.isRoot = isRoot;
         this.text = text;
         this.icon = icon;
-        this.isFile = isFile;
+        this.file = file;
         this.bundle = bundle;
+    }
+
+    public boolean isRoot() {
+        return isRoot;
     }
 
     public String getText() {
@@ -49,7 +56,11 @@ public class CellData {
     }
 
     public boolean isFile() {
-        return isFile;
+        return file != null;
+    }
+
+    public String getFile() {
+        return file;
     }
 
     public boolean isBundle() {
@@ -64,7 +75,8 @@ public class CellData {
     public String toString() {
         return "CellData{" +
                 "text='" + text + '\'' +
-                ", isFile=" + isFile +
+                ", isFile=" + this.isFile() +
+                ", isBundle=" + this.isBundle() +
                 '}';
     }
 }

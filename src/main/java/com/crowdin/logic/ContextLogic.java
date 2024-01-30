@@ -45,22 +45,28 @@ public class ContextLogic {
     public static Long findSourceIdFromSourceFile(
             CrowdinProperties properties, Map<String, FileInfo> filePaths, VirtualFile file, VirtualFile root
     ) {
+        String fileRelativePath = FileUtil.sepAtStart(FileUtil.findRelativePath(root, file));
         if (properties.isPreserveHierarchy()) {
-            String fileRelativePath = FileUtil.sepAtStart(FileUtil.findRelativePath(root, file));
             if (filePaths.containsKey(fileRelativePath)) {
                 FileInfo foundSource = filePaths.get(fileRelativePath);
                 return foundSource.getId();
             } else {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"));
+                throw new RuntimeException(
+                        String.format(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"), fileRelativePath)
+                );
             }
         } else {
             List<String> foundCrowdinSources = filePaths.keySet().stream()
                     .filter(crowdinFilePath -> file.getPath().endsWith(crowdinFilePath))
-                    .collect(Collectors.toList());
+                    .toList();
             if (foundCrowdinSources.isEmpty()) {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"));
+                throw new RuntimeException(
+                        String.format(MESSAGES_BUNDLE.getString("errors.file_no_server_representative"), fileRelativePath)
+                );
             } else if (foundCrowdinSources.size() > 1) {
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.file_not_one_server_representative"));
+                throw new RuntimeException(
+                        String.format(MESSAGES_BUNDLE.getString("errors.file_not_one_server_representative"), fileRelativePath)
+                );
             } else {
                 return filePaths.get(foundCrowdinSources.get(0)).getId();
             }

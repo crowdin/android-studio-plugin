@@ -5,13 +5,18 @@ import com.crowdin.logic.DownloadBundleLogic;
 import com.crowdin.logic.DownloadTranslationsLogic;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.download.DownloadWindow;
+import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,7 +53,7 @@ public class DownloadAction extends BackgroundAction {
 
         isInProgress.set(true);
         try {
-            Optional<ActionContext> contextOptional = super.prepare(
+            Optional<ActionContext> context = super.prepare(
                     project,
                     indicator,
                     true,
@@ -58,12 +63,12 @@ public class DownloadAction extends BackgroundAction {
                     "Download"
             );
 
-            if (contextOptional.isEmpty()) {
+            if (context.isEmpty()) {
                 return;
             }
 
-            if (contextOptional.get().crowdinProjectCache.isStringsBased()) {
-                if (contextOptional.get().branch == null) {
+            if (context.get().crowdinProjectCache.isStringsBased()) {
+                if (context.get().branch == null) {
                     NotificationUtil.showErrorMessage(project, "Branch is missing");
                     return;
                 }
@@ -80,12 +85,33 @@ public class DownloadAction extends BackgroundAction {
                     return;
                 }
 
-                (new DownloadBundleLogic(project, contextOptional.get().crowdin, contextOptional.get().root, bundle)).process();
+                (new DownloadBundleLogic(project, context.get().crowdin, context.get().root, bundle)).process();
+                return;
+            }
+
+            List<String> selectedFiles = Optional
+                    .ofNullable(project.getService(ProjectService.class).getDownloadWindow())
+                    .map(DownloadWindow::getSelectedFiles)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .toList();
+
+            if (!selectedFiles.isEmpty()) {
+                for (String file : selectedFiles) {
+                    try {
+                        VirtualFile virtualFile = FileUtil.findVFileByPath(file);
+                        DownloadTranslationFromContextAction.performDownload(this, context.get(), virtualFile);
+                    } catch (Exception e) {
+                        NotificationUtil.logErrorMessage(project, e);
+                        NotificationUtil.showWarningMessage(project, e.getMessage());
+                    }
+                }
                 return;
             }
 
 
-            (new DownloadTranslationsLogic(project, contextOptional.get().crowdin, contextOptional.get().properties, contextOptional.get().root, contextOptional.get().crowdinProjectCache, contextOptional.get().branch)).process();
+            (new DownloadTranslationsLogic(project, context.get().crowdin, context.get().properties, context.get().root, context.get().crowdinProjectCache, context.get().branch)).process();
         } catch (ProcessCanceledException e) {
             throw e;
         } catch (Exception e) {
