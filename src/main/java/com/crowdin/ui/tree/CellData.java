@@ -19,28 +19,35 @@ public class CellData {
 
     private final boolean isRoot;
 
+    private final String link;
+
     public static CellData root(String text) {
-        return new CellData(true, text, LOGO, null, null);
+        return new CellData(true, text, LOGO, null, null, null);
     }
 
     public static CellData folder(String text) {
-        return new CellData(false, text, FOLDER, null, null);
+        return new CellData(false, text, FOLDER, null, null, null);
     }
 
     public static CellData file(String text, String file) {
-        return new CellData(false, text, FILE, file, null);
+        return new CellData(false, text, FILE, file, null, null);
     }
 
     public static CellData bundle(Bundle bundle) {
-        return new CellData(false, bundle.getName(), AllIcons.FileTypes.Archive, null, bundle);
+        return new CellData(false, bundle.getName(), AllIcons.FileTypes.Archive, null, bundle, null);
     }
 
-    private CellData(boolean isRoot, String text, Icon icon, String file, Bundle bundle) {
+    public static CellData link(String text, String link) {
+        return new CellData(false, text, AllIcons.Ide.Link, null, null, link);
+    }
+
+    private CellData(boolean isRoot, String text, Icon icon, String file, Bundle bundle, String link) {
         this.isRoot = isRoot;
         this.text = text;
         this.icon = icon;
         this.file = file;
         this.bundle = bundle;
+        this.link = link;
     }
 
     public boolean isRoot() {
@@ -69,6 +76,14 @@ public class CellData {
 
     public Bundle getBundle() {
         return bundle;
+    }
+
+    public boolean isLink() {
+        return link != null;
+    }
+
+    public String getLink() {
+        return link;
     }
 
     @Override

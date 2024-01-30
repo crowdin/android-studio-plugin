@@ -4,6 +4,7 @@ import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.upload.UploadWindow;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProjectService {
@@ -11,7 +12,7 @@ public class ProjectService {
     private TranslationProgressWindow translationProgressWindow;
     private UploadWindow uploadWindow;
     private DownloadWindow downloadWindow;
-    private final AtomicBoolean panelsLoaded = new AtomicBoolean(false);
+    private final EnumSet<InitializationItem> initializationItems = EnumSet.noneOf(InitializationItem.class);
 
     public void setTranslationProgressWindow(TranslationProgressWindow translationProgressWindow) {
         this.translationProgressWindow = translationProgressWindow;
@@ -37,7 +38,12 @@ public class ProjectService {
         this.downloadWindow = downloadWindow;
     }
 
-    public AtomicBoolean getPanelsLoaded() {
-        return panelsLoaded;
+    public synchronized EnumSet<InitializationItem> addAndGetLoadedComponents(InitializationItem item) {
+        initializationItems.add(item);
+        return initializationItems;
+    }
+
+    public static enum InitializationItem {
+        STARTUP_ACTIVITY, UI_PANELS
     }
 }

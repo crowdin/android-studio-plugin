@@ -99,4 +99,6 @@ public interface CrowdinClient {
     Label addLabel(AddLabelRequest request);
 
     List<Bundle> getBundles();
+
+    String getBundlesUrl(Project project);
 }

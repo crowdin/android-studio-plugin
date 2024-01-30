@@ -210,7 +210,7 @@ public class CrowdinProjectCacheProvider {
         if (crowdinProjectCache.getProjectLanguages() == null || update || differentProject) {
             crowdinProjectCache.setProjectLanguages(crowdin.extractProjectLanguages(crowdinProjectCache.getProject()));
         }
-        if ((crowdinProjectCache.getBundles() == null || differentProject) && crowdinProjectCache.isStringsBased()) {
+        if ((crowdinProjectCache.getBundles() == null || differentProject || update) && crowdinProjectCache.isStringsBased()) {
             crowdinProjectCache.setBundles(crowdin.getBundles());
         }
         if (crowdinProjectCache.getBranches() == null || outdated || update || differentProject) {

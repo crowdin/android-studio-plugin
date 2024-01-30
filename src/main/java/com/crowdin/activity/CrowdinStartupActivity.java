@@ -6,6 +6,7 @@ import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
+import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
@@ -15,6 +16,8 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.EnumSet;
 
 public class CrowdinStartupActivity implements StartupActivity {
 
@@ -46,7 +49,11 @@ public class CrowdinStartupActivity implements StartupActivity {
                 try {
                     indicator.setText("Updating Crowdin cache");
                     project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, true);
-                    CrowdinPanelWindowFactory.reloadPanels(project, true);
+                    ProjectService service = project.getService(ProjectService.class);
+                    EnumSet<ProjectService.InitializationItem> loadedComponents = service.addAndGetLoadedComponents(ProjectService.InitializationItem.STARTUP_ACTIVITY);
+                    if (loadedComponents.contains(ProjectService.InitializationItem.UI_PANELS)) {
+                        CrowdinPanelWindowFactory.reloadPanels(project, true);
+                    }
                 } catch (Exception e) {
                     NotificationUtil.showErrorMessage(project, e.getMessage());
                 }

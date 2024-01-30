@@ -6,6 +6,7 @@ import com.crowdin.ui.tree.CellData;
 import com.crowdin.ui.tree.CellRenderer;
 import com.crowdin.ui.tree.FileTree;
 import com.intellij.ide.ActivityTracker;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -55,6 +56,12 @@ public class DownloadWindow implements ContentTab {
             }
 
             CellData cell = CellRenderer.getData(this.selectedElement);
+
+            if (cell.isLink()) {
+                BrowserUtil.browse(cell.getLink());
+                return;
+            }
+
             if (cell.isBundle()) {
                 this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
             } else {
@@ -89,13 +96,16 @@ public class DownloadWindow implements ContentTab {
         FileTree.expandAll(tree1);
     }
 
-    public void rebuildBundlesTree(String projectName, List<Bundle> bundles) {
+    public void rebuildBundlesTree(String projectName, List<Bundle> bundles, String bundleInfoUrl) {
         isBundlesMode = true;
         this.selectedElement = null;
         this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
         this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
         bundles.forEach(bundle -> root.add(new DefaultMutableTreeNode(CellData.bundle(bundle))));
+        if (bundles.isEmpty()) {
+            root.add(new DefaultMutableTreeNode(CellData.link("Check how to create bundle", bundleInfoUrl)));
+        }
         tree1.setModel(new DefaultTreeModel(root));
         expandAll();
     }

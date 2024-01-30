@@ -23,6 +23,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -82,8 +83,10 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
         contentManager.addContent(uploadPanel, 1);
         contentManager.addContent(downloadPanel, 2);
 
-        projectService.getPanelsLoaded().set(true);
-        reloadPanels(project, true);
+        EnumSet<ProjectService.InitializationItem> loadedComponents = projectService.addAndGetLoadedComponents(ProjectService.InitializationItem.UI_PANELS);
+        if (loadedComponents.contains(ProjectService.InitializationItem.STARTUP_ACTIVITY)) {
+            reloadPanels(project, true);
+        }
     }
 
     private Content setupPanel(
@@ -104,13 +107,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     public static void reloadPanels(Project project, boolean fullReload) {
-        if (!project.getService(ProjectService.class).getPanelsLoaded().get()) {
-            //in case if reload was triggered from startup activity and panels were not initialized yet
-            //ToolWindow.getContentManager() will invoke createToolWindowContent() and contentManager.addContent(..) will throw an error
-            //because this is not a proper event for adding a UI content
-            return;
-        }
-
         Optional
                 .ofNullable(ToolWindowManager.getInstance(project))
                 .map(toolWindowManager -> toolWindowManager.getToolWindow(TOOLWINDOW_ID))
