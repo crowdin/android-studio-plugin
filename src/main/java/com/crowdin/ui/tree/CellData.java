@@ -3,14 +3,25 @@ package com.crowdin.ui.tree;
 import com.crowdin.client.bundles.model.Bundle;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
+import java.util.Map;
+import java.util.Optional;
 
 public class CellData {
 
     private static final Icon LOGO = IconLoader.getIcon("/icons/icon.svg", CellData.class);
-    private static final Icon FOLDER = IconLoader.getIcon("/icons/folder.svg", CellData.class);
-    private static final Icon FILE = IconLoader.getIcon("/icons/file.svg", CellData.class);
+
+    private static final Map<String, Icon> FILES_TYPES_ICONS = Map.of(
+            "xml", AllIcons.FileTypes.Xml,
+            "json", AllIcons.FileTypes.Json,
+            "html", AllIcons.FileTypes.Html,
+            "xsd", AllIcons.FileTypes.XsdFile,
+            "css", AllIcons.FileTypes.Css,
+            "yml", AllIcons.FileTypes.Yaml,
+            "yaml", AllIcons.FileTypes.Yaml
+    );
 
     private final String text;
     private final Icon icon;
@@ -26,11 +37,18 @@ public class CellData {
     }
 
     public static CellData folder(String text) {
-        return new CellData(false, text, FOLDER, null, null, null);
+        return new CellData(false, text, AllIcons.Nodes.Folder, null, null, null);
     }
 
     public static CellData file(String text, String file) {
-        return new CellData(false, text, FILE, file, null, null);
+        String extension = FilenameUtils.getExtension(file);
+        Icon icon = Optional.ofNullable(extension)
+                .filter(e -> !e.isEmpty())
+                .map(String::toLowerCase)
+                .filter(FILES_TYPES_ICONS::containsKey)
+                .map(FILES_TYPES_ICONS::get)
+                .orElse(AllIcons.FileTypes.Text);
+        return new CellData(false, text, icon, file, null, null);
     }
 
     public static CellData bundle(Bundle bundle) {
@@ -90,8 +108,11 @@ public class CellData {
     public String toString() {
         return "CellData{" +
                 "text='" + text + '\'' +
-                ", isFile=" + this.isFile() +
-                ", isBundle=" + this.isBundle() +
+                ", icon=" + icon +
+                ", file='" + file + '\'' +
+                ", bundle=" + bundle +
+                ", isRoot=" + isRoot +
+                ", link='" + link + '\'' +
                 '}';
     }
 }

@@ -220,4 +220,9 @@ public class MockCrowdin implements CrowdinClient {
     public List<Bundle> getBundles() {
         return null;
     }
+
+    @Override
+    public String getBundlesUrl(Project project) {
+        return null;
+    }
 }
