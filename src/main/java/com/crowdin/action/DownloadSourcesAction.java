@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -78,16 +79,16 @@ public class DownloadSourcesAction extends BackgroundAction {
                 return;
             }
 
-            List<String> selectedFiles = Optional
+            List<Path> selectedFiles = Optional
                     .ofNullable(project.getService(ProjectService.class).getDownloadWindow())
                     .map(DownloadWindow::getSelectedFiles)
                     .orElse(Collections.emptyList())
                     .stream()
-                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .map(str -> Paths.get(context.get().root.getPath(), str))
                     .toList();
 
             if (!selectedFiles.isEmpty()) {
-                for (String file : selectedFiles) {
+                for (Path file : selectedFiles) {
                     try {
                         VirtualFile virtualFile = FileUtil.findVFileByPath(file);
                         DownloadSourceFromContextAction.performDownload(this, virtualFile, context.get());

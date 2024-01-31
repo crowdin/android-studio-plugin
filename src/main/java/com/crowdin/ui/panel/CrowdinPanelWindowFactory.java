@@ -79,9 +79,9 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                 "Download"
         );
 
-        contentManager.addContent(progressPanel, 0);
-        contentManager.addContent(uploadPanel, 1);
-        contentManager.addContent(downloadPanel, 2);
+        contentManager.addContent(uploadPanel, 0);
+        contentManager.addContent(downloadPanel, 1);
+        contentManager.addContent(progressPanel, 2);
 
         EnumSet<ProjectService.InitializationItem> loadedComponents = projectService.addAndGetLoadedComponents(ProjectService.InitializationItem.UI_PANELS);
         if (loadedComponents.contains(ProjectService.InitializationItem.STARTUP_ACTIVITY)) {

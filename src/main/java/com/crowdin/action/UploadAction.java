@@ -14,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -51,12 +52,12 @@ public class UploadAction extends BackgroundAction {
                 return;
             }
 
-            List<String> selectedFiles = Optional
+            List<Path> selectedFiles = Optional
                     .ofNullable(project.getService(ProjectService.class).getUploadWindow())
                     .map(UploadWindow::getSelectedFiles)
                     .orElse(Collections.emptyList())
                     .stream()
-                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .map(str -> Paths.get(context.get().root.getPath(), str))
                     .toList();
 
             NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.upload_sources.list_of_patterns")
@@ -70,7 +71,7 @@ public class UploadAction extends BackgroundAction {
                                     fileBean,
                                     FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource())
                                             .stream()
-                                            .filter(f -> selectedFiles.isEmpty() || selectedFiles.contains(Paths.get(f.getPath()).toString()))
+                                            .filter(f -> selectedFiles.isEmpty() || selectedFiles.contains(Paths.get(f.getPath())))
                                             .toList()
                             )
                     )

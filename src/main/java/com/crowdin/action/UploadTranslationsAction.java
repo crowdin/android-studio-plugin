@@ -57,12 +57,12 @@ public class UploadTranslationsAction extends BackgroundAction {
                 return;
             }
 
-            List<String> selectedFiles = Optional
+            List<Path> selectedFiles = Optional
                     .ofNullable(project.getService(ProjectService.class).getUploadWindow())
                     .map(UploadWindow::getSelectedFiles)
                     .orElse(Collections.emptyList())
                     .stream()
-                    .map(str -> Paths.get(context.get().root.getPath(), str).toString())
+                    .map(str -> Paths.get(context.get().root.getPath(), str))
                     .toList();
 
             if (context.get().crowdinProjectCache.isStringsBased() && context.get().branch == null) {
@@ -102,7 +102,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                         java.io.File translationFile = translationFilePath.toFile();
 
                         if (!selectedFiles.isEmpty()) {
-                            if (!selectedFiles.contains(translationFilePath.toString())) {
+                            if (!selectedFiles.contains(translationFilePath)) {
                                 continue;
                             }
                         }

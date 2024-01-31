@@ -50,6 +50,10 @@ public final class FileUtil {
         return LocalFileSystem.getInstance().findFileByPath(path);
     }
 
+    public static VirtualFile findVFileByPath(Path path) {
+        return LocalFileSystem.getInstance().findFileByNioFile(path);
+    }
+
     public static String findRelativePath(VirtualFile baseDir, VirtualFile file) {
         return StringUtils.removeStart(file.getCanonicalPath(), baseDir.getCanonicalPath())
                 .replaceAll("^[\\\\/]+", "");
