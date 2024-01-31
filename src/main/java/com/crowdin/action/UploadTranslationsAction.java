@@ -7,12 +7,14 @@ import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
 import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.upload.UploadWindow;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PlaceholderUtil;
 import com.crowdin.util.StringUtils;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
@@ -156,6 +158,8 @@ public class UploadTranslationsAction extends BackgroundAction {
         } catch (Exception exception) {
             NotificationUtil.logErrorMessage(project, exception);
             NotificationUtil.showErrorMessage(project, exception.getMessage());
+        } finally {
+            ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, true));
         }
     }
 
