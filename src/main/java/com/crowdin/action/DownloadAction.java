@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.Constants.TOOLWINDOW_ID;
 
 public class DownloadAction extends BackgroundAction {
 
@@ -36,7 +36,7 @@ public class DownloadAction extends BackgroundAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        if (e.getPlace().equals(DOWNLOAD_TOOLBAR_ID)) {
+        if (e.getPlace().equals(TOOLWINDOW_ID)) {
             this.enabled = e.getPresentation().isEnabled();
             this.visible = e.getPresentation().isVisible();
             this.text = e.getPresentation().getText();

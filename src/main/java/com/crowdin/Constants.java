@@ -61,4 +61,6 @@ public final class Constants {
     public static final String DOWNLOAD_REFRESH_ACTION = "Crowdin.RefreshDownloadAction";
     public static final String DOWNLOAD_TRANSLATIONS_ACTION = "Crowdin.DownloadTranslations";
     public static final String DOWNLOAD_SOURCES_ACTION = "Crowdin.DownloadSources";
+
+    public static final String PROGRESS_GROUP_FILES_BY_FILE_ACTION = "Crowdin.GroupByFiles";
 }

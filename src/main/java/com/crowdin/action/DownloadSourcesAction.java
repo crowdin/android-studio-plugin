@@ -30,8 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.Constants.TOOLWINDOW_ID;
 
 public class DownloadSourcesAction extends BackgroundAction {
 
@@ -43,7 +43,7 @@ public class DownloadSourcesAction extends BackgroundAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        if (e.getPlace().equals(DOWNLOAD_TOOLBAR_ID)) {
+        if (e.getPlace().equals(TOOLWINDOW_ID)) {
             this.enabled = e.getPresentation().isEnabled();
             this.visible = e.getPresentation().isVisible();
             this.text = e.getPresentation().getText();

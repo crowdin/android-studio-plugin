@@ -4,6 +4,7 @@ import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
 import com.crowdin.ui.panel.upload.UploadWindow;
+import com.intellij.ide.ActivityTracker;
 import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionPlaces;
@@ -120,6 +121,16 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
                     runRefresh(project, actionManager, UPLOAD_REFRESH_ACTION);
                     runRefresh(project, actionManager, DOWNLOAD_REFRESH_ACTION);
                 });
+    }
+
+    public static void updateToolbar(String actionId, String text, boolean visible, boolean enabled) {
+        AnAction action = ActionManager.getInstance().getAction(actionId);
+        Presentation presentation = new Presentation();
+        presentation.setVisible(visible);
+        presentation.setEnabled(enabled);
+        presentation.setText(text);
+        action.update(AnActionEvent.createFromDataContext(TOOLWINDOW_ID, presentation, DataContext.EMPTY_CONTEXT));
+        ActivityTracker.getInstance().inc();
     }
 
     private static void runRefresh(Project project, ActionManager actionManager, String action) {

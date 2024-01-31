@@ -2,6 +2,7 @@ package com.crowdin.ui.panel.download;
 
 import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.ui.panel.ContentTab;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.tree.CellData;
 import com.crowdin.ui.tree.CellRenderer;
 import com.crowdin.ui.tree.FileTree;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.crowdin.Constants.DOWNLOAD_SOURCES_ACTION;
-import static com.crowdin.Constants.DOWNLOAD_TOOLBAR_ID;
 import static com.crowdin.Constants.DOWNLOAD_TRANSLATIONS_ACTION;
 
 public class DownloadWindow implements ContentTab {
@@ -79,9 +79,9 @@ public class DownloadWindow implements ContentTab {
             CellData cell = CellRenderer.getData(this.selectedElement);
 
             if (cell.isBundle()) {
-                this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
+                CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
             } else {
-                this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
+                CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
             }
         });
     }
@@ -106,8 +106,8 @@ public class DownloadWindow implements ContentTab {
     public void rebuildFileTree(String projectName, List<String> files) {
         isBundlesMode = false;
         this.selectedElement = null;
-        this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
-        this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
+        CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
+        CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
         tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
         FileTree.expandAll(tree1);
     }
@@ -115,8 +115,8 @@ public class DownloadWindow implements ContentTab {
     public void rebuildBundlesTree(String projectName, List<Bundle> bundles, String bundleInfoUrl) {
         isBundlesMode = true;
         this.selectedElement = null;
-        this.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
-        this.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
+        CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
+        CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
         bundles.forEach(bundle -> root.add(new DefaultMutableTreeNode(CellData.bundle(bundle))));
         if (bundles.isEmpty()) {
@@ -124,16 +124,6 @@ public class DownloadWindow implements ContentTab {
         }
         tree1.setModel(new DefaultTreeModel(root));
         expandAll();
-    }
-
-    private void updateToolbar(String actionId, String text, boolean visible, boolean enabled) {
-        AnAction action = ActionManager.getInstance().getAction(actionId);
-        Presentation presentation = new Presentation();
-        presentation.setVisible(visible);
-        presentation.setEnabled(enabled);
-        presentation.setText(text);
-        action.update(AnActionEvent.createFromDataContext(DOWNLOAD_TOOLBAR_ID, presentation, DataContext.EMPTY_CONTEXT));
-        ActivityTracker.getInstance().inc();
     }
 
     public void expandAll() {

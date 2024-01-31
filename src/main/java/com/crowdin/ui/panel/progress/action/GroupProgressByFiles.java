@@ -9,10 +9,22 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import static com.crowdin.Constants.TOOLWINDOW_ID;
+
 public class GroupProgressByFiles extends ToggleAction implements DumbAware {
+
+    private boolean enabled = false;
 
     public GroupProgressByFiles() {
         super("Group by files", "Really group by files", AllIcons.Actions.GroupByFile);
+    }
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        if (e.getPlace().equals(TOOLWINDOW_ID)) {
+            this.enabled = e.getPresentation().isEnabled();
+        }
+        e.getPresentation().setEnabled(enabled);
     }
 
     @Override

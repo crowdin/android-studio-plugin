@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.crowdin.Constants.PROGRESS_GROUP_FILES_BY_FILE_ACTION;
 import static com.crowdin.util.FileUtil.joinPaths;
 import static com.crowdin.util.FileUtil.normalizePath;
 import static com.crowdin.util.FileUtil.sepAtStart;
@@ -74,7 +75,6 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
                     .parallelStream()
                     .collect(Collectors.toMap(Function.identity(), langProgress -> context.get().crowdin.getLanguageProgress(langProgress.getLanguageId())));
 
-
             List<String> crowdinFilePaths = context.get().properties.getFiles().stream()
                     .flatMap((fileBean) -> {
                         List<VirtualFile> sourceFiles = FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource());
@@ -105,6 +105,12 @@ public class RefreshTranslationProgressAction extends BackgroundAction {
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 window.setData(context.get().crowdinProjectCache.getProject().getName(), progress, fileNames, languageNames);
                 window.rebuildTree();
+                CrowdinPanelWindowFactory.updateToolbar(
+                        PROGRESS_GROUP_FILES_BY_FILE_ACTION,
+                        null,
+                        true,
+                        !context.get().crowdinProjectCache.isStringsBased()
+                );
             });
         } catch (ProcessCanceledException ex) {
             throw ex;
