@@ -1,4 +1,4 @@
-package com.crowdin.ui;
+package com.crowdin.ui.dialog;
 
 import javax.swing.*;
 

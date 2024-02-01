@@ -1,11 +1,13 @@
 package com.crowdin.activity;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
-import com.crowdin.util.ActionUtils;
+import com.crowdin.logic.BranchLogic;
+import com.crowdin.service.CrowdinProjectCacheProvider;
+import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -14,6 +16,8 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.EnumSet;
 
 public class CrowdinStartupActivity implements StartupActivity {
 
@@ -29,21 +33,31 @@ public class CrowdinStartupActivity implements StartupActivity {
             properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
-            String branchName = ActionUtils.getBranchName(project, properties, false);
-
-            ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
-                @Override
-                public void run(@NotNull ProgressIndicator indicator) {
-                    try {
-                        indicator.setText("Updating Crowdin cache");
-                        CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-                    } catch (Exception e) {
-                        NotificationUtil.showErrorMessage(project, e.getMessage());
-                    }
-                }
-            });
+            this.reloadPlugin(project, crowdin, properties);
         } catch (Exception e) {
             NotificationUtil.showErrorMessage(project, e.getMessage());
         }
+    }
+
+    private void reloadPlugin(Project project, Crowdin crowdin, CrowdinProperties properties) {
+        BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+        String branchName = branchLogic.acquireBranchName();
+
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Crowdin") {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setText("Updating Crowdin cache");
+                    project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, true);
+                    ProjectService service = project.getService(ProjectService.class);
+                    EnumSet<ProjectService.InitializationItem> loadedComponents = service.addAndGetLoadedComponents(ProjectService.InitializationItem.STARTUP_ACTIVITY);
+                    if (loadedComponents.contains(ProjectService.InitializationItem.UI_PANELS)) {
+                        CrowdinPanelWindowFactory.reloadPanels(project, true);
+                    }
+                } catch (Exception e) {
+                    NotificationUtil.showErrorMessage(project, e.getMessage());
+                }
+            }
+        });
     }
 }

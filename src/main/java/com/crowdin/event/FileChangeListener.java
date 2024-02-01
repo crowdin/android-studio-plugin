@@ -1,10 +1,18 @@
 package com.crowdin.event;
 
-import com.crowdin.client.*;
+import com.crowdin.client.Crowdin;
+import com.crowdin.client.CrowdinProperties;
+import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
-import com.crowdin.util.*;
+import com.crowdin.service.CrowdinProjectCacheProvider;
+import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.crowdin.util.FileUtil;
+import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -25,6 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -72,10 +81,10 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
                     BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-                    String branchName = branchLogic.acquireBranchName(true);
+                    String branchName = branchLogic.acquireBranchName();
 
                     CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                        CrowdinProjectCacheProvider.getInstance(crowdin, branchName, false);
+                            project.getService(CrowdinProjectCacheProvider.class).getInstance(crowdin, branchName, false);
                     indicator.checkCanceled();
 
                     Map<FileBean, List<VirtualFile>> allSources = new HashMap<>();
@@ -97,6 +106,14 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         }
                     }
 
+                    VirtualFile crowdinPropertyFile = PropertyUtil.getCrowdinPropertyFile(project);
+                    boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
+                    if (crowdinPropertiesFileUpdated) {
+                        ProjectService projectService = project.getService(ProjectService.class);
+                        if (projectService.getLoadedComponents().contains(ProjectService.InitializationItem.UI_PANELS)) {
+                            CrowdinPanelWindowFactory.reloadPanels(project, false);
+                        }
+                    }
 
                     if (changedSources.isEmpty()) {
                         return;
@@ -106,14 +123,14 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     indicator.checkCanceled();
 
                     String text = changedSources.values().stream()
-                        .flatMap(Collection::stream)
-                        .map(VirtualFile::getName)
-                        .collect(Collectors.joining(","));
+                            .flatMap(Collection::stream)
+                            .map(VirtualFile::getName)
+                            .collect(Collectors.joining(","));
                     indicator.setText(String.format(MESSAGES_BUNDLE.getString("messages.uploading_file_s"), text, changedSources.size() == 1 ? "" : "s"));
 
                     SourceLogic.processSources(project, FileUtil.getProjectBaseDir(project), crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), changedSources);
 
-                    CrowdinProjectCacheProvider.outdateBranch(branchName);
+                    project.getService(CrowdinProjectCacheProvider.class).outdateBranch(branchName);
                 } catch (ProcessCanceledException e) {
                     throw e;
                 } catch (Exception e) {

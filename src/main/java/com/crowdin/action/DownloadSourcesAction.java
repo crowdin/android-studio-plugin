@@ -1,39 +1,57 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
 import com.crowdin.client.FileBean;
-import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.FileInfo;
-import com.crowdin.logic.BranchLogic;
-import com.crowdin.logic.CrowdinSettings;
+import com.crowdin.service.ProjectService;
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
+import static com.crowdin.Constants.TOOLWINDOW_ID;
 
 public class DownloadSourcesAction extends BackgroundAction {
+
+    private boolean enabled = false;
+    private boolean visible = false;
+    private String text = "";
+
+    private final AtomicBoolean isInProgress = new AtomicBoolean(false);
+
+    @Override
+    public void update(@NotNull AnActionEvent e) {
+        if (e.getPlace().equals(TOOLWINDOW_ID)) {
+            this.enabled = e.getPresentation().isEnabled();
+            this.visible = e.getPresentation().isVisible();
+            this.text = e.getPresentation().getText();
+        }
+        e.getPresentation().setEnabled(!isInProgress.get() && enabled);
+        e.getPresentation().setVisible(visible);
+        e.getPresentation().setText(text);
+    }
 
     @Override
     protected String loadingText(AnActionEvent e) {
@@ -41,70 +59,82 @@ public class DownloadSourcesAction extends BackgroundAction {
     }
 
     @Override
-    protected void performInBackground(@NonNull AnActionEvent anActionEvent, @NonNull ProgressIndicator indicator) {
+    protected void performInBackground(@NotNull AnActionEvent anActionEvent, @NotNull ProgressIndicator indicator) {
         Project project = anActionEvent.getProject();
+        if (project == null) {
+            return;
+        }
+
+        isInProgress.set(true);
         try {
-            VirtualFile root = FileUtil.getProjectBaseDir(project);
+            Optional<ActionContext> context = super.prepare(
+                    project,
+                    indicator,
+                    false,
+                    false,
+                    true,
+                    "messages.confirm.download_sources",
+                    "Download"
+            );
 
-            CrowdinSettings crowdinSettings = ServiceManager.getService(project, CrowdinSettings.class);
-
-            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString("messages.confirm.download"), "Download");
-            if (!confirmation) {
+            if (context.isEmpty()) {
                 return;
             }
-            indicator.checkCanceled();
 
-            CrowdinProperties properties;
-            try {
-                properties = CrowdinPropertiesLoader.load(project);
-            } catch (Exception e) {
-                NotificationUtil.showErrorMessage(project, e.getMessage());
+            List<Path> selectedFiles = Optional
+                    .ofNullable(project.getService(ProjectService.class).getDownloadWindow())
+                    .map(DownloadWindow::getSelectedFiles)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(str -> Paths.get(context.get().root.getPath(), str))
+                    .toList();
+
+            if (!selectedFiles.isEmpty()) {
+                for (Path file : selectedFiles) {
+                    try {
+                        VirtualFile virtualFile = FileUtil.findVFileByPath(file);
+                        DownloadSourceFromContextAction.performDownload(this, virtualFile, context.get());
+                        NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download_sources.file_downloaded"), file));
+                    } catch (Exception e) {
+                        NotificationUtil.logErrorMessage(project, e);
+                        NotificationUtil.showWarningMessage(project, e.getMessage());
+                    }
+                }
                 return;
             }
-            NotificationUtil.setLogDebugLevel(properties.isDebug());
-            NotificationUtil.logDebugMessage(project, MESSAGES_BUNDLE.getString("messages.debug.started_action"));
 
-            Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
-
-            BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
-            String branchName = branchLogic.acquireBranchName(true);
-            indicator.checkCanceled();
-
-            CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache =
-                CrowdinProjectCacheProvider.getInstance(crowdin, branchName, true);
-
-            Branch branch = branchLogic.getBranch(crowdinProjectCache, false);
-
-            Map<String, FileInfo> filePaths = crowdinProjectCache.getFileInfos(branch);
+            Map<String, FileInfo> filePaths = context.get().crowdinProjectCache.getFileInfos(context.get().branch);
 
             AtomicBoolean isAnyFileDownloaded = new AtomicBoolean(false);
 
-            for (FileBean fileBean : properties.getFiles()) {
-                Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), properties.isPreserveHierarchy());
-                Map<String, VirtualFile> localSourceFiles = (properties.isPreserveHierarchy())
-                    ? Collections.emptyMap()
-                    : FileUtil.getSourceFilesRec(root, fileBean.getSource()).stream()
-                    .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
+            for (FileBean fileBean : context.get().properties.getFiles()) {
+                Predicate<String> sourcePredicate = FileUtil.filePathRegex(fileBean.getSource(), context.get().properties.isPreserveHierarchy());
+                Map<String, VirtualFile> localSourceFiles = (context.get().properties.isPreserveHierarchy())
+                        ? Collections.emptyMap()
+                        : FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource()).stream()
+                        .collect(Collectors.toMap(VirtualFile::getPath, Function.identity()));
                 List<String> foundSources = filePaths.keySet().stream()
-                    .map(FileUtil::unixPath)
-                    .filter(sourcePredicate)
-                    .map(FileUtil::normalizePath)
-                    .sorted()
-                    .collect(Collectors.toList());
+                        .map(FileUtil::unixPath)
+                        .filter(sourcePredicate)
+                        .map(FileUtil::normalizePath)
+                        .sorted()
+                        .toList();
 
                 if (foundSources.isEmpty()) {
                     NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.no_sources_for_pattern"), fileBean.getSource()));
                     return;
                 }
+
                 for (String foundSourceFilePath : foundSources) {
-                    if (properties.isPreserveHierarchy()) {
+                    if (context.get().properties.isPreserveHierarchy()) {
                         Long fileId = filePaths.get(foundSourceFilePath).getId();
-                        this.downloadFile(crowdin, fileId, root, foundSourceFilePath);
+                        this.downloadFile(context.get().crowdin, fileId, context.get().root, foundSourceFilePath);
                         isAnyFileDownloaded.set(true);
                     } else {
                         List<String> fittingSources = localSourceFiles.keySet().stream()
-                            .filter(localSourceFilePath -> localSourceFilePath.endsWith(foundSourceFilePath))
-                            .collect(Collectors.toList());
+                                .filter(localSourceFilePath -> localSourceFilePath.endsWith(foundSourceFilePath))
+                                .toList();
+
                         if (fittingSources.isEmpty()) {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.file_no_representative"), foundSourceFilePath));
                             continue;
@@ -112,9 +142,10 @@ public class DownloadSourcesAction extends BackgroundAction {
                             NotificationUtil.showWarningMessage(project, String.format(MESSAGES_BUNDLE.getString("errors.file_not_one_representative"), foundSourceFilePath));
                             continue;
                         }
+
                         Long fileId = filePaths.get(foundSourceFilePath).getId();
                         VirtualFile file = localSourceFiles.get(fittingSources.get(0));
-                        this.downloadFile(crowdin, fileId, file);
+                        this.downloadFile(context.get().crowdin, fileId, file);
                         isAnyFileDownloaded.set(true);
                     }
                     NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download_sources.file_downloaded"), foundSourceFilePath));
@@ -132,6 +163,9 @@ public class DownloadSourcesAction extends BackgroundAction {
         } catch (Exception e) {
             NotificationUtil.logErrorMessage(project, e);
             NotificationUtil.showErrorMessage(project, e.getMessage());
+        } finally {
+            isInProgress.set(false);
+            ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, false));
         }
     }
 

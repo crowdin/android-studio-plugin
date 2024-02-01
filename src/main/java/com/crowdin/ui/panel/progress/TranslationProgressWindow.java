@@ -1,13 +1,12 @@
-package com.crowdin.ui;
+package com.crowdin.ui.panel.progress;
 
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
+import com.crowdin.ui.panel.ContentTab;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.treeStructure.Tree;
-import lombok.Data;
-
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -19,7 +18,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-public class TranslationProgressWindow {
+public class TranslationProgressWindow implements ContentTab {
     private JPanel panel1;
     private Tree tree1;
     private JLabel translatedTip;
@@ -29,7 +28,7 @@ public class TranslationProgressWindow {
     private boolean groupByFiles = false;
 
     private String projectName;
-    private Map<LanguageProgress, List<FileProgress>> progressData;
+    private Map<LanguageProgress, List<FileBranchProgress>> progressData;
     private Map<Long, String> fileNames;
     private Map<String, String> languageNames;
 
@@ -41,6 +40,7 @@ public class TranslationProgressWindow {
         tree1.setCellRenderer(new TranslationProgressCellRenderer());
     }
 
+    @Override
     public JPanel getContent() {
         return panel1;
     }
@@ -53,7 +53,7 @@ public class TranslationProgressWindow {
         this.groupByFiles = groupByFiles;
     }
 
-    public void setData(String projectName, Map<LanguageProgress, List<FileProgress>> progressData, Map<Long, String> fileNames, Map<String, String> languageNames) {
+    public void setData(String projectName, Map<LanguageProgress, List<FileBranchProgress>> progressData, Map<Long, String> fileNames, Map<String, String> languageNames) {
         this.projectName = projectName;
         this.progressData = progressData;
         this.fileNames = fileNames;
@@ -80,7 +80,7 @@ public class TranslationProgressWindow {
             Map<String, DefaultMutableTreeNode> fileGroups = new TreeMap<>();
             for (LanguageProgress langProgress : sortedLanguageProgresses) {
                 String languageName = languageNames.get(langProgress.getLanguageId());
-                for (FileProgress fileProgress : progressData.get(langProgress)) {
+                for (FileBranchProgress fileProgress : progressData.get(langProgress)) {
                     String fileName = fileNames.get(fileProgress.getFileId());
                     if (fileName == null) {
                         continue;
@@ -91,7 +91,7 @@ public class TranslationProgressWindow {
                         fileProgress.getTranslationProgress() + "%", fileProgress.getApprovalProgress() + "%")));
                 }
             }
-            System.out.println(fileGroups);
+
             for (DefaultMutableTreeNode fileNode : fileGroups.values()) {
                 root.add(fileNode);
             }
@@ -115,16 +115,11 @@ public class TranslationProgressWindow {
 
     public static class TranslationProgressCellRenderer extends DefaultTreeCellRenderer {
 
-        @Data
         public static class CellData {
             private Icon icon;
-            private String text;
+            private final String text;
             private String translatedProgressText;
             private String approvedProgressText;
-
-            public CellData(String text) {
-                this.text = text;
-            }
 
             public CellData(Icon icon, String text) {
                 this.icon = icon;
@@ -142,6 +137,22 @@ public class TranslationProgressWindow {
                 this.text = text;
                 this.translatedProgressText = translatedProgressText;
                 this.approvedProgressText = approvedProgressText;
+            }
+
+            public Icon getIcon() {
+                return icon;
+            }
+
+            public String getText() {
+                return text;
+            }
+
+            public String getTranslatedProgressText() {
+                return translatedProgressText;
+            }
+
+            public String getApprovedProgressText() {
+                return approvedProgressText;
             }
         }
 

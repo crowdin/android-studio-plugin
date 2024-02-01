@@ -1,12 +1,13 @@
 package com.crowdin.client;
 
-import com.crowdin.client.CrowdinProjectCacheProvider.CrowdinProjectCache;
 import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.client.projectsgroups.model.ProjectSettings;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.sourcefiles.model.FileInfo;
+import com.crowdin.service.CrowdinProjectCacheProvider;
+import com.crowdin.service.CrowdinProjectCacheProvider.CrowdinProjectCache;
 import com.crowdin.util.LanguageMapping;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,9 +35,11 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class CrowdinProjectCacheProviderTest {
 
+    private CrowdinProjectCacheProvider crowdinProjectCacheProvider;
+
     @BeforeEach
     void setUp() {
-        CrowdinProjectCacheProvider.reset();
+        crowdinProjectCacheProvider = new CrowdinProjectCacheProvider();
     }
 
     @ParameterizedTest
@@ -59,7 +62,7 @@ public class CrowdinProjectCacheProviderTest {
         Map<String, FileInfo> map = new HashMap<>();
         map.put("fileinfo", fileInfo);
         Map<String, FileInfo> map2 = new HashMap<>();
-        Map<Branch, Map<String,FileInfo>> map1 = new HashMap<>();
+        Map<Branch, Map<String, FileInfo>> map1 = new HashMap<>();
         map1.put(branch, map);
         return Stream.of(arguments(map1, branch, map), arguments(map1, branch1, map2));
     }
@@ -67,7 +70,7 @@ public class CrowdinProjectCacheProviderTest {
     @ParameterizedTest
     @MethodSource
     public void testGetFiles(final Map<Branch, Map<String, ? extends FileInfo>> fileInfo,
-                                 final Branch branch, final Map<String, File> expected) {
+                             final Branch branch, final Map<String, File> expected) {
         CrowdinProjectCache cache = new CrowdinProjectCache();
         cache.setFileInfos(fileInfo);
         cache.setManagerAccess(true);
@@ -85,7 +88,7 @@ public class CrowdinProjectCacheProviderTest {
         Map<String, File> map = new HashMap<>();
         map.put("fileinfo", file);
         Map<String, File> map2 = new HashMap<>();
-        Map<Branch, Map<String,File>> map1 = new HashMap<>();
+        Map<Branch, Map<String, File>> map1 = new HashMap<>();
         map1.put(branch, map);
         return Stream.of(arguments(map1, branch, map), arguments(map1, branch1, map2));
     }
@@ -122,7 +125,7 @@ public class CrowdinProjectCacheProviderTest {
     @ParameterizedTest
     @MethodSource
     public void testAddOutdatedBranch(final String branchName) {
-        assertDoesNotThrow(() -> CrowdinProjectCacheProvider.outdateBranch(branchName));
+        assertDoesNotThrow(() -> crowdinProjectCacheProvider.outdateBranch(branchName));
     }
 
     private static Stream<Arguments> testAddOutdatedBranch() {
@@ -135,7 +138,7 @@ public class CrowdinProjectCacheProviderTest {
     void testSetsValuesForNotYetConfiguredCacheProperties() {
         CrowdinClient crowdin = new MockCrowdin(1L);
         //Using a different branch name than what's in MockCrowdin, so that fileinfos doesn't get updated
-        CrowdinProjectCache cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branchname", false);
+        CrowdinProjectCache cache = crowdinProjectCacheProvider.getInstance(crowdin, "branchname", false);
 
         assertEquals(crowdin.getProject(), cache.getProject());
         assertFalse(cache.isManagerAccess());
@@ -155,7 +158,7 @@ public class CrowdinProjectCacheProviderTest {
     void testDoesntSetConfigurationForExistingValues() {
         //Set the initial state of the underlying project cache. Using empty collections to have simpler test data.
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         Project project = new Project();
         cache.setProject(project);
@@ -175,7 +178,7 @@ public class CrowdinProjectCacheProviderTest {
         cache.setDirs(dirs);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
 
         //Validating 0 collection sizes is feasible because we presume
         // that the used MockCrowdin instance returns non-empty collections
@@ -192,7 +195,7 @@ public class CrowdinProjectCacheProviderTest {
     @Test
     void testSetsLanguageMappingForManagerAccess() {
         CrowdinClient crowdin = new MockCrowdin(2L);
-        CrowdinProjectCache cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
+        CrowdinProjectCache cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
 
         assertTrue(cache.isManagerAccess());
         assertTrue(cache.getLanguageMapping().containsValue("hu", "placeholder"));
@@ -201,12 +204,12 @@ public class CrowdinProjectCacheProviderTest {
     @Test
     void testSetsBranchesWhenOutdated() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
         cache.setBranches(new HashMap<>());
-        CrowdinProjectCacheProvider.outdateBranch("branch1");
+        crowdinProjectCacheProvider.outdateBranch("branch1");
 
         CrowdinClient crowdin = new MockCrowdin(1L);
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
 
         assertEquals(crowdin.getBranches(), cache.getBranches());
     }
@@ -215,7 +218,7 @@ public class CrowdinProjectCacheProviderTest {
     void testDoesntSetConfigurationForNoUpdate() {
         //Set the initial state of the underlying project cache. Using empty collections to have simpler test data.
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         //Using ProjectSettings because that would set manager access to true,
         // thus we can validate if it remains false
@@ -225,7 +228,7 @@ public class CrowdinProjectCacheProviderTest {
         cache.setBranches(new HashMap<>());
 
         CrowdinClient crowdin = new MockCrowdin(1L);
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", false);
 
         //Test that no configuration was overwritten with data from the mock Crowdin client
         assertSame(project, cache.getProject());
@@ -238,7 +241,10 @@ public class CrowdinProjectCacheProviderTest {
     void testSetsConfigurationForUpdate() {
         //Set the initial state of the underlying project cache. Using empty collections to have simpler test data.
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        Project prj = new Project();
+        prj.setId(1L);
+        cache.setProject(prj);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         //Using ProjectSettings because that would set manager access to true,
         // thus we can validate if it remains false.
@@ -247,8 +253,8 @@ public class CrowdinProjectCacheProviderTest {
         cache.setProjectLanguages(new ArrayList<>());
         cache.setBranches(new HashMap<>());
 
-        CrowdinClient crowdin = new MockCrowdin(1L);
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch1", true);
+        CrowdinClient crowdin = new MockCrowdin(prj.getId());
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch1", true);
 
         //Test that no configuration was overwritten with data from the mock Crowdin client
         assertSame(crowdin.getProject(), cache.getProject());
@@ -262,26 +268,26 @@ public class CrowdinProjectCacheProviderTest {
     @Test
     void testSavesBranchWhenFileInfosDoesntContainBranch() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
         cache.setBranches(crowdin.getBranches());
         //FileInfos doesn't contain branch2
         cache.setFileInfos(createFileInfos(STANDARD_BRANCH_1, new HashMap<>()));
 
-        CrowdinProjectCacheProvider.outdateBranch("branch2");
+        crowdinProjectCacheProvider.outdateBranch("branch2");
 
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
 
         assertTrue(cache.getFileInfos().containsKey(STANDARD_BRANCH_2));
         assertTrue(cache.getDirs().containsKey(STANDARD_BRANCH_2));
-        assertFalse(CrowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
+        assertFalse(crowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
     }
 
     @Test
     void testSavesBranchWhenDirsDoesntContainBranch() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
         cache.setBranches(crowdin.getBranches());
@@ -290,20 +296,20 @@ public class CrowdinProjectCacheProviderTest {
         cache.setFileInfos(createFileInfos(STANDARD_BRANCH_2, fileInfoValue));
         cache.setDirs(createDirs(STANDARD_BRANCH_1, new HashMap<>()));
 
-        CrowdinProjectCacheProvider.outdateBranch("branch2");
+        crowdinProjectCacheProvider.outdateBranch("branch2");
 
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
 
         //Validate if fileinfos branch entry value is updated
         assertNotSame(fileInfoValue, cache.getFileInfos().get(STANDARD_BRANCH_2));
         assertTrue(cache.getDirs().containsKey(STANDARD_BRANCH_2));
-        assertFalse(CrowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
+        assertFalse(crowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
     }
 
     @Test
     void testSavesBranchWhenBranchIsOutdated() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
         cache.setBranches(crowdin.getBranches());
@@ -313,20 +319,20 @@ public class CrowdinProjectCacheProviderTest {
         HashMap<String, Directory> dirsValue = new HashMap<>();
         cache.setDirs(createDirs(STANDARD_BRANCH_2, dirsValue));
 
-        CrowdinProjectCacheProvider.outdateBranch("branch2");
+        crowdinProjectCacheProvider.outdateBranch("branch2");
 
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
 
         //Validate if fileinfos and dirs branch entry values are updated
         assertNotSame(fileInfoValue, cache.getFileInfos().get(STANDARD_BRANCH_2));
         assertNotSame(dirsValue, cache.getDirs().get(STANDARD_BRANCH_2));
-        assertFalse(CrowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
+        assertFalse(crowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
     }
 
     @Test
     void testSavesBranchWhenMarkedForUpdate() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
         cache.setBranches(crowdin.getBranches());
@@ -336,18 +342,18 @@ public class CrowdinProjectCacheProviderTest {
         HashMap<String, Directory> dirsValue = new HashMap<>();
         cache.setDirs(createDirs(STANDARD_BRANCH_2, dirsValue));
 
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch2", true);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch2", true);
 
         //Validate if fileinfos and dirs branch entry values are updated
         assertNotSame(fileInfoValue, cache.getFileInfos().get(STANDARD_BRANCH_2));
         assertNotSame(dirsValue, cache.getDirs().get(STANDARD_BRANCH_2));
-        assertFalse(CrowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
+        assertFalse(crowdinProjectCacheProvider.getOutdatedBranches().contains("branch2"));
     }
 
     @Test
     void testDoesntSaveBranch() {
         CrowdinProjectCache cache = new CrowdinProjectCache();
-        CrowdinProjectCacheProvider.setCrowdinProjectCache(cache);
+        crowdinProjectCacheProvider.setCrowdinProjectCache(cache);
 
         CrowdinClient crowdin = new MockCrowdin(1L);
         cache.setBranches(crowdin.getBranches());
@@ -357,7 +363,7 @@ public class CrowdinProjectCacheProviderTest {
         HashMap<String, Directory> dirsValue = new HashMap<>();
         cache.setDirs(createDirs(STANDARD_BRANCH_2, dirsValue));
 
-        cache = CrowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
+        cache = crowdinProjectCacheProvider.getInstance(crowdin, "branch2", false);
 
         //Validate if fileinfos and dirs branch entry values are updated
         assertSame(fileInfoValue, cache.getFileInfos().get(STANDARD_BRANCH_2));

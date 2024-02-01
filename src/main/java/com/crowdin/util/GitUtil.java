@@ -28,7 +28,7 @@ public final class GitUtil {
         GitLocalBranch localBranch;
         String branchName = "";
         try {
-            repository = GitBranchUtil.getCurrentRepository(project);
+            repository = GitBranchUtil.guessWidgetRepository(project, FileUtil.getProjectBaseDir(project));
             if (repository == null) {
                 throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.not_found_git_branch"));
             }

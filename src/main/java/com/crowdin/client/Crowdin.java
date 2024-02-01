@@ -1,18 +1,24 @@
 package com.crowdin.client;
 
+import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.bundles.model.BundleExport;
 import com.crowdin.client.core.http.exceptions.HttpBadRequestException;
 import com.crowdin.client.core.http.exceptions.HttpException;
 import com.crowdin.client.core.model.*;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
+import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.sourcestrings.model.SourceString;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import com.crowdin.util.RetryUtil;
 import com.crowdin.util.Util;
@@ -36,69 +42,82 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 public class Crowdin implements CrowdinClient {
 
     private final Long projectId;
+    private final String baseUrl;
 
     private final com.crowdin.client.Client client;
 
     public Crowdin(@NotNull Long projectId, @NotNull String apiToken, String baseUrl) {
         this.projectId = projectId;
+        this.baseUrl = baseUrl;
         Credentials credentials = new Credentials(apiToken, null, baseUrl);
         ClientConfig clientConfig = ClientConfig.builder()
-            .userAgent(Util.getUserAgent())
-            .build();
+                .userAgent(Util.getUserAgent())
+                .build();
         this.client = new Client(credentials, clientConfig);
+    }
+
+    @Override
+    public Long getProjectId() {
+        return this.projectId;
     }
 
     @Override
     public Long addStorage(String fileName, InputStream content) {
         return executeRequest(() -> this.client.getStorageApi()
-            .addStorage(fileName, content)
-            .getData()
-            .getId());
+                .addStorage(fileName, content)
+                .getData()
+                .getId());
     }
 
     @Override
     public void updateSource(Long sourceId, UpdateFileRequest request) {
         executeRequest(() -> this.client.getSourceFilesApi()
-            .updateOrRestoreFile(this.projectId, sourceId, request));
+                .updateOrRestoreFile(this.projectId, sourceId, request));
     }
 
     @Override
     public URL downloadFile(Long fileId) {
         return url(executeRequest(() -> this.client.getSourceFilesApi()
-            .downloadFile(this.projectId, fileId)
-            .getData()));
+                .downloadFile(this.projectId, fileId)
+                .getData()));
     }
 
     @Override
     public void addSource(AddFileRequest request) {
         executeRequest(() -> this.client.getSourceFilesApi()
-            .addFile(this.projectId, request));
+                .addFile(this.projectId, request));
     }
 
     @Override
     public void editSource(Long fileId, List<PatchRequest> request) {
         executeRequest(() -> this.client.getSourceFilesApi()
-            .editFile(this.projectId, fileId, request));
+                .editFile(this.projectId, fileId, request));
     }
 
     @Override
     public void uploadTranslation(String languageId, UploadTranslationsRequest request) {
         executeRequest(() -> this.client.getTranslationsApi()
-            .uploadTranslations(this.projectId, languageId, request));
+                .uploadTranslations(this.projectId, languageId, request));
+    }
+
+    @Override
+    public void uploadStringsTranslation(String languageId, UploadTranslationsStringsRequest request) {
+        executeRequest(() -> this.client.getTranslationsApi()
+                .uploadTranslationStringsBased(this.projectId, languageId, request));
     }
 
     @Override
     public Directory addDirectory(AddDirectoryRequest request) {
         return executeRequest(() -> this.client.getSourceFilesApi()
-            .addDirectory(this.projectId, request)
-            .getData());
+                .addDirectory(this.projectId, request)
+                .getData());
     }
 
     @Override
     public com.crowdin.client.projectsgroups.model.Project getProject() {
         return executeRequest(() -> this.client.getProjectsGroupsApi()
-            .getProject(this.projectId)
-            .getData());
+                .getProject(this.projectId)
+                .getData());
     }
 
     @Override
@@ -107,66 +126,102 @@ public class Crowdin implements CrowdinClient {
     }
 
     @Override
+    public UploadStringsProgress uploadStrings(UploadStringsRequest request) {
+        return executeRequest(() -> this.client.getSourceStringsApi()
+                .uploadStrings(this.projectId, request)
+                .getData());
+    }
+
+    @Override
+    public UploadStringsProgress checkUploadStringsStatus(String id) {
+        return executeRequest(() -> this.client.getSourceStringsApi()
+                .uploadStringsStatus(projectId, id)
+                .getData());
+    }
+
+    @Override
     public ProjectBuild startBuildingTranslation(BuildProjectTranslationRequest request) {
         return executeRequest(() -> this.client.getTranslationsApi()
-            .buildProjectTranslation(this.projectId, request)
-            .getData());
+                .buildProjectTranslation(this.projectId, request)
+                .getData());
     }
 
     @Override
     public ProjectBuild checkBuildingStatus(Long buildId) {
         return executeRequest(() -> this.client.getTranslationsApi()
-            .checkBuildStatus(projectId, buildId)
-            .getData());
+                .checkBuildStatus(projectId, buildId)
+                .getData());
     }
 
     @Override
     public URL downloadProjectTranslations(Long buildId) {
         return url(executeRequest(() -> this.client.getTranslationsApi()
-            .downloadProjectTranslations(this.projectId, buildId)
-            .getData()));
+                .downloadProjectTranslations(this.projectId, buildId)
+                .getData()));
+    }
+
+
+    @Override
+    public BundleExport startBuildingBundle(Long bundleId) {
+        return executeRequest(() -> this.client.getBundlesApi()
+                .exportBundle(this.projectId, bundleId)
+                .getData());
+    }
+
+    @Override
+    public BundleExport checkBundleBuildingStatus(Long buildId, String exportId) {
+        return executeRequest(() -> this.client.getBundlesApi()
+                .checkBundleExportStatus(projectId, buildId, exportId)
+                .getData());
+    }
+
+    @Override
+    public URL downloadBundle(Long buildId, String exportId) {
+        return url(executeRequest(() -> this.client.getBundlesApi()
+                .downloadBundle(this.projectId, buildId, exportId)
+                .getData()));
     }
 
     @Override
     public URL downloadFileTranslation(Long fileId, BuildProjectFileTranslationRequest request) {
         return url(executeRequest(() -> client.getTranslationsApi()
-            .buildProjectFileTranslation(this.projectId, fileId, null, request)
-            .getData()));
+                .buildProjectFileTranslation(this.projectId, fileId, null, request)
+                .getData()));
     }
 
     @Override
     public List<Language> getSupportedLanguages() {
         return executeRequest(() -> client.getLanguagesApi().listSupportedLanguages(500, 0)
-            .getData()
-            .stream()
-            .map(ResponseObject::getData)
-            .collect(Collectors.toList()));
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
     }
 
     @Override
     public Map<Long, Directory> getDirectories(Long branchId) {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceFilesApi()
-                    .listDirectories(this.projectId, branchId, null, null, true, limit, offset)
-                    .getData()
-            )
-            .stream()
-            .map(ResponseObject::getData)
-            .filter(dir -> Objects.equals(dir.getBranchId(), branchId))
-            .collect(Collectors.toMap(Directory::getId, Function.identity()));
+                        .listDirectories(this.projectId, branchId, null, null, true, limit, offset)
+                        .getData()
+        )
+                .stream()
+                .map(ResponseObject::getData)
+                .filter(dir -> Objects.equals(dir.getBranchId(), branchId))
+                .collect(Collectors.toMap(Directory::getId, Function.identity()));
     }
 
     @Override
     public List<com.crowdin.client.sourcefiles.model.FileInfo> getFiles(Long branchId) {
         return executeRequestFullList((limit, offset) ->
                 this.client.getSourceFilesApi()
-                    .listFiles(this.projectId, branchId, null, null, true, 500, 0)
-                    .getData()
-            )
-            .stream()
-            .map(ResponseObject::getData)
-            .filter(file -> Objects.equals(file.getBranchId(), branchId))
-            .collect(Collectors.toList());
+                        .listFiles(this.projectId, branchId, null, null, true, 500, 0)
+                        .getData()
+        )
+                .stream()
+                .map(ResponseObject::getData)
+                .filter(file -> Objects.equals(file.getBranchId(), branchId))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -183,7 +238,7 @@ public class Crowdin implements CrowdinClient {
                         null,
                         limit,
                         offset).getData()
-                )
+        )
                 .stream()
                 .map(ResponseObject::getData)
                 .collect(Collectors.toList());
@@ -191,7 +246,7 @@ public class Crowdin implements CrowdinClient {
 
     /**
      * @param request represents function that downloads list of models and has two args (limit, offset)
-     * @param <T> represents model
+     * @param <T>     represents model
      * @return list of models accumulated from request function
      */
     private <T> List<T> executeRequestFullList(BiFunction<Integer, Integer, List<T>> request) {
@@ -210,8 +265,8 @@ public class Crowdin implements CrowdinClient {
     public Branch addBranch(AddBranchRequest request) {
         try {
             return executeRequest(() -> this.client.getSourceFilesApi()
-                .addBranch(this.projectId, request)
-                .getData());
+                    .addBranch(this.projectId, request)
+                    .getData());
         } catch (Exception e) {
             if (e.getMessage() != null && e.getMessage().contains("regexNotMatch File name can't contain")) {
                 throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
@@ -233,50 +288,70 @@ public class Crowdin implements CrowdinClient {
     @Override
     public Map<String, Branch> getBranches() {
         return executeRequestFullList((limit, offset) ->
-            this.client.getSourceFilesApi()
-                .listBranches(this.projectId, null, limit, offset)
-                .getData()
+                this.client.getSourceFilesApi()
+                        .listBranches(this.projectId, null, limit, offset)
+                        .getData()
         )
-            .stream()
-            .map(ResponseObject::getData)
-            .collect(Collectors.toMap(Branch::getName, Function.identity()));
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toMap(Branch::getName, Function.identity()));
     }
 
     @Override
     public List<LanguageProgress> getProjectProgress() {
         return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
-            .getProjectProgress(this.projectId, limit, offset, null)
-            .getData()
-            .stream()
-            .map(ResponseObject::getData)
-            .collect(Collectors.toList()));
+                .getProjectProgress(this.projectId, limit, offset, null)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
     }
 
     @Override
-    public List<FileProgress> getLanguageProgress(String languageId) {
+    public List<FileBranchProgress> getLanguageProgress(String languageId) {
         return executeRequestFullList((limit, offset) -> this.client.getTranslationStatusApi()
-            .getLanguageProgress(this.projectId, languageId, limit, offset)
-            .getData()
-            .stream()
-            .map(ResponseObject::getData)
-            .collect(Collectors.toList()));
+                .getLanguageProgress(this.projectId, languageId, limit, offset)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
     }
 
     @Override
     public List<Label> listLabels() {
         return executeRequestFullList((limit, offset) -> this.client.getLabelsApi()
-            .listLabels(this.projectId, limit, offset)
-            .getData()
-            .stream()
-            .map(ResponseObject::getData)
-            .collect(Collectors.toList()));
+                .listLabels(this.projectId, limit, offset, null)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList()));
     }
 
     @Override
     public Label addLabel(AddLabelRequest request) {
-        return executeRequest(() ->this.client.getLabelsApi()
-            .addLabel(this.projectId, request)
-            .getData());
+        return executeRequest(() -> this.client.getLabelsApi()
+                .addLabel(this.projectId, request)
+                .getData());
+    }
+
+    @Override
+    public List<Bundle> getBundles() {
+        return this.client.getBundlesApi()
+                .listBundles(this.projectId)
+                .getData()
+                .stream()
+                .map(ResponseObject::getData)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getBundlesUrl(Project project) {
+        if (this.baseUrl != null) {
+            String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
+            return base + "u/projects/" + project.getId() + "/translations#bundles";
+        } else {
+            return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles";
+        }
     }
 
     private boolean concurrentIssue(Exception error) {
@@ -336,8 +411,8 @@ public class Crowdin implements CrowdinClient {
             String code = (ex.getError() != null && ex.getError().getCode() != null) ? ex.getError().getCode() : "<empty_code>";
             String message = (ex.getError() != null && ex.getError().getMessage() != null) ? ex.getError().getMessage() : "<empty_message>";
             String errorMessage = ("401".equals(code))
-                ? MESSAGES_BUNDLE.getString("errors.authorize")
-                : String.format("Error from server: <Code: %s, Message: %s>", code, message);
+                    ? MESSAGES_BUNDLE.getString("errors.authorize")
+                    : String.format("Error from server: <Code: %s, Message: %s>", code, message);
             throw new RuntimeException(errorMessage, e);
         } catch (HttpBadRequestException e) {
             String errorMessage;
@@ -345,17 +420,17 @@ public class Crowdin implements CrowdinClient {
                 errorMessage = "Wrong parameters: <Key: <empty_key>, Code: <empty_code>, Message: <empty_message>";
             } else {
                 errorMessage = "Wrong parameters: \n" + e.getErrors()
-                    .stream()
-                    .map(HttpBadRequestException.ErrorHolder::getError)
-                    .flatMap(holder -> holder.getErrors()
                         .stream()
-                        .filter(Objects::nonNull)
-                        .map(error ->
-                            String.format("<Key: %s, Code: %s, Message: %s>",
-                                (holder.getKey() != null) ? holder.getKey() : "<empty_key>",
-                                (error.getCode() != null) ? error.getCode() : "<empty_code>",
-                                (error.getMessage() != null) ? error.getMessage() : "<empty_message>")))
-                    .collect(Collectors.joining("\n"));
+                        .map(HttpBadRequestException.ErrorHolder::getError)
+                        .flatMap(holder -> holder.getErrors()
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .map(error ->
+                                        String.format("<Key: %s, Code: %s, Message: %s>",
+                                                (holder.getKey() != null) ? holder.getKey() : "<empty_key>",
+                                                (error.getCode() != null) ? error.getCode() : "<empty_code>",
+                                                (error.getMessage() != null) ? error.getMessage() : "<empty_message>")))
+                        .collect(Collectors.joining("\n"));
             }
             throw new RuntimeException(errorMessage, e);
         }

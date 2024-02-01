@@ -2,8 +2,6 @@ package com.crowdin.util;
 
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.*;
-import lombok.NonNull;
-import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,13 +9,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.MESSAGES_BUNDLE;
-
 public class CrowdinFileUtil {
 
     private CrowdinFileUtil() {}
 
-    public static <F extends FileInfo>  Map<String, F> buildFilePaths(@NonNull List<F> files, @NonNull Map<Long, Directory> dirs) {
+    public static <F extends FileInfo>  Map<String, F> buildFilePaths(List<F> files, Map<Long, Directory> dirs) {
         Map<String, F> filePaths = new HashMap<>();
         for (F file : files) {
             StringBuilder sb = new StringBuilder(file.getName());
@@ -33,7 +29,7 @@ public class CrowdinFileUtil {
         return filePaths;
     }
 
-    public static Map<String, Directory> buildDirPaths(@NonNull Map<Long, Directory> dirs) {
+    public static Map<String, Directory> buildDirPaths(Map<Long, Directory> dirs) {
         Map<String, Directory> dirPaths = new HashMap<>();
         for (Directory dir : dirs.values()) {
             StringBuilder sb = new StringBuilder(dir.getName());
@@ -49,12 +45,12 @@ public class CrowdinFileUtil {
         return dirPaths;
     }
 
-    public static Map<Long, String> revDirPaths(@NonNull Map<String, Directory> dirs) {
+    public static Map<Long, String> revDirPaths(Map<String, Directory> dirs) {
         return dirs.keySet().stream()
             .collect(Collectors.toMap(path -> dirs.get(path).getId(), Function.identity()));
     }
 
-    public static Map<String, String> buildAllProjectTranslationsWithSources(@NonNull List<File> sources, @NonNull Map<Long, String> dirPaths, @NonNull List<Language> projLanguages, LanguageMapping languageMapping) {
+    public static Map<String, String> buildAllProjectTranslationsWithSources(List<File> sources, Map<Long, String> dirPaths, List<Language> projLanguages, LanguageMapping languageMapping) {
         Map<String, String> result = new HashMap<>();
         for (File source : sources) {
             String sourcePath = ((source.getDirectoryId() != null) ? dirPaths.get(source.getDirectoryId()) + java.io.File.separator : java.io.File.separator) + source.getName();

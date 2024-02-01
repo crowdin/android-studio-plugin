@@ -27,6 +27,8 @@ public final class Constants {
     public static final String PROPERTY_FILES_TRANSLATIONS_PATTERN = "files.%stranslation";
     public static final Pattern PROPERTY_FILES_TRANSLATIONS_REGEX = Pattern.compile("^files\\.(|\\d+\\.)translation$");
     public static final String PROPERTY_FILES_EXCLUDED_TARGET_LANGUAGES_PATTERN = "files.%sexcluded-target-languages";
+    public static final String PROPERTY_FILES_CLEANUP_MODE_PATTERN = "files.%scleanup-mode";
+    public static final String PROPERTY_FILES_UPDATE_STRINGS_PATTERN = "files.%supdate-strings";
     public static final String PROPERTY_FILES_LABELS_PATTERN = "files.%slabels";
     public static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
     public static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
@@ -47,4 +49,18 @@ public final class Constants {
     public static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto-approve-imported";
 
     public static final String PROPERTY_TRANSLATE_HIDDEN = "translate-hidden";
+
+    public static final String PROGRESS_TOOLBAR_ID = "Crowdin.TranslationProgressToolbar";
+
+    public static final String TOOLWINDOW_ID = "Crowdin";
+    public static final String UPLOAD_TOOLBAR_ID = "Crowdin.UploadToolbar";
+    public static final String DOWNLOAD_TOOLBAR_ID = "Crowdin.DownloadToolbar";
+
+    public static final String PROGRESS_REFRESH_ACTION = "Crowdin.RefreshTranslationProgressAction";
+    public static final String UPLOAD_REFRESH_ACTION = "Crowdin.RefreshUploadAction";
+    public static final String DOWNLOAD_REFRESH_ACTION = "Crowdin.RefreshDownloadAction";
+    public static final String DOWNLOAD_TRANSLATIONS_ACTION = "Crowdin.DownloadTranslations";
+    public static final String DOWNLOAD_SOURCES_ACTION = "Crowdin.DownloadSources";
+
+    public static final String PROGRESS_GROUP_FILES_BY_FILE_ACTION = "Crowdin.GroupByFiles";
 }

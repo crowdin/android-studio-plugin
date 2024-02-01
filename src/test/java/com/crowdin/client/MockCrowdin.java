@@ -4,6 +4,8 @@ import static java.util.Collections.singletonMap;
 
 import com.crowdin.api.model.BranchBuilder;
 import com.crowdin.api.model.LanguageBuilder;
+import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.bundles.model.BundleExport;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
@@ -18,11 +20,14 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.sourcestrings.model.SourceString;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.BuildProjectTranslationRequest;
 import com.crowdin.client.translations.model.ProjectBuild;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
-import com.crowdin.client.translationstatus.model.FileProgress;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
+import com.crowdin.client.translationstatus.model.FileBranchProgress;
 import com.crowdin.client.translationstatus.model.LanguageProgress;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,6 +60,11 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
+    public Long getProjectId() {
+        return project != null ? project.getId() : null;
+    }
+
+    @Override
     public Long addStorage(String fileName, InputStream content) {
         return null;
     }
@@ -81,6 +91,10 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
+    public void uploadStringsTranslation(String languageId, UploadTranslationsStringsRequest request) {
+    }
+
+    @Override
     public Directory addDirectory(AddDirectoryRequest request) {
         return null;
     }
@@ -96,6 +110,16 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
+    public UploadStringsProgress uploadStrings(UploadStringsRequest request) {
+        return null;
+    }
+
+    @Override
+    public UploadStringsProgress checkUploadStringsStatus(String id) {
+        return null;
+    }
+
+    @Override
     public ProjectBuild startBuildingTranslation(BuildProjectTranslationRequest request) {
         return null;
     }
@@ -107,6 +131,21 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public URL downloadProjectTranslations(Long buildId) {
+        return null;
+    }
+
+    @Override
+    public BundleExport startBuildingBundle(Long bundleId) {
+        return null;
+    }
+
+    @Override
+    public BundleExport checkBundleBuildingStatus(Long buildId, String exportId) {
+        return null;
+    }
+
+    @Override
+    public URL downloadBundle(Long buildId, String exportId) {
         return null;
     }
 
@@ -163,7 +202,7 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
-    public List<FileProgress> getLanguageProgress(String languageId) {
+    public List<FileBranchProgress> getLanguageProgress(String languageId) {
         return null;
     }
 
@@ -174,6 +213,16 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public Label addLabel(AddLabelRequest request) {
+        return null;
+    }
+
+    @Override
+    public List<Bundle> getBundles() {
+        return null;
+    }
+
+    @Override
+    public String getBundlesUrl(Project project) {
         return null;
     }
 }

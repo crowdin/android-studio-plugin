@@ -1,12 +1,8 @@
 package com.crowdin.util;
 
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.HashMap;
 import java.util.Map;
 
-@ToString
 public class LanguageMapping {
 
     private final Map<String, Map<String, String>> languageMapping;
@@ -59,5 +55,12 @@ public class LanguageMapping {
             copy.put(entry.getKey(), new HashMap<>(entry.getValue()));
         }
         return copy;
+    }
+
+    @Override
+    public String toString() {
+        return "LanguageMapping{" +
+                "languageMapping=" + languageMapping +
+                '}';
     }
 }

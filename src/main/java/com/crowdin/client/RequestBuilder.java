@@ -10,6 +10,7 @@ import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
 import com.crowdin.client.translations.model.BuildProjectFileTranslationRequest;
 import com.crowdin.client.translations.model.CrowdinTranslationCreateProjectBuildForm;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
+import com.crowdin.client.translations.model.UploadTranslationsStringsRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,22 @@ public class RequestBuilder {
     ) {
         UploadTranslationsRequest request = new UploadTranslationsRequest();
         request.setFileId(fileId);
+        request.setStorageId(storageId);
+        request.setImportEqSuggestions(importEqSuggestions);
+        request.setAutoApproveImported(autoApproveImported);
+        request.setTranslateHidden(translateHidden);
+        return request;
+    }
+
+    public static UploadTranslationsStringsRequest uploadStringsTranslation(
+        Long branchId,
+        Long storageId,
+        Boolean importEqSuggestions,
+        Boolean autoApproveImported,
+        Boolean translateHidden
+    ) {
+        UploadTranslationsStringsRequest request = new UploadTranslationsStringsRequest();
+        request.setBranchId(branchId);
         request.setStorageId(storageId);
         request.setImportEqSuggestions(importEqSuggestions);
         request.setAutoApproveImported(autoApproveImported);

@@ -1,18 +1,26 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProjectCacheProvider;
 import com.crowdin.client.FileBean;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.client.sourcefiles.model.*;
+import com.crowdin.client.sourcefiles.model.AddDirectoryRequest;
+import com.crowdin.client.sourcefiles.model.AddFileRequest;
+import com.crowdin.client.sourcefiles.model.Branch;
+import com.crowdin.client.sourcefiles.model.Directory;
+import com.crowdin.client.sourcefiles.model.FileInfo;
+import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
+import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
+import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
+import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
+import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
+import com.crowdin.util.StringUtils;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,6 +35,7 @@ import static com.crowdin.util.FileUtil.joinPaths;
 import static com.crowdin.util.FileUtil.normalizePath;
 import static com.crowdin.util.FileUtil.sepAtStart;
 import static com.crowdin.util.FileUtil.unixPath;
+import static com.crowdin.util.Util.isFileFormatNotAllowed;
 
 public class SourceLogic {
 
@@ -39,14 +48,19 @@ public class SourceLogic {
     private final Long branchId;
 
     public static void processSources(
-        Project project, VirtualFile root,
-        Crowdin crowdin, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache,
-        Branch branch, boolean preserveHierarchy, Map<FileBean, List<VirtualFile>> sourcesToUpload
+            Project project, VirtualFile root,
+            Crowdin crowdin, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache,
+            Branch branch, boolean preserveHierarchy, Map<FileBean, List<VirtualFile>> sourcesToUpload
     ) {
         Map<String, FileInfo> filePaths = projectCache.getFileInfos(branch);
         Map<String, Directory> dirPaths = projectCache.getDirs().getOrDefault(branch, new HashMap<>());
         Map<String, Long> labels = SourceLogic.prepareLabels(crowdin, new ArrayList<>(sourcesToUpload.keySet()));
         Long branchId = (branch != null) ? branch.getId() : null;
+
+        if (projectCache.isStringsBased() && branchId == null) {
+            NotificationUtil.showErrorMessage(project, "Branch is missing");
+            return;
+        }
 
         SourceLogic sourceLogic = new SourceLogic(root, project, crowdin, filePaths, dirPaths, labels, branchId);
         for (FileBean fileBean : sourcesToUpload.keySet()) {
@@ -57,7 +71,11 @@ public class SourceLogic {
         for (FileBean fileBean : sourcesToUpload.keySet()) {
             for (VirtualFile source : sourcesToUpload.get(fileBean)) {
                 try {
-                    sourceLogic.uploadSource(source, fileBean, preserveHierarchy);
+                    if (projectCache.isStringsBased()) {
+                        sourceLogic.uploadStrings(source, fileBean, preserveHierarchy);
+                    } else {
+                        sourceLogic.uploadSource(source, fileBean, preserveHierarchy);
+                    }
                 } catch (Exception e) {
                     NotificationUtil.logErrorMessage(project, e);
                     NotificationUtil.showErrorMessage(project, e.getMessage());
@@ -67,9 +85,9 @@ public class SourceLogic {
     }
 
     public SourceLogic(
-        VirtualFile root, Project project,
-        Crowdin crowdin,
-        Map<String, FileInfo> filePaths, Map<String, Directory> dirPaths, Map<String, Long> labelMap, Long branchId
+            VirtualFile root, Project project,
+            Crowdin crowdin,
+            Map<String, FileInfo> filePaths, Map<String, Directory> dirPaths, Map<String, Long> labelMap, Long branchId
     ) {
         this.root = root;
         this.project = project;
@@ -113,7 +131,6 @@ public class SourceLogic {
                     storageId = crowdin.addStorage(source.getName(), sourceStream);
                 }
 
-
                 UpdateFileRequest updateFileRequest = RequestBuilder.updateFile(storageId, exportOptions);
 
                 if (fileBean.getLabels() != null && !fileBean.getLabels().isEmpty()) {
@@ -142,7 +159,7 @@ public class SourceLogic {
                 }
 
                 AddFileRequest addFileRequest = RequestBuilder.addFile(
-                    storageId, source.getName(), (directoryId == null ? branchId : null), directoryId, type, exportOptions);
+                        storageId, source.getName(), (directoryId == null ? branchId : null), directoryId, type, exportOptions);
 
                 if (fileBean.getLabels() != null && !fileBean.getLabels().isEmpty()) {
                     List<Long> labelIds = fileBean.getLabels().stream().map(labels::get).collect(Collectors.toList());
@@ -161,8 +178,53 @@ public class SourceLogic {
         }
     }
 
-    private boolean isFileUploaded(String path) {
-        return filePaths.containsKey(path);
+    public void uploadStrings(VirtualFile source, FileBean fileBean, boolean preserveHierarchy) {
+        try {
+            VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
+
+            String path;
+            if (preserveHierarchy) {
+                String relativePathToPattern = FileUtil.findRelativePath(root, pathToPattern);
+                String patternPathToFile = FileUtil.findRelativePath(pathToPattern, source.getParent());
+                path = sepAtStart(normalizePath(joinPaths(relativePathToPattern, patternPathToFile, source.getName())));
+            } else {
+                path = sepAtStart(source.getName());
+            }
+
+            String outputName = FileUtil.noSepAtStart(path);
+
+            Long storageId;
+            NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.upload_sources.add_to_storage"), outputName));
+            try (InputStream sourceStream = source.getInputStream()) {
+                storageId = crowdin.addStorage(source.getName(), sourceStream);
+            }
+
+            UploadStringsRequest request = new UploadStringsRequest();
+            request.setStorageId(storageId);
+            request.setBranchId(branchId);
+            request.setUpdateStrings(fileBean.getUpdateStrings());
+            request.setCleanupMode(fileBean.getCleanupMode());
+
+            UploadStringsProgress progress = crowdin.uploadStrings(request);
+            String id = progress.getIdentifier();
+
+            while (!progress.getStatus().equalsIgnoreCase("finished")) {
+                progress = crowdin.checkUploadStringsStatus(id);
+            }
+
+            NotificationUtil.showInformationMessage(project, "File '" + outputName + "' is uploaded");
+
+        } catch (Exception e) {
+            if (isFileFormatNotAllowed(e)) {
+                String message = String.format(
+                        "*.%s files are not allowed to upload in strings-based projects",
+                        source.getExtension()
+                );
+                NotificationUtil.showWarningMessage(project, message);
+                return;
+            }
+            throw new RuntimeException(String.format("Couldn't upload source file: %s", e.getMessage()), e);
+        }
     }
 
     private Long buildPath(Crowdin crowdin, String path, Map<String, Directory> dirs, Long branchId) {
@@ -194,22 +256,24 @@ public class SourceLogic {
     public static void checkExcludedTargetLanguages(List<String> excludedTargetLanguages, List<Language> supportedLanguages, List<Language> projectLanguages) {
         if (excludedTargetLanguages != null && !excludedTargetLanguages.isEmpty()) {
             List<String> supportedLanguageIds = supportedLanguages.stream()
-                .map(Language::getId)
-                .collect(Collectors.toList());;
+                    .map(Language::getId)
+                    .collect(Collectors.toList());
+            ;
             List<String> projectLanguageIds = projectLanguages.stream()
-                .map(Language::getId)
-                .collect(Collectors.toList());;
+                    .map(Language::getId)
+                    .collect(Collectors.toList());
+            ;
             String notSupportedLangs = excludedTargetLanguages.stream()
-                .filter(lang -> !supportedLanguageIds.contains(lang))
-                .map(lang -> "'" + lang + "'")
-                .collect(Collectors.joining(", "));
+                    .filter(lang -> !supportedLanguageIds.contains(lang))
+                    .map(lang -> "'" + lang + "'")
+                    .collect(Collectors.joining(", "));
             if (notSupportedLangs.length() > 0) {
                 throw new RuntimeException(String.format("Crowdin doesn't support %s language code(s)", notSupportedLangs));
             }
             String notInProjectLangs = excludedTargetLanguages.stream()
-                .filter(lang -> !projectLanguageIds.contains(lang))
-                .map(lang -> "'" + lang + "'")
-                .collect(Collectors.joining(", "));
+                    .filter(lang -> !projectLanguageIds.contains(lang))
+                    .map(lang -> "'" + lang + "'")
+                    .collect(Collectors.joining(", "));
             if (notInProjectLangs.length() > 0) {
                 throw new RuntimeException(String.format("Project doesn't have %s language(s)", notInProjectLangs));
             }
@@ -218,13 +282,13 @@ public class SourceLogic {
 
     public static Map<String, Long> prepareLabels(Crowdin crowdin, List<FileBean> fileBeans) {
         Map<String, Long> labels = crowdin.listLabels().stream()
-            .collect(Collectors.toMap(Label::getTitle, Label::getId));
+                .collect(Collectors.toMap(Label::getTitle, Label::getId));
         fileBeans.stream()
-            .map(FileBean::getLabels)
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .distinct()
-            .forEach(labelTitle -> labels.computeIfAbsent(labelTitle, (title) -> crowdin.addLabel(RequestBuilder.addLabel(title)).getId()));
+                .map(FileBean::getLabels)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .distinct()
+                .forEach(labelTitle -> labels.computeIfAbsent(labelTitle, (title) -> crowdin.addLabel(RequestBuilder.addLabel(title)).getId()));
         return labels;
     }
 

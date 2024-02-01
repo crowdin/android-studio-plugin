@@ -2,7 +2,9 @@
   <id>com.crowdin.crowdin-idea</id>
   <name>Crowdin</name>
   <version>1.6.3</version>
-  <idea-version since-build="163.*"/>
+<!--  https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html#platformVersions-->
+<!--  https://www.jetbrains.com/idea/download/other.html-->
+  <idea-version since-build="222.*"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[
       <p>
@@ -33,19 +35,43 @@
   </change-notes>
 
   <extensions defaultExtensionNs="com.intellij">
-    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"></postStartupActivity>
-    <projectService serviceImplementation="com.crowdin.logic.CrowdinSettings"/>
-    <toolWindow factoryClass="com.crowdin.ui.TranslationProgressWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
-    <projectService serviceImplementation="com.crowdin.ui.TranslationProgressWindowFactory$ProjectService"/>
+    <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
+
+    <projectService serviceImplementation="com.crowdin.service.CrowdinSettings"/>
+    <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
+    <projectService serviceImplementation="com.crowdin.service.CrowdinProjectCacheProvider"/>
+
+    <toolWindow factoryClass="com.crowdin.ui.panel.CrowdinPanelWindowFactory" id="Crowdin" anchor="right" icon="/icons/icon.svg"/>
     <completion.contributor language="any" implementationClass="com.crowdin.completion.StringsCompletionContributor" />
+
+    <notificationGroup displayType="BALLOON" id="Crowdin BALLON" isLogByDefault="true"/>
+    <notificationGroup displayType="NONE" id="Crowdin NONE" isLogByDefault="true"/>
   </extensions>
 
   <actions>
 
     <group id="Crowdin.TranslationProgressToolbar">
-      <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.action.GroupProgressByFiles"/>
+      <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.panel.progress.action.GroupProgressByFiles"/>
       <separator/>
-      <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.action.RefreshTranslationProgressAction"/>
+      <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.panel.progress.action.RefreshTranslationProgressAction"/>
+    </group>
+
+    <group id="Crowdin.UploadToolbar">
+      <action id="Crowdin.UploadSource" icon="/icons/upload-sources.svg" class="com.crowdin.action.UploadAction" text="Upload Sources" />
+      <action id="Crowdin.UploadTranslations" icon="/icons/upload.svg" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations"/>
+      <separator/>
+      <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
+      <action id="Crowdin.ExpandUploadTree" text="Expand" class="com.crowdin.ui.panel.upload.action.ExpandAction"/>
+      <action id="Crowdin.CollapseUploadTree" text="Collapse" class="com.crowdin.ui.panel.upload.action.CollapseAction"/>
+    </group>
+
+    <group id="Crowdin.DownloadToolbar">
+      <action id="Crowdin.DownloadSources" icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
+      <action id="Crowdin.DownloadTranslations" icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
+      <separator/>
+      <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
+      <action id="Crowdin.ExpandDownloadTree" text="Expand" class="com.crowdin.ui.panel.download.action.ExpandAction"/>
+      <action id="Crowdin.CollapseDownloadTree" text="Collapse" class="com.crowdin.ui.panel.download.action.CollapseAction"/>
     </group>
 
     <action icon="/icons/icon.svg" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">
@@ -63,14 +89,6 @@
     <action icon="/icons/icon.svg" id="Crowdin.DownloadTranslationContextAction" class="com.crowdin.action.DownloadTranslationFromContextAction" text="Download Translation File from Crowdin" description="Download this translation file from Crowdin">
       <add-to-group group-id="ProjectViewPopupMenu" />
     </action>
-
-    <group icon="/icons/icon.svg" id="Crowdin.Commands" text="Crowdin" description="Crowdin Integration" popup="true">
-      <add-to-group group-id="ToolsMenu" anchor="last"></add-to-group>
-      <action id="Crowdin.UploadSource" class="com.crowdin.action.UploadAction" text="Upload Sources" description="Upload Source File" />
-      <action id="Crowdin.UploadTranslations" class="com.crowdin.action.UploadTranslationsAction" text="Upload Translations" description="Upload Translation Files"/>
-      <action id="Crowdin.DownloadSources" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" description="Download Sources" />
-      <action id="Crowdin.DownloadTranslations" class="com.crowdin.action.DownloadAction" text="Download Translations" description="Download Translations" />
-    </group>
 
   </actions>
   <depends>com.intellij.modules.vcs</depends>

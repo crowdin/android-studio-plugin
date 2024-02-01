@@ -1,8 +1,11 @@
-package com.crowdin.client;
+package com.crowdin.service;
 
+import com.crowdin.client.CrowdinClient;
+import com.crowdin.client.bundles.model.Bundle;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.client.projectsgroups.model.ProjectSettings;
+import com.crowdin.client.projectsgroups.model.Type;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
@@ -10,32 +13,33 @@ import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.LanguageMapping;
-import com.google.common.annotations.VisibleForTesting;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CrowdinProjectCacheProvider {
 
-    @Getter(AccessLevel.PACKAGE)
-    @Setter(AccessLevel.PACKAGE)
-    @VisibleForTesting
-    private static CrowdinProjectCache crowdinProjectCache;
+    private CrowdinProjectCache crowdinProjectCache = new CrowdinProjectCache();
 
-    private static boolean outdated = false;
+    private boolean outdated = false;
 
-    @Getter(AccessLevel.PACKAGE)
-    @VisibleForTesting
-    private static List<String> outdatedBranches = new ArrayList<>();
+    private final List<String> outdatedBranches = new ArrayList<>();
 
-    @Data
+    public CrowdinProjectCache getCrowdinProjectCache() {
+        return crowdinProjectCache;
+    }
+
+    public void setCrowdinProjectCache(CrowdinProjectCache crowdinProjectCache) {
+        this.crowdinProjectCache = crowdinProjectCache;
+    }
+
+    public List<String> getOutdatedBranches() {
+        return outdatedBranches;
+    }
+
     public static class CrowdinProjectCache {
         private boolean managerAccess;
         private Project project;
@@ -46,9 +50,15 @@ public class CrowdinProjectCacheProvider {
         private Map<Branch, Map<String, ? extends FileInfo>> fileInfos;
         private LanguageMapping languageMapping;
         private List<SourceString> strings;
+        private List<Bundle> bundles;
+
+        public boolean isStringsBased() {
+            return Type.STRINGS_BASED == this.project.getType();
+        }
 
         /**
          * Returns project information with additional information. Should be checked for managerAccess before accessing this value
+         *
          * @return Project information with additional information
          */
         public ProjectSettings getProjectSettings() {
@@ -69,6 +79,7 @@ public class CrowdinProjectCacheProvider {
 
         /**
          * Returns list of files with additional information. Should be checked for managerAccess before accessing this values
+         *
          * @return List of files with additional information
          */
         @SuppressWarnings("unchecked")
@@ -85,6 +96,7 @@ public class CrowdinProjectCacheProvider {
 
         /**
          * Returns server language mapping. Should be checked for managerAccess before accessing this value
+         *
          * @return Langauge Mapping from server
          */
         public LanguageMapping getLanguageMapping() {
@@ -98,41 +110,117 @@ public class CrowdinProjectCacheProvider {
             }
         }
 
-    }
-
-    private CrowdinProjectCacheProvider() {
-
-    }
-
-    public synchronized static CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
-        if (crowdinProjectCache == null) {
-            crowdinProjectCache = new CrowdinProjectCache();
+        public boolean isManagerAccess() {
+            return managerAccess;
         }
-        if (crowdinProjectCache.getProject() == null || update) {
+
+        public void setManagerAccess(boolean managerAccess) {
+            this.managerAccess = managerAccess;
+        }
+
+        public Project getProject() {
+            return project;
+        }
+
+        public void setProject(Project project) {
+            this.project = project;
+        }
+
+        public List<Language> getSupportedLanguages() {
+            return SupportedLanguages;
+        }
+
+        public void setSupportedLanguages(List<Language> supportedLanguages) {
+            SupportedLanguages = supportedLanguages;
+        }
+
+        public List<Language> getProjectLanguages() {
+            return ProjectLanguages;
+        }
+
+        public void setProjectLanguages(List<Language> projectLanguages) {
+            ProjectLanguages = projectLanguages;
+        }
+
+        public Map<String, Branch> getBranches() {
+            return branches;
+        }
+
+        public void setBranches(Map<String, Branch> branches) {
+            this.branches = branches;
+        }
+
+        public Map<Branch, Map<String, Directory>> getDirs() {
+            return dirs;
+        }
+
+        public void setDirs(Map<Branch, Map<String, Directory>> dirs) {
+            this.dirs = dirs;
+        }
+
+        public Map<Branch, Map<String, ? extends FileInfo>> getFileInfos() {
+            return fileInfos;
+        }
+
+        public void setFileInfos(Map<Branch, Map<String, ? extends FileInfo>> fileInfos) {
+            this.fileInfos = fileInfos;
+        }
+
+        public void setLanguageMapping(LanguageMapping languageMapping) {
+            this.languageMapping = languageMapping;
+        }
+
+        public List<SourceString> getStrings() {
+            return strings;
+        }
+
+        public void setStrings(List<SourceString> strings) {
+            this.strings = strings;
+        }
+
+        public List<Bundle> getBundles() {
+            return bundles;
+        }
+
+        public void setBundles(List<Bundle> bundles) {
+            this.bundles = bundles;
+        }
+    }
+
+    public synchronized CrowdinProjectCache getInstance(CrowdinClient crowdin, String branchName, boolean update) {
+        boolean differentProject = Optional
+                .ofNullable(crowdinProjectCache.getProject())
+                .map(Project::getId)
+                .map(id -> !crowdin.getProjectId().equals(id))
+                .orElse(false);
+        if (crowdinProjectCache.getProject() == null || update || differentProject) {
             crowdinProjectCache.setProject(crowdin.getProject());
             crowdinProjectCache.setManagerAccess(crowdinProjectCache.getProject() instanceof ProjectSettings);
             if (crowdinProjectCache.isManagerAccess()) {
                 crowdinProjectCache.setLanguageMapping(
-                    LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
+                        LanguageMapping.fromServerLanguageMapping(crowdinProjectCache.getProjectSettings().getLanguageMapping()));
             }
         }
-        if (crowdinProjectCache.getStrings() == null) {
+        if (crowdinProjectCache.getStrings() == null || differentProject) {
             crowdinProjectCache.setStrings(crowdin.getStrings());
         }
-        if (crowdinProjectCache.getSupportedLanguages() == null) {
+        if (crowdinProjectCache.getSupportedLanguages() == null || differentProject) {
             crowdinProjectCache.setSupportedLanguages(crowdin.getSupportedLanguages());
         }
-        if (crowdinProjectCache.getProjectLanguages() == null || update) {
+        if (crowdinProjectCache.getProjectLanguages() == null || update || differentProject) {
             crowdinProjectCache.setProjectLanguages(crowdin.extractProjectLanguages(crowdinProjectCache.getProject()));
         }
-        if (crowdinProjectCache.getBranches() == null || outdated || update) {
+        if ((crowdinProjectCache.getBundles() == null || differentProject || update) && crowdinProjectCache.isStringsBased()) {
+            crowdinProjectCache.setBundles(crowdin.getBundles());
+        }
+        if (crowdinProjectCache.getBranches() == null || outdated || update || differentProject) {
             crowdinProjectCache.setBranches(crowdin.getBranches());
             outdated = false;
         }
-        if (crowdinProjectCache.getFileInfos() == null) {
+        if (crowdinProjectCache.getFileInfos() == null || differentProject) {
             crowdinProjectCache.setFileInfos(new HashMap<>());
         }
-        if (crowdinProjectCache.getDirs() == null) {
+        if (crowdinProjectCache.getDirs() == null || differentProject) {
             crowdinProjectCache.setDirs(new HashMap<>());
         }
         if ((branchName != null && !branchName.isEmpty()) && !crowdinProjectCache.getBranches().containsKey(branchName)) {
@@ -144,24 +232,19 @@ public class CrowdinProjectCacheProvider {
                 || outdatedBranches.contains(branchName)
                 || update) {
             Long branchId = (branch != null) ? branch.getId() : null;
-            List<FileInfo> files = crowdin.getFiles(branchId);
-            Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
-            crowdinProjectCache.getFileInfos().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
-            crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
+            if (!crowdinProjectCache.isStringsBased()) {
+                List<FileInfo> files = crowdin.getFiles(branchId);
+                Map<Long, Directory> dirs = crowdin.getDirectories(branchId);
+                crowdinProjectCache.getFileInfos().put(branch, CrowdinFileUtil.buildFilePaths(files, dirs));
+                crowdinProjectCache.getDirs().put(branch, CrowdinFileUtil.buildDirPaths(dirs));
+            }
             outdatedBranches.remove(branchName);
         }
         return crowdinProjectCache;
     }
 
-    public synchronized static void outdateBranch(String branchName) {
+    public synchronized void outdateBranch(String branchName) {
         outdated = true;
         outdatedBranches.add(branchName);
-    }
-
-    @TestOnly
-    static void reset() {
-        outdated = false;
-        outdatedBranches.clear();
-        crowdinProjectCache = null;
     }
 }
