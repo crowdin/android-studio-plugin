@@ -24,22 +24,23 @@ public class CrowdinPropertiesLoader {
     private static final String API_TOKEN_ENV = "api-token-env";
     private static final String BASE_URL = "base-url";
     private static final String BASE_URL_ENV = "base-url-env";
+    @Deprecated
     private static final String PROPERTY_SOURCES = "sources";
     private static final String PROPERTY_LABELS = "labels";
     private static final String PROPERTY_FILES = "files";
     private static final String PROPERTY_FILES_SOURCE = "source";
     private static final String PROPERTY_FILES_TRANSLATION = "translation";
-    private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup-mode";
-    private static final String PROPERTY_FILES_UPDATE_STRINGS = "update-strings";
-    private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded-target-languages";
+    private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup_mode";
+    private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
+    private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
     private static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
-    private static final String PROPERTY_PRESERVE_HIERARCHY = "preserve-hierarchy";
+    private static final String PROPERTY_PRESERVE_HIERARCHY = "preserve_hierarchy";
     private static final String PROPERTY_DEBUG = "debug";
     private static final String PROPERTY_AUTOCOMPLETION_DISABLED = "completion-disabled";
     private static final String PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS = "completion-file-extensions";
-    private static final String PROPERTY_IMPORT_EQ_SUGGESTIONS = "import-eq-suggestions";
-    private static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto-approve-imported";
-    private static final String PROPERTY_TRANSLATE_HIDDEN = "translate-hidden";
+    private static final String PROPERTY_IMPORT_EQ_SUGGESTIONS = "import_eq_suggestions";
+    private static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto_approve_imported";
+    private static final String PROPERTY_TRANSLATE_HIDDEN = "translate_hidden";
 
     private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
@@ -163,7 +164,9 @@ public class CrowdinPropertiesLoader {
             defaultFileBean.setTranslation(STANDARD_TRANSLATION_PATTERN);
             fileBeans.add(defaultFileBean);
         }
+        @Deprecated
         List<String> labels = (List<String>) properties.get(PROPERTY_LABELS);
+        @Deprecated
         List<String> excluded_target_languages = (List<String>) properties.get(PROPERTY_EXCLUDED_TARGET_LANGUAGES);
         for (FileBean fb : fileBeans) {
             if (fb.getLabels() == null) {
@@ -176,6 +179,7 @@ public class CrowdinPropertiesLoader {
         return fileBeans;
     }
 
+    @Deprecated
     private static List<FileBean> getSourcesList(Map<String, Object> properties) {
         List<String> sources = (List<String>) properties.get(PROPERTY_SOURCES);
         if (sources == null || sources.isEmpty()) {
