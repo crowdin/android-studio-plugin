@@ -1,6 +1,6 @@
 package com.crowdin.action;
 
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.File;

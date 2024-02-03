@@ -1,9 +1,10 @@
 package com.crowdin.event;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinFileProvider;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
@@ -12,7 +13,6 @@ import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -37,9 +37,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
-import static com.crowdin.Constants.PROPERTY_AUTO_UPLOAD;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
+
+    private static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
 
     private final MessageBusConnection connection;
     private final Project project;
@@ -62,8 +63,8 @@ public class FileChangeListener implements Disposable, BulkFileListener {
         ProjectFileIndex instance = ProjectFileIndex.getInstance(this.project);
         List<? extends VFileEvent> interestedFiles = events.stream()
                 .filter(f -> f.getFile() != null && instance.isInContent(f.getFile()))
-                .collect(Collectors.toList());
-        if (interestedFiles.size() == 0 || this.autoUploadOff()) {
+                .toList();
+        if (interestedFiles.isEmpty() || this.autoUploadOff()) {
             return;
         }
 
@@ -71,7 +72,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    CrowdinProperties properties;
+                    CrowdinConfig properties;
                     try {
                         properties = CrowdinPropertiesLoader.load(project);
                     } catch (Exception e) {
@@ -106,7 +107,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         }
                     }
 
-                    VirtualFile crowdinPropertyFile = PropertyUtil.getCrowdinPropertyFile(project);
+                    VirtualFile crowdinPropertyFile = CrowdinFileProvider.getCrowdinConfigFile(project);
                     boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
                     if (crowdinPropertiesFileUpdated) {
                         ProjectService projectService = project.getService(ProjectService.class);
@@ -141,8 +142,12 @@ public class FileChangeListener implements Disposable, BulkFileListener {
     }
 
     private boolean autoUploadOff() {
-        String autoUploadProp = PropertyUtil.getPropertyValue(PROPERTY_AUTO_UPLOAD, this.project);
-        return PropertyUtil.getCrowdinPropertyFile(this.project) == null || (autoUploadProp != null && autoUploadProp.equals("false"));
+        Map<String, Object> settings = CrowdinFileProvider.load(this.project);
+        if (settings == null) {
+            return true;
+        }
+        Boolean flag = (Boolean) settings.get(PROPERTY_AUTO_UPLOAD);
+        return flag == null || !flag;
     }
 
     @Override

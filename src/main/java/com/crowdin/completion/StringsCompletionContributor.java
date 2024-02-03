@@ -1,8 +1,8 @@
 package com.crowdin.completion;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.logic.BranchLogic;
@@ -40,7 +40,7 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
-        CrowdinProperties properties;
+        CrowdinConfig properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);
         } catch (Exception e) {

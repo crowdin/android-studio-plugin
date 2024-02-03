@@ -1,6 +1,6 @@
 package com.crowdin.action;
 
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.service.ProjectService;

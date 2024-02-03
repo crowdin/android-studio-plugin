@@ -1,8 +1,8 @@
-package com.crowdin.client;
+package com.crowdin.client.config;
 
 import java.util.List;
 
-public class CrowdinProperties {
+public class CrowdinConfig {
 
     private Long projectId;
     private String apiToken;
@@ -45,16 +45,16 @@ public class CrowdinProperties {
         return disabledBranches;
     }
 
-    public void setDisabledBranches(boolean disabledBranches) {
-        this.disabledBranches = disabledBranches;
+    public void setDisabledBranches(Boolean disabledBranches) {
+        this.disabledBranches = disabledBranches != null ? disabledBranches : false;
     }
 
     public boolean isPreserveHierarchy() {
         return preserveHierarchy;
     }
 
-    public void setPreserveHierarchy(boolean preserveHierarchy) {
-        this.preserveHierarchy = preserveHierarchy;
+    public void setPreserveHierarchy(Boolean preserveHierarchy) {
+        this.preserveHierarchy = preserveHierarchy != null ? preserveHierarchy : false;
     }
 
     public List<FileBean> getFiles() {
@@ -69,16 +69,16 @@ public class CrowdinProperties {
         return debug;
     }
 
-    public void setDebug(boolean debug) {
-        this.debug = debug;
+    public void setDebug(Boolean debug) {
+        this.debug = debug != null ? debug : false;
     }
 
     public boolean isAutocompletionDisabled() {
         return autocompletionDisabled;
     }
 
-    public void setAutocompletionDisabled(boolean autocompletionDisabled) {
-        this.autocompletionDisabled = autocompletionDisabled;
+    public void setAutocompletionDisabled(Boolean autocompletionDisabled) {
+        this.autocompletionDisabled = autocompletionDisabled != null ? autocompletionDisabled : false;
     }
 
     public List<String> getAutocompletionFileExtensions() {
@@ -93,23 +93,23 @@ public class CrowdinProperties {
         return importEqSuggestions;
     }
 
-    public void setImportEqSuggestions(boolean importEqSuggestions) {
-        this.importEqSuggestions = importEqSuggestions;
+    public void setImportEqSuggestions(Boolean importEqSuggestions) {
+        this.importEqSuggestions = importEqSuggestions != null ? importEqSuggestions : false;
     }
 
     public boolean isAutoApproveImported() {
         return autoApproveImported;
     }
 
-    public void setAutoApproveImported(boolean autoApproveImported) {
-        this.autoApproveImported = autoApproveImported;
+    public void setAutoApproveImported(Boolean autoApproveImported) {
+        this.autoApproveImported = autoApproveImported != null ? autoApproveImported : false;
     }
 
     public boolean isTranslateHidden() {
         return translateHidden;
     }
 
-    public void setTranslateHidden(boolean translateHidden) {
-        this.translateHidden = translateHidden;
+    public void setTranslateHidden(Boolean translateHidden) {
+        this.translateHidden = translateHidden != null ? translateHidden : false;
     }
 }

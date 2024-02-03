@@ -8,6 +8,7 @@ import com.crowdin.client.sourcefiles.model.Directory;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
 import com.crowdin.client.sourcefiles.model.PropertyFileExportOptions;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class CrowdinFileUtilTest {
@@ -30,7 +30,7 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testBuildFilePaths(List<File> files, Map<Long, Directory> dirs, Map<String, File> expected) {
         Map<String, File> result = CrowdinFileUtil.buildFilePaths(files, dirs);
-        assertEquals("dirs: " + dirs + ", files: " + files, expected, result);
+        Assertions.assertEquals(expected, result, "dirs: " + dirs + ", files: " + files);
     }
 
     public static Stream<Arguments> testBuildFilePaths() {
@@ -38,12 +38,12 @@ public class CrowdinFileUtilTest {
         File file_101L_201L = FileBuilder.standard().setProjectId(PROJECT_ID).setIdentifiers("strings.xml", "xml", 101L, 201L, 301L).build();
         File file_102L_null = FileBuilder.standard().setProjectId(PROJECT_ID).setIdentifiers("strings2.xml", "xml", 102L, null, 301L).build();
         return Stream.of(
-            arguments(new ArrayList<File>() {{
+                arguments(new ArrayList<File>() {{
                     add(file_101L_201L);
                     add(file_102L_null);
-                }},new HashMap<Long, Directory>() {{
+                }}, new HashMap<Long, Directory>() {{
                     put(201L, dir_201L);
-                }},  new HashMap<String, File>() {{
+                }}, new HashMap<String, File>() {{
                     put(sep + "values" + sep + "strings.xml", file_101L_201L);
                     put(sep + "strings2.xml", file_102L_null);
                 }})
@@ -54,16 +54,16 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testIsValidBranchName(String branchName, boolean expected) {
         boolean result = CrowdinFileUtil.isValidBranchName(branchName);
-        assertEquals(expected, result);
+        Assertions.assertEquals(expected, result);
     }
 
     public static Stream<Arguments> testIsValidBranchName() {
         return Stream.of(
-            arguments("master", true),
-            arguments(null, true),
-            arguments("test<42>", false),
-            arguments("\\4\\2\\", false),
-            arguments("", true)
+                arguments("master", true),
+                arguments(null, true),
+                arguments("test<42>", false),
+                arguments("\\4\\2\\", false),
+                arguments("", true)
         );
     }
 
@@ -71,7 +71,7 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testBuildDirPaths(Map<Long, Directory> dirs, Map<String, Directory> expected) {
         Map<String, Directory> result = CrowdinFileUtil.buildDirPaths(dirs);
-        assertEquals("dirs: " + dirs, expected, result);
+        Assertions.assertEquals(expected, result, "dirs: " + dirs);
     }
 
     public static Stream<Arguments> testBuildDirPaths() {
@@ -93,7 +93,7 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testRevDirPaths(Map<String, Directory> dirs, Map<Long, String> expected) {
         Map<Long, String> result = CrowdinFileUtil.revDirPaths(dirs);
-        assertEquals("dirs: " + dirs, expected, result);
+        Assertions.assertEquals(expected, result, "dirs: " + dirs);
     }
 
     public static Stream<Arguments> testRevDirPaths() {
@@ -115,7 +115,7 @@ public class CrowdinFileUtilTest {
     @MethodSource
     public void testBuildAllProjectTranslationsWithSources(List<File> files, Map<Long, String> dirPaths, List<Language> languages, LanguageMapping languageMapping, Map<String, String> expected) {
         Map<String, String> result = CrowdinFileUtil.buildAllProjectTranslationsWithSources(files, dirPaths, languages, languageMapping);
-        assertEquals("dirPaths: " + dirPaths + ", files: " + files, expected, result);
+        Assertions.assertEquals(expected, result, "dirPaths: " + dirPaths + ", files: " + files);
     }
 
     public static Stream<Arguments> testBuildAllProjectTranslationsWithSources() {

@@ -1,8 +1,8 @@
 package com.crowdin.action;
 
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
@@ -80,7 +80,7 @@ public class UploadFromContextAction extends BackgroundAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isSourceFile = false;
         try {
-            CrowdinProperties properties;
+            CrowdinConfig properties;
             properties = CrowdinPropertiesLoader.load(project);
             isSourceFile = properties.getFiles()
                     .stream()

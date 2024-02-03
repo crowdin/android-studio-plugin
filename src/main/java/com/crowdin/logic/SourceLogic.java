@@ -1,7 +1,7 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.Label;

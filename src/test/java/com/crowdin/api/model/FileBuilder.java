@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 
 public class FileBuilder {
 
-    private File file;
+    private final File file;
 
     public static FileBuilder standard() {
         File file = new File();

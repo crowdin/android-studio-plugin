@@ -5,20 +5,20 @@ import com.crowdin.client.languages.model.Language;
 public enum LanguageBuilder {
     UKR("Ukrainian", "uk", "uk", "ukr", "uk-UA", "uk-rUA", "uk", "uk.lproj"),
     RUS("Russian", "ru", "ru", "rus", "ru-RU", "ru-rRU", "ru", "ru.lproj"),
-    DEU("German", "de", "de","deu", "de-DE", "de-rDE", "de", "de.proj"),
+    DEU("German", "de", "de", "deu", "de-DE", "de-rDE", "de", "de.proj"),
     ENG("English", "en", "en", "eng", "en-US", "en-rUS", "en", "en.lproj");
 
-    private Language lang;
+    private final Language lang;
 
     LanguageBuilder(
-        String name,
-        String id,
-        String twoLettersCode,
-        String threeLettersCode,
-        String locale,
-        String androidCode,
-        String osxLocale,
-        String osxCode
+            String name,
+            String id,
+            String twoLettersCode,
+            String threeLettersCode,
+            String locale,
+            String androidCode,
+            String osxLocale,
+            String osxCode
     ) {
         lang = new Language();
         lang.setName(name);

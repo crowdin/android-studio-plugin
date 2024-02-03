@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 
 public class BranchBuilder {
 
-    private Branch branch;
+    private final Branch branch;
 
     public static BranchBuilder standard() {
         Branch branch = new Branch();

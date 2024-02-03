@@ -1,15 +1,15 @@
 package com.crowdin.activity;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinFileProvider;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.NotificationUtil;
-import com.crowdin.util.PropertyUtil;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -25,8 +25,8 @@ public class CrowdinStartupActivity implements StartupActivity {
     public void runActivity(@NotNull Project project) {
         try {
             new FileChangeListener(project);
-            CrowdinProperties properties;
-            if (PropertyUtil.getCrowdinPropertyFile(project) == null) {
+            CrowdinConfig properties;
+            if (CrowdinFileProvider.getCrowdinConfigFile(project) == null) {
                 return;
             }
             //config validation
@@ -39,7 +39,7 @@ public class CrowdinStartupActivity implements StartupActivity {
         }
     }
 
-    private void reloadPlugin(Project project, Crowdin crowdin, CrowdinProperties properties) {
+    private void reloadPlugin(Project project, Crowdin crowdin, CrowdinConfig properties) {
         BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
         String branchName = branchLogic.acquireBranchName();
 
