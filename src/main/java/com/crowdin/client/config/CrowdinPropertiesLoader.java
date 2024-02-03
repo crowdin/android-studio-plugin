@@ -48,7 +48,7 @@ public class CrowdinPropertiesLoader {
         return CrowdinPropertiesLoader.load(properties);
     }
 
-    public static CrowdinConfig load(Map<String, Object> properties) {
+    protected static CrowdinConfig load(Map<String, Object> properties) {
         List<String> errors = new ArrayList<>();
         List<String> notExistEnvVars = new ArrayList<>();
         CrowdinConfig crowdinProperties = new CrowdinConfig();

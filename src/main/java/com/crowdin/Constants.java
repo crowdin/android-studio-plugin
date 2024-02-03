@@ -6,7 +6,6 @@ public final class Constants {
 
     public static final String CONFIG_FILE = "crowdin.yml";
 
-
     public static final ResourceBundle MESSAGES_BUNDLE = ResourceBundle.getBundle("messages/messages");
 
     //UI Components Ids
