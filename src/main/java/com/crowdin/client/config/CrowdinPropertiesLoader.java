@@ -5,31 +5,26 @@ import com.crowdin.util.StringUtils;
 import com.crowdin.util.Util;
 import com.intellij.openapi.project.Project;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static com.crowdin.Constants.*;
+import static com.crowdin.Constants.CONFIG_FILE;
+import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class CrowdinPropertiesLoader {
 
-    private static final String STANDARD_TRANSLATION_PATTERN = "/values-%android_code%/%original_file_name%";
-    private static final String STANDARD_SOURCE_DIRECTORY = "values";
-    private static final String STANDARD_SOURCE_PATH = "**/" + STANDARD_SOURCE_DIRECTORY + "/";
-    private static final String STANDARD_SOURCE_NAME = "strings.xml";
-    private static final String STANDARD_SOURCE_FILE_PATH = STANDARD_SOURCE_PATH + STANDARD_SOURCE_NAME;
     private static final String PROJECT_ID = "project-id";
     private static final String PROJECT_ID_ENV = "project-id-env";
     private static final String API_TOKEN = "api-token";
     private static final String API_TOKEN_ENV = "api-token-env";
     private static final String BASE_URL = "base-url";
     private static final String BASE_URL_ENV = "base-url-env";
-    @Deprecated
-    private static final String PROPERTY_SOURCES = "sources";
-    private static final String PROPERTY_LABELS = "labels";
     private static final String PROPERTY_FILES = "files";
     private static final String PROPERTY_FILES_SOURCE = "source";
     private static final String PROPERTY_FILES_TRANSLATION = "translation";
+    private static final String PROPERTY_LABELS = "labels";
     private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup_mode";
     private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
     private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
@@ -128,7 +123,7 @@ public class CrowdinPropertiesLoader {
                 crowdinProperties.setPreserveHierarchy(preserveHierarchy);
                 Boolean debug = (Boolean) properties.get(PROPERTY_DEBUG);
                 crowdinProperties.setDebug(debug);
-                crowdinProperties.setFiles(getFileBeans(properties, errors));
+                crowdinProperties.setFiles(getSourcesWithTranslations(properties, errors));
 
                 Boolean autocompletionDisabled = (Boolean) properties.get(PROPERTY_AUTOCOMPLETION_DISABLED);
                 List<String> autocompletionFileExtensions = (List<String>) properties.get(PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS);
@@ -153,49 +148,6 @@ public class CrowdinPropertiesLoader {
         }
 
         return crowdinProperties;
-    }
-
-    private static List<FileBean> getFileBeans(Map<String, Object> properties, List<String> errors) {
-        List<FileBean> fileBeans = getSourcesList(properties);
-        fileBeans.addAll(getSourcesWithTranslations(properties, errors));
-        if (fileBeans.isEmpty()) {
-            FileBean defaultFileBean = new FileBean();
-            defaultFileBean.setSource(STANDARD_SOURCE_FILE_PATH);
-            defaultFileBean.setTranslation(STANDARD_TRANSLATION_PATTERN);
-            fileBeans.add(defaultFileBean);
-        }
-        @Deprecated
-        List<String> labels = (List<String>) properties.get(PROPERTY_LABELS);
-        @Deprecated
-        List<String> excluded_target_languages = (List<String>) properties.get(PROPERTY_EXCLUDED_TARGET_LANGUAGES);
-        for (FileBean fb : fileBeans) {
-            if (fb.getLabels() == null) {
-                fb.setLabels(labels);
-            }
-            if (fb.getExcludedTargetLanguages() == null) {
-                fb.setExcludedTargetLanguages(excluded_target_languages);
-            }
-        }
-        return fileBeans;
-    }
-
-    @Deprecated
-    private static List<FileBean> getSourcesList(Map<String, Object> properties) {
-        List<String> sources = (List<String>) properties.get(PROPERTY_SOURCES);
-        if (sources == null || sources.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return sources.stream()
-                .map(String::trim)
-                .filter(e -> !StringUtils.isEmpty(e))
-                .map(s -> STANDARD_SOURCE_PATH + s)
-                .map(source -> {
-                    FileBean fb = new FileBean();
-                    fb.setSource(source);
-                    fb.setTranslation(STANDARD_TRANSLATION_PATTERN);
-                    return fb;
-                })
-                .collect(Collectors.toList());
     }
 
     private static List<FileBean> getSourcesWithTranslations(Map<String, Object> properties, List<String> errors) {

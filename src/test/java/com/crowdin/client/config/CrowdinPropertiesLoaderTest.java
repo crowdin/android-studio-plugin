@@ -45,30 +45,13 @@ public class CrowdinPropertiesLoaderTest {
     public static Stream<Arguments> testGetSources() {
         return Stream.of(
                 arguments(
-                        getProperties("one_source.yml"),
+                        getProperties("file1.yml"),
                         new ArrayList<FileBean>() {{
-                            add(FileBeanBuilder.fileBean("**/values/strings.xml", "/values-%android_code%/%original_file_name%").build());
-                        }}),
-                arguments(
-                        getProperties("list_sources.yml"),
-                        new ArrayList<FileBean>() {{
-                            add(FileBeanBuilder.fileBean("**/values/strings.xml", "/values-%android_code%/%original_file_name%").build());
-                            add(FileBeanBuilder.fileBean("**/values/strings1.xml", "/values-%android_code%/%original_file_name%").build());
-                            add(FileBeanBuilder.fileBean("**/values/strings2.xml", "/values-%android_code%/%original_file_name%").build());
-                        }}),
-                arguments(
-                        getProperties("sources_w_translations.yml"),
-                        new ArrayList<FileBean>() {{
-                            add(FileBeanBuilder.fileBean("values/*.xml", "/values-%android_code%/%original_file_name%").build());
-                            add(FileBeanBuilder.fileBean("another/path/*.xml", "/another/path-%android_code%/%original_file_name%").build());
                             add(FileBeanBuilder.fileBean("values2/*.xml", "/values2-%android_code%/%original_file_name%").build());
                         }}),
                 arguments(
-                        getProperties("combined_sources.yml"),
+                        getProperties("file2.yml"),
                         new ArrayList<FileBean>() {{
-                            add(FileBeanBuilder.fileBean("**/values/strings.xml", "/values-%android_code%/%original_file_name%").build());
-                            add(FileBeanBuilder.fileBean("**/values/strings1.xml", "/values-%android_code%/%original_file_name%").build());
-                            add(FileBeanBuilder.fileBean("**/values/strings2.xml", "/values-%android_code%/%original_file_name%").build());
                             add(FileBeanBuilder.fileBean("values/*.xml", "/values-%android_code%/%original_file_name%").build());
                             add(FileBeanBuilder.fileBean("another/path/*.xml", "/another/path-%android_code%/%original_file_name%").build());
                             add(FileBeanBuilder.fileBean("values2/*.xml", "/values2-%android_code%/%original_file_name%").build());

@@ -1,7 +1,6 @@
 package com.crowdin.settings;
 
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,19 +52,6 @@ public class CrowdinSettingsConfigurable implements Configurable {
         instance.autoUpload = this.settingsPanel.getAutoUpload();
         instance.disableBranches = this.settingsPanel.getDisableBranches();
         instance.disableCompletion = this.settingsPanel.getDisableCompletion();
-    }
-
-    @Override
-    public void reset() {
-        CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
-        this.settingsPanel.setProjectId(instance.projectId);
-        this.settingsPanel.setApiToken(instance.apiToken);
-        this.settingsPanel.setBaseUrl(instance.baseUrl);
-        this.settingsPanel.setCompletionFileExtensions(instance.fileExtensions);
-        this.settingsPanel.setDoNotShowConfirmation(instance.doNotShowConfirmation);
-        this.settingsPanel.setAutoUpload(instance.autoUpload);
-        this.settingsPanel.setDisableBranches(instance.disableBranches);
-        this.settingsPanel.setDisableCompletion(instance.disableCompletion);
     }
 
     @Override
