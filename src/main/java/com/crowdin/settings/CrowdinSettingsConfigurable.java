@@ -55,6 +55,19 @@ public class CrowdinSettingsConfigurable implements Configurable {
     }
 
     @Override
+    public void reset() {
+        CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
+        this.settingsPanel.setProjectId(instance.projectId);
+        this.settingsPanel.setApiToken(instance.apiToken);
+        this.settingsPanel.setBaseUrl(instance.baseUrl);
+        this.settingsPanel.setCompletionFileExtensions(instance.fileExtensions);
+        this.settingsPanel.setDoNotShowConfirmation(instance.doNotShowConfirmation);
+        this.settingsPanel.setAutoUpload(instance.autoUpload);
+        this.settingsPanel.setDisableBranches(instance.disableBranches);
+        this.settingsPanel.setDisableCompletion(instance.disableCompletion);
+    }
+
+    @Override
     public void disposeUIResources() {
         this.settingsPanel = null;
     }
