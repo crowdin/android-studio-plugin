@@ -21,13 +21,6 @@ public class CrowdinPropertiesLoader {
     private static final String API_TOKEN_ENV = "api-token-env";
     private static final String BASE_URL = "base-url";
     private static final String BASE_URL_ENV = "base-url-env";
-    private static final String PROPERTY_FILES = "files";
-    private static final String PROPERTY_FILES_SOURCE = "source";
-    private static final String PROPERTY_FILES_TRANSLATION = "translation";
-    private static final String PROPERTY_LABELS = "labels";
-    private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup_mode";
-    private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
-    private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
     private static final String PROPERTY_DISABLE_BRANCHES = "disable-branches";
     private static final String PROPERTY_PRESERVE_HIERARCHY = "preserve_hierarchy";
     private static final String PROPERTY_DEBUG = "debug";
@@ -36,6 +29,14 @@ public class CrowdinPropertiesLoader {
     private static final String PROPERTY_IMPORT_EQ_SUGGESTIONS = "import_eq_suggestions";
     private static final String PROPERTY_AUTO_APPROVE_IMPORTED = "auto_approve_imported";
     private static final String PROPERTY_TRANSLATE_HIDDEN = "translate_hidden";
+    private static final String PROPERTY_BRANCH = "branch";
+    private static final String PROPERTY_FILES = "files";
+    private static final String PROPERTY_FILES_SOURCE = "source";
+    private static final String PROPERTY_FILES_TRANSLATION = "translation";
+    private static final String PROPERTY_LABELS = "labels";
+    private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup_mode";
+    private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
+    private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
 
     private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
@@ -117,25 +118,27 @@ public class CrowdinPropertiesLoader {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.sysenv_not_exist.plural"), String.join(", ", notExistEnvVars)));
                 }
 
+                crowdinProperties.setFiles(getSourcesWithTranslations(properties, errors));
+
+                List<String> autocompletionFileExtensions = (List<String>) properties.get(PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS);
+                crowdinProperties.setAutocompletionFileExtensions(autocompletionFileExtensions);
+                Boolean autocompletionDisabled = (Boolean) properties.get(PROPERTY_AUTOCOMPLETION_DISABLED);
+                crowdinProperties.setAutocompletionDisabled(autocompletionDisabled);
+
                 Boolean disabledBranches = (Boolean) properties.get(PROPERTY_DISABLE_BRANCHES);
                 crowdinProperties.setDisabledBranches(disabledBranches);
                 Boolean preserveHierarchy = (Boolean) properties.get(PROPERTY_PRESERVE_HIERARCHY);
                 crowdinProperties.setPreserveHierarchy(preserveHierarchy);
                 Boolean debug = (Boolean) properties.get(PROPERTY_DEBUG);
                 crowdinProperties.setDebug(debug);
-                crowdinProperties.setFiles(getSourcesWithTranslations(properties, errors));
-
-                Boolean autocompletionDisabled = (Boolean) properties.get(PROPERTY_AUTOCOMPLETION_DISABLED);
-                List<String> autocompletionFileExtensions = (List<String>) properties.get(PROPERTY_AUTOCOMPLETION_FILE_EXTENSIONS);
-                crowdinProperties.setAutocompletionDisabled(autocompletionDisabled);
-                crowdinProperties.setAutocompletionFileExtensions(autocompletionFileExtensions);
-
                 Boolean importEqSuggestions = (Boolean) properties.get(PROPERTY_IMPORT_EQ_SUGGESTIONS);
                 crowdinProperties.setImportEqSuggestions(importEqSuggestions);
                 Boolean autoApproveImported = (Boolean) properties.get(PROPERTY_AUTO_APPROVE_IMPORTED);
                 crowdinProperties.setAutoApproveImported(autoApproveImported);
                 Boolean translateHidden = (Boolean) properties.get(PROPERTY_TRANSLATE_HIDDEN);
                 crowdinProperties.setTranslateHidden(translateHidden);
+                String branch = (String) properties.get(PROPERTY_BRANCH);
+                crowdinProperties.setBranch(branch);
 
             } catch (Exception e) {
                 e.printStackTrace();

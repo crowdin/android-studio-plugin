@@ -2,8 +2,8 @@ package com.crowdin.logic;
 
 import com.crowdin.client.BranchInfo;
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.config.CrowdinConfig;
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.CrowdinConfig;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.service.CrowdinProjectCacheProvider;
@@ -33,6 +33,8 @@ public class BranchLogic {
         BranchInfo branch;
         if (properties.isDisabledBranches()) {
             branch = new BranchInfo("", "");
+        } else if (properties.getBranch() != null) {
+            branch = new BranchInfo(properties.getBranch(), properties.getBranch());
         } else {
             branch = GitUtil.getCurrentBranch(project);
         }

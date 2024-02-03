@@ -16,6 +16,7 @@ public class CrowdinConfig {
     private boolean importEqSuggestions;
     private boolean autoApproveImported;
     private boolean translateHidden;
+    private String branch;
 
     public Long getProjectId() {
         return projectId;
@@ -111,5 +112,13 @@ public class CrowdinConfig {
 
     public void setTranslateHidden(Boolean translateHidden) {
         this.translateHidden = translateHidden != null ? translateHidden : false;
+    }
+
+    public String getBranch() {
+        return branch;
+    }
+
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }
