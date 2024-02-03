@@ -6,15 +6,10 @@ import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.tree.CellData;
 import com.crowdin.ui.tree.CellRenderer;
 import com.crowdin.ui.tree.FileTree;
-import com.intellij.ide.ActivityTracker;
 import com.intellij.ide.BrowserUtil;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.FormBuilder;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -31,23 +26,26 @@ import static com.crowdin.Constants.DOWNLOAD_TRANSLATIONS_ACTION;
 
 public class DownloadWindow implements ContentTab {
 
-    private JPanel panel1;
-    private Tree tree1;
-    private JScrollPane scrollPane;
+    private final JPanel panel;
+    private final Tree tree = new Tree();
     private boolean isBundlesMode = false;
     private DefaultMutableTreeNode selectedElement;
 
     public DownloadWindow() {
-        scrollPane.getViewport().setBackground(JBColor.WHITE);
-        tree1.setCellRenderer(new CellRenderer());
-        tree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        this.panel = FormBuilder
+                .createFormBuilder()
+                .addComponent(new JBScrollPane(tree))
+                .getPanel();
+
+        tree.setCellRenderer(new CellRenderer());
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         this.setPlug("Refresh tree");
 
-        tree1.addMouseListener(new MouseAdapter() {
+        tree.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                int selRow = tree1.getRowForLocation(e.getX(), e.getY());
-                TreePath selPath = tree1.getPathForLocation(e.getX(), e.getY());
+                int selRow = tree.getRowForLocation(e.getX(), e.getY());
+                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                 if (selRow != -1) {
                     if (e.getClickCount() == 2) {
                         Optional
@@ -61,7 +59,7 @@ public class DownloadWindow implements ContentTab {
             }
         });
 
-        tree1.addTreeSelectionListener(e -> {
+        tree.addTreeSelectionListener(e -> {
             Optional<DefaultMutableTreeNode> selectedNode = Optional.ofNullable(e.getNewLeadSelectionPath())
                     .map(TreePath::getLastPathComponent)
                     .map(DefaultMutableTreeNode.class::cast);
@@ -87,12 +85,12 @@ public class DownloadWindow implements ContentTab {
     }
 
     public void setPlug(String text) {
-        tree1.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(CellData.root(text))));
+        tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(CellData.root(text))));
     }
 
     @Override
     public JPanel getContent() {
-        return panel1;
+        return this.panel;
     }
 
     public Bundle getSelectedBundle() {
@@ -108,8 +106,8 @@ public class DownloadWindow implements ContentTab {
         this.selectedElement = null;
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
-        tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
-        FileTree.expandAll(tree1);
+        tree.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+        FileTree.expandAll(tree);
     }
 
     public void rebuildBundlesTree(String projectName, List<Bundle> bundles, String bundleInfoUrl) {
@@ -122,15 +120,15 @@ public class DownloadWindow implements ContentTab {
         if (bundles.isEmpty()) {
             root.add(new DefaultMutableTreeNode(CellData.link("Check how to create bundle", bundleInfoUrl)));
         }
-        tree1.setModel(new DefaultTreeModel(root));
+        tree.setModel(new DefaultTreeModel(root));
         expandAll();
     }
 
     public void expandAll() {
-        FileTree.expandAll(tree1);
+        FileTree.expandAll(tree);
     }
 
     public void collapseAll() {
-        FileTree.collapseAll(tree1);
+        FileTree.collapseAll(tree);
     }
 }
