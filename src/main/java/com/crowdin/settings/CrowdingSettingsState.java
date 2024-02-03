@@ -16,10 +16,10 @@ public class CrowdingSettingsState implements PersistentStateComponent<CrowdingS
     public String apiToken;
     public String baseUrl;
     public String fileExtensions;
-    public Boolean doNotShowConfirmation;
-    public Boolean disableBranches;
-    public Boolean autoUpload;
-    public Boolean disableCompletion;
+    public boolean doNotShowConfirmation = false;
+    public boolean disableBranches = false;
+    public boolean autoUpload = true;
+    public boolean disableCompletion = false;
 
     public static CrowdingSettingsState getInstance(Project project) {
         return project.getService(CrowdingSettingsState.class);

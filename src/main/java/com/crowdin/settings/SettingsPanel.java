@@ -77,32 +77,32 @@ public class SettingsPanel {
         return this.completionFileExtensions.getText();
     }
 
-    public void setDoNotShowConfirmation(Boolean doNotShowConfirmation) {
-        this.doNotShowConfirmation.setSelected(doNotShowConfirmation != null && doNotShowConfirmation);
+    public void setDoNotShowConfirmation(boolean doNotShowConfirmation) {
+        this.doNotShowConfirmation.setSelected(doNotShowConfirmation);
     }
 
     public boolean getDoNotShowConfirmation() {
         return this.doNotShowConfirmation.isSelected();
     }
 
-    public void setDisableBranches(Boolean disableBranches) {
-        this.disableBranches.setSelected(disableBranches != null && disableBranches);
+    public void setDisableBranches(boolean disableBranches) {
+        this.disableBranches.setSelected(disableBranches);
     }
 
     public boolean getDisableBranches() {
         return this.disableBranches.isSelected();
     }
 
-    public void setAutoUpload(Boolean autoUpload) {
-        this.autoUpload.setSelected(autoUpload != null && autoUpload);
+    public void setAutoUpload(boolean autoUpload) {
+        this.autoUpload.setSelected(autoUpload);
     }
 
     public boolean getAutoUpload() {
         return this.autoUpload.isSelected();
     }
 
-    public void setDisableCompletion(Boolean disableCompletion) {
-        this.disableCompletion.setSelected(disableCompletion != null && disableCompletion);
+    public void setDisableCompletion(boolean disableCompletion) {
+        this.disableCompletion.setSelected(disableCompletion);
     }
 
     public boolean getDisableCompletion() {
