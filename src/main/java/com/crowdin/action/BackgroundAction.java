@@ -6,7 +6,7 @@ import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
-import com.crowdin.service.CrowdinSettings;
+import com.crowdin.settings.CrowdingSettingsState;
 import com.crowdin.ui.dialog.ConfirmActionDialog;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -51,7 +51,7 @@ public abstract class BackgroundAction extends AnAction {
     ) {
         VirtualFile root = FileUtil.getProjectBaseDir(project);
 
-        CrowdinSettings crowdinSettings = project.getService(CrowdinSettings.class);
+        CrowdingSettingsState crowdinSettings = CrowdingSettingsState.getInstance(project);
 
         if (!StringUtils.isEmpty(question) && !StringUtils.isEmpty(okBtn)) {
             boolean confirmation = confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString(question), okBtn);
@@ -111,17 +111,17 @@ public abstract class BackgroundAction extends AnAction {
         });
     }
 
-    private boolean confirmDialog(Project project, CrowdinSettings settings, String questionText, String okButtonText) {
+    private boolean confirmDialog(Project project, CrowdingSettingsState settings, String questionText, String okButtonText) {
         if (ApplicationManager.getApplication().isHeadlessEnvironment()) {
             return true;
         }
-        if (!settings.isDoNotShowConfirms()) {
+        if (!settings.doNotShowConfirmation) {
             AtomicReference<Boolean> confirmation = new AtomicReference<>();
             ApplicationManager.getApplication().invokeAndWait(() -> {
                 ConfirmActionDialog confirmDialog =
                         new ConfirmActionDialog(project, questionText, okButtonText);
                 confirmation.set(confirmDialog.showAndGet());
-                settings.setDoNotShowConfirms(confirmDialog.isDoNotAskAgain());
+                settings.doNotShowConfirmation = confirmDialog.isDoNotAskAgain();
             });
             return confirmation.get();
         } else {

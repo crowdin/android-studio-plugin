@@ -53,7 +53,7 @@ public class StringsCompletionContributor extends CompletionContributor {
         }
 
         if (properties.getAutocompletionFileExtensions() != null &&
-                properties.getAutocompletionFileExtensions().size() > 0 &&
+                !properties.getAutocompletionFileExtensions().isEmpty() &&
                 !properties.getAutocompletionFileExtensions().contains(extension)) {
             return;
         }
