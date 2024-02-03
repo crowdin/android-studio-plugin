@@ -147,7 +147,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
             return true;
         }
         Boolean flag = (Boolean) settings.get(PROPERTY_AUTO_UPLOAD);
-        return flag == null || !flag;
+        return flag != null && !flag;
     }
 
     @Override
