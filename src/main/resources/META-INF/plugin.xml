@@ -37,7 +37,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
 
-    <projectConfigurable parentId="tools" instance="com.crowdin.settings.CrowdinSettingsConfigurable" id="com.crowdin.settings.CrowdinSettingsConfigurable" displayName="Crowdin Settings" />
+    <projectConfigurable parentId="tools" instance="com.crowdin.settings.CrowdinSettingsConfigurable" id="Crowdin.PluginSettings" displayName="Crowdin Settings" />
     <projectService serviceImplementation="com.crowdin.settings.CrowdingSettingsState"/>
 
     <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
@@ -56,6 +56,8 @@
       <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.panel.progress.action.GroupProgressByFiles"/>
       <separator/>
       <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.panel.progress.action.RefreshTranslationProgressAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings1" />
     </group>
 
     <group id="Crowdin.UploadToolbar">
@@ -65,6 +67,8 @@
       <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
       <action id="Crowdin.ExpandUploadTree" text="Expand" class="com.crowdin.ui.panel.upload.action.ExpandAction"/>
       <action id="Crowdin.CollapseUploadTree" text="Collapse" class="com.crowdin.ui.panel.upload.action.CollapseAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings2" />
     </group>
 
     <group id="Crowdin.DownloadToolbar">
@@ -74,6 +78,8 @@
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
       <action id="Crowdin.ExpandDownloadTree" text="Expand" class="com.crowdin.ui.panel.download.action.ExpandAction"/>
       <action id="Crowdin.CollapseDownloadTree" text="Collapse" class="com.crowdin.ui.panel.download.action.CollapseAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings3" />
     </group>
 
     <action icon="/icons/icon.svg" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">
