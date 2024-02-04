@@ -35,7 +35,7 @@ public class CrowdinPropertiesLoader {
     public static boolean isWorkspaceNotPrepared(Project project) {
         CrowdingSettingsState settings = CrowdingSettingsState.getInstance(project);
 
-        if (StringUtils.isEmpty(settings.projectId) || StringUtils.isEmpty(settings.apiToken)) {
+        if (StringUtils.isEmpty(settings.projectId) || StringUtils.isEmpty(settings.getApiToken())) {
             return true;
         }
 
@@ -49,7 +49,7 @@ public class CrowdinPropertiesLoader {
             throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.settings.project_id_missing"));
         }
 
-        if (StringUtils.isEmpty(settings.apiToken)) {
+        if (StringUtils.isEmpty(settings.getApiToken())) {
             throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.settings.api_token_missing"));
         }
 
@@ -71,7 +71,7 @@ public class CrowdinPropertiesLoader {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.project_id_format"), projectId));
                 }
 
-                crowdinProperties.setApiToken(settings.apiToken);
+                crowdinProperties.setApiToken(settings.getApiToken());
 
                 String baseUrl = settings.baseUrl;
 

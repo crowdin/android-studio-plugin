@@ -33,7 +33,7 @@ public class CrowdinSettingsConfigurable implements Configurable {
     @Override
     public boolean isModified() {
         CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
-        return !Objects.equals(this.settingsPanel.getApiToken(), instance.apiToken) ||
+        return !Objects.equals(this.settingsPanel.getApiToken(), instance.getApiToken()) ||
                 !Objects.equals(this.settingsPanel.getBaseUrl(), instance.baseUrl) ||
                 !Objects.equals(this.settingsPanel.getProjectId(), instance.projectId) ||
                 !Objects.equals(this.settingsPanel.getCompletionFileExtensions(), instance.fileExtensions) ||
@@ -47,9 +47,9 @@ public class CrowdinSettingsConfigurable implements Configurable {
     public void apply() {
         CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
         boolean needToReload = !Objects.equals(instance.projectId, this.settingsPanel.getProjectId()) ||
-                !Objects.equals(instance.apiToken, this.settingsPanel.getApiToken());
+                !Objects.equals(instance.getApiToken(), this.settingsPanel.getApiToken());
         instance.projectId = this.settingsPanel.getProjectId();
-        instance.apiToken = this.settingsPanel.getApiToken();
+        instance.saveApiToken(this.settingsPanel.getApiToken());
         instance.baseUrl = this.settingsPanel.getBaseUrl();
         instance.fileExtensions = this.settingsPanel.getCompletionFileExtensions();
         instance.doNotShowConfirmation = this.settingsPanel.getDoNotShowConfirmation();
@@ -65,7 +65,7 @@ public class CrowdinSettingsConfigurable implements Configurable {
     public void reset() {
         CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
         this.settingsPanel.setProjectId(instance.projectId);
-        this.settingsPanel.setApiToken(instance.apiToken);
+        this.settingsPanel.setApiToken(instance.getApiToken());
         this.settingsPanel.setBaseUrl(instance.baseUrl);
         this.settingsPanel.setCompletionFileExtensions(instance.fileExtensions);
         this.settingsPanel.setDoNotShowConfirmation(instance.doNotShowConfirmation);
