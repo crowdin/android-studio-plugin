@@ -1,6 +1,7 @@
 package com.crowdin.client.config;
 
 import com.crowdin.client.FileBeanBuilder;
+import com.crowdin.settings.CrowdingSettingsState;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,6 +24,13 @@ public class CrowdinPropertiesLoaderTest {
 
     private static final Yaml YAML = new Yaml();
 
+    private final CrowdingSettingsState settingsState = new CrowdingSettingsState();
+
+    {
+        settingsState.projectId = "123";
+        settingsState.apiToken = "test";
+    }
+
     @Test
     public void isBaseUrlValidTest() {
         Assertions.assertTrue(isBaseUrlValid("https://myorganization.crowdin.com/"));
@@ -38,7 +46,7 @@ public class CrowdinPropertiesLoaderTest {
     @ParameterizedTest
     @MethodSource
     public void testGetSources(Map<String, Object> properties, List<FileBean> expected) {
-        CrowdinConfig result = CrowdinPropertiesLoader.load(properties);
+        CrowdinConfig result = CrowdinPropertiesLoader.load(properties, settingsState);
         Assertions.assertEquals(expected, result.getFiles(), "Properties: " + properties);
     }
 
@@ -62,7 +70,7 @@ public class CrowdinPropertiesLoaderTest {
     @ParameterizedTest
     @MethodSource
     public void testThrowRunTimeException(Map<String, Object> properties) {
-        assertThrows(RuntimeException.class, () -> CrowdinPropertiesLoader.load(properties));
+        assertThrows(RuntimeException.class, () -> CrowdinPropertiesLoader.load(properties, settingsState));
     }
 
     public static Stream<Arguments> testThrowRunTimeException() {

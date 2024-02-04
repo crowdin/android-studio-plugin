@@ -40,6 +40,10 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
+        if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+            return;
+        }
+
         CrowdinConfig properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);
@@ -91,14 +95,14 @@ public class StringsCompletionContributor extends CompletionContributor {
                         @SuppressWarnings("unchecked")
                         Map<String, String> map = (Map<String, String>) s.getText();
                         Optional<String> text = Stream.of
-                                (
-                                        Optional.ofNullable(map.get("one")),
-                                        Optional.ofNullable(map.get("zero")),
-                                        Optional.ofNullable(map.get("two")),
-                                        Optional.ofNullable(map.get("few")),
-                                        Optional.ofNullable(map.get("many")),
-                                        Optional.ofNullable(map.get("other"))
-                                )
+                                        (
+                                                Optional.ofNullable(map.get("one")),
+                                                Optional.ofNullable(map.get("zero")),
+                                                Optional.ofNullable(map.get("two")),
+                                                Optional.ofNullable(map.get("few")),
+                                                Optional.ofNullable(map.get("many")),
+                                                Optional.ofNullable(map.get("other"))
+                                        )
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
                                 .findFirst();

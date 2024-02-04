@@ -2,7 +2,6 @@ package com.crowdin.activity;
 
 import com.crowdin.client.Crowdin;
 import com.crowdin.client.config.CrowdinConfig;
-import com.crowdin.client.config.CrowdinFileProvider;
 import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.event.FileChangeListener;
 import com.crowdin.logic.BranchLogic;
@@ -25,12 +24,13 @@ public class CrowdinStartupActivity implements StartupActivity {
     public void runActivity(@NotNull Project project) {
         try {
             new FileChangeListener(project);
-            CrowdinConfig properties;
-            if (CrowdinFileProvider.getCrowdinConfigFile(project) == null) {
+
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
                 return;
             }
+
             //config validation
-            properties = CrowdinPropertiesLoader.load(project);
+            CrowdinConfig properties = CrowdinPropertiesLoader.load(project);
             Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
             this.reloadPlugin(project, crowdin, properties);

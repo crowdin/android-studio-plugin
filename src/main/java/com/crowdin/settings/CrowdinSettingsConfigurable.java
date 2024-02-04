@@ -1,5 +1,7 @@
 package com.crowdin.settings;
 
+import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +46,8 @@ public class CrowdinSettingsConfigurable implements Configurable {
     @Override
     public void apply() {
         CrowdingSettingsState instance = CrowdingSettingsState.getInstance(this.project);
+        boolean needToReload = !Objects.equals(instance.projectId, this.settingsPanel.getProjectId()) ||
+                !Objects.equals(instance.apiToken, this.settingsPanel.getApiToken());
         instance.projectId = this.settingsPanel.getProjectId();
         instance.apiToken = this.settingsPanel.getApiToken();
         instance.baseUrl = this.settingsPanel.getBaseUrl();
@@ -52,6 +56,9 @@ public class CrowdinSettingsConfigurable implements Configurable {
         instance.autoUpload = this.settingsPanel.getAutoUpload();
         instance.disableBranches = this.settingsPanel.getDisableBranches();
         instance.disableCompletion = this.settingsPanel.getDisableCompletion();
+        if (needToReload) {
+            ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, true));
+        }
     }
 
     @Override

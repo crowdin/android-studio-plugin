@@ -46,8 +46,8 @@ public class CrowdinConfig {
         return disabledBranches;
     }
 
-    public void setDisabledBranches(Boolean disabledBranches) {
-        this.disabledBranches = disabledBranches != null ? disabledBranches : false;
+    public void setDisabledBranches(boolean disabledBranches) {
+        this.disabledBranches = disabledBranches;
     }
 
     public boolean isPreserveHierarchy() {
@@ -78,8 +78,8 @@ public class CrowdinConfig {
         return autocompletionDisabled;
     }
 
-    public void setAutocompletionDisabled(Boolean autocompletionDisabled) {
-        this.autocompletionDisabled = autocompletionDisabled != null ? autocompletionDisabled : false;
+    public void setAutocompletionDisabled(boolean autocompletionDisabled) {
+        this.autocompletionDisabled = autocompletionDisabled;
     }
 
     public List<String> getAutocompletionFileExtensions() {

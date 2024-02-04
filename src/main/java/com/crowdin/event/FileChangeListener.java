@@ -10,6 +10,7 @@ import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.service.ProjectService;
+import com.crowdin.settings.CrowdingSettingsState;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
@@ -40,8 +41,6 @@ import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class FileChangeListener implements Disposable, BulkFileListener {
 
-    private static final String PROPERTY_AUTO_UPLOAD = "auto-upload";
-
     private final MessageBusConnection connection;
     private final Project project;
 
@@ -64,7 +63,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
         List<? extends VFileEvent> interestedFiles = events.stream()
                 .filter(f -> f.getFile() != null && instance.isInContent(f.getFile()))
                 .toList();
-        if (interestedFiles.isEmpty() || this.autoUploadOff()) {
+        if (interestedFiles.isEmpty() || !CrowdingSettingsState.getInstance(this.project).autoUpload) {
             return;
         }
 
@@ -72,12 +71,17 @@ public class FileChangeListener implements Disposable, BulkFileListener {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
+                    if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+                        return;
+                    }
+
                     CrowdinConfig properties;
                     try {
                         properties = CrowdinPropertiesLoader.load(project);
                     } catch (Exception e) {
                         return;
                     }
+
                     indicator.checkCanceled();
                     Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
 
@@ -139,15 +143,6 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                 }
             }
         });
-    }
-
-    private boolean autoUploadOff() {
-        Map<String, Object> settings = CrowdinFileProvider.load(this.project);
-        if (settings == null) {
-            return true;
-        }
-        Boolean flag = (Boolean) settings.get(PROPERTY_AUTO_UPLOAD);
-        return flag != null && !flag;
     }
 
     @Override
