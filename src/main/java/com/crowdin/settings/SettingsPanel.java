@@ -35,8 +35,12 @@ public class SettingsPanel {
                 .addComponent(doNotShowConfirmation, 5)
                 .addComponent(disableBranches, 5)
                 .addComponent(autoUpload, 5)
+                .addComponent(new JBLabel("Autocomplete"), 10)
+                .addSeparator()
                 .addComponent(disableCompletion, 5)
-                .addLabeledComponent(new JBLabel("File extensions for autocompletion"), completionFileExtensions, 5)
+                .addLabeledComponent(new JBLabel("File extensions"), completionFileExtensions, 5)
+                .addComponent(new JBLabel("Comma-separated list of file extensions for which autocomplete should be active."))
+                .addComponent(new JBLabel("By default strings autocomplete will be active in all files."))
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
     }
