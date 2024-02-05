@@ -1,7 +1,8 @@
 package com.crowdin.action;
 
-import com.crowdin.client.config.FileBean;
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.File;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
@@ -143,10 +144,18 @@ public class UploadTranslationsFromContextAction extends BackgroundAction {
     @Override
     public void update(AnActionEvent e) {
         Project project = e.getProject();
+        if (project == null) {
+            return;
+        }
+
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isTranslationFile = false;
         try {
             if (file == null) {
+                return;
+            }
+
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
                 return;
             }
 
