@@ -1,5 +1,5 @@
-project-id: 42
-api-token: a4p2i
+project_id: 42
+api_token: a4p2i
 
 files:
   - source: /values2/*.xml

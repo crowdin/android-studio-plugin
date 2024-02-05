@@ -24,16 +24,7 @@ public class CrowdinPropertiesLoaderTest {
 
     private static final Yaml YAML = new Yaml();
 
-    private final CrowdingSettingsState settingsState = new CrowdingSettingsState() {
-        @Override
-        public String getApiToken() {
-            return "test";
-        }
-    };
-
-    {
-        settingsState.projectId = "123";
-    }
+    private final CrowdingSettingsState settingsState = new CrowdingSettingsState();
 
     @Test
     public void isBaseUrlValidTest() {
