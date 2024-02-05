@@ -31,16 +31,18 @@ public class BranchLogic {
 
     public String acquireBranchName() {
         BranchInfo branch;
-        if (properties.isDisabledBranches()) {
-            branch = new BranchInfo("", "");
-        } else if (properties.getBranch() != null) {
+        if (properties.isUseGitBranch()) {
+            branch = GitUtil.getCurrentBranch(project);
+        } else if (!StringUtils.isEmpty(properties.getBranch())) {
             branch = new BranchInfo(properties.getBranch(), properties.getBranch());
         } else {
-            branch = GitUtil.getCurrentBranch(project);
+            branch = new BranchInfo("", "");
         }
+
         if (!CrowdinFileUtil.isValidBranchName(branch.name())) {
             throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
         }
+
         this.branchInfo = branch;
         return branch.name();
     }

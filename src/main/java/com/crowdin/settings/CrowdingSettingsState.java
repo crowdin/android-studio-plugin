@@ -20,9 +20,9 @@ public class CrowdingSettingsState implements PersistentStateComponent<CrowdingS
     public String baseUrl;
     public String fileExtensions;
     public boolean doNotShowConfirmation = false;
-    public boolean disableBranches = false;
+    public boolean useGitBranch = false;
     public boolean autoUpload = true;
-    public boolean disableCompletion = false;
+    public boolean enableCompletion = true;
 
     public String getApiToken() {
         Credentials credentials = PasswordSafe.getInstance().get(this.credentialAttributes());

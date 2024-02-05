@@ -141,9 +141,9 @@ public class CrowdinPropertiesLoader {
                 if (!StringUtils.isEmpty(settings.fileExtensions)) {
                     crowdinProperties.setAutocompletionFileExtensions(Arrays.asList(settings.fileExtensions.split(",")));
                 }
-                crowdinProperties.setAutocompletionDisabled(settings.disableCompletion);
+                crowdinProperties.setAutocompletionEnabled(settings.enableCompletion);
 
-                crowdinProperties.setDisabledBranches(settings.disableBranches);
+                crowdinProperties.setUseGitBranch(settings.useGitBranch);
                 Boolean preserveHierarchy = (Boolean) properties.get(PROPERTY_PRESERVE_HIERARCHY);
                 crowdinProperties.setPreserveHierarchy(preserveHierarchy);
                 Boolean debug = (Boolean) properties.get(PROPERTY_DEBUG);

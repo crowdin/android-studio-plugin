@@ -13,6 +13,7 @@ import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.util.CrowdinFileUtil;
 import com.crowdin.util.LanguageMapping;
+import com.crowdin.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,7 +224,7 @@ public class CrowdinProjectCacheProvider {
         if (crowdinProjectCache.getDirs() == null || differentProject) {
             crowdinProjectCache.setDirs(new HashMap<>());
         }
-        if ((branchName != null && !branchName.isEmpty()) && !crowdinProjectCache.getBranches().containsKey(branchName)) {
+        if (!StringUtils.isEmpty(branchName) && !crowdinProjectCache.getBranches().containsKey(branchName)) {
             return crowdinProjectCache;
         }
         Branch branch = crowdinProjectCache.getBranches().get(branchName);

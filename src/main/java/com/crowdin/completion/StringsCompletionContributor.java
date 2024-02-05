@@ -52,7 +52,7 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
-        if (properties.isAutocompletionDisabled()) {
+        if (!properties.isAutocompletionEnabled()) {
             return;
         }
 

@@ -7,11 +7,11 @@ public class CrowdinConfig {
     private Long projectId;
     private String apiToken;
     private String baseUrl;
-    private boolean disabledBranches;
+    private boolean useGitBranch;
     private boolean preserveHierarchy;
     private List<FileBean> files;
     private boolean debug;
-    private boolean autocompletionDisabled;
+    private boolean autocompletionEnabled;
     private List<String> autocompletionFileExtensions;
     private boolean importEqSuggestions;
     private boolean autoApproveImported;
@@ -42,12 +42,12 @@ public class CrowdinConfig {
         this.baseUrl = baseUrl;
     }
 
-    public boolean isDisabledBranches() {
-        return disabledBranches;
+    public boolean isUseGitBranch() {
+        return useGitBranch;
     }
 
-    public void setDisabledBranches(boolean disabledBranches) {
-        this.disabledBranches = disabledBranches;
+    public void setUseGitBranch(boolean useGitBranch) {
+        this.useGitBranch = useGitBranch;
     }
 
     public boolean isPreserveHierarchy() {
@@ -74,12 +74,12 @@ public class CrowdinConfig {
         this.debug = debug != null ? debug : false;
     }
 
-    public boolean isAutocompletionDisabled() {
-        return autocompletionDisabled;
+    public boolean isAutocompletionEnabled() {
+        return autocompletionEnabled;
     }
 
-    public void setAutocompletionDisabled(boolean autocompletionDisabled) {
-        this.autocompletionDisabled = autocompletionDisabled;
+    public void setAutocompletionEnabled(boolean autocompletionEnabled) {
+        this.autocompletionEnabled = autocompletionEnabled;
     }
 
     public List<String> getAutocompletionFileExtensions() {

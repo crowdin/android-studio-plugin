@@ -18,10 +18,10 @@ public class SettingsPanel {
     private final JBTextField baseUrl = new JBTextField();
     private final JBTextField completionFileExtensions = new JBTextField();
 
-    private final JBCheckBox doNotShowConfirmation = new JBCheckBox("Do not show confirmation dialogs? ");
-    private final JBCheckBox disableBranches = new JBCheckBox("Disable branches? ");
-    private final JBCheckBox autoUpload = new JBCheckBox("Automatically upload on change? ");
-    private final JBCheckBox disableCompletion = new JBCheckBox("Disable autocompletion? ");
+    private final JBCheckBox doNotShowConfirmation = new JBCheckBox("Do not show confirmation dialogs ");
+    private final JBCheckBox useGitBranch = new JBCheckBox("Use Git Branch ");
+    private final JBCheckBox autoUpload = new JBCheckBox("Automatically upload on change ");
+    private final JBCheckBox enableCompletion = new JBCheckBox("Enable Autocompletion ");
 
     public SettingsPanel() {
         mainPanel = FormBuilder.createFormBuilder()
@@ -32,12 +32,12 @@ public class SettingsPanel {
                 .addLabeledComponent(new JBLabel("Base URL: "), baseUrl, 2)
                 .addComponent(new JBLabel("Settings"), 20)
                 .addSeparator()
-                .addComponent(doNotShowConfirmation, 5)
-                .addComponent(disableBranches, 5)
+                .addComponent(useGitBranch, 5)
                 .addComponent(autoUpload, 5)
+                .addComponent(doNotShowConfirmation, 5)
                 .addComponent(new JBLabel("Autocomplete"), 10)
                 .addSeparator()
-                .addComponent(disableCompletion, 5)
+                .addComponent(enableCompletion, 5)
                 .addLabeledComponent(new JBLabel("File extensions"), completionFileExtensions, 5)
                 .addComponent(new JBLabel("Comma-separated list of file extensions for which autocomplete should be active."))
                 .addComponent(new JBLabel("By default strings autocomplete will be active in all files."))
@@ -89,12 +89,12 @@ public class SettingsPanel {
         return this.doNotShowConfirmation.isSelected();
     }
 
-    public void setDisableBranches(boolean disableBranches) {
-        this.disableBranches.setSelected(disableBranches);
+    public void setUseGitBranch(boolean useGitBranch) {
+        this.useGitBranch.setSelected(useGitBranch);
     }
 
-    public boolean getDisableBranches() {
-        return this.disableBranches.isSelected();
+    public boolean getUseGitBranch() {
+        return this.useGitBranch.isSelected();
     }
 
     public void setAutoUpload(boolean autoUpload) {
@@ -105,11 +105,11 @@ public class SettingsPanel {
         return this.autoUpload.isSelected();
     }
 
-    public void setDisableCompletion(boolean disableCompletion) {
-        this.disableCompletion.setSelected(disableCompletion);
+    public void setEnableCompletion(boolean enableCompletion) {
+        this.enableCompletion.setSelected(enableCompletion);
     }
 
-    public boolean getDisableCompletion() {
-        return this.disableCompletion.isSelected();
+    public boolean getEnableCompletion() {
+        return this.enableCompletion.isSelected();
     }
 }

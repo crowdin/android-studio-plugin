@@ -37,7 +37,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
 
-    <projectConfigurable parentId="tools" instance="com.crowdin.settings.CrowdinSettingsConfigurable" id="Crowdin.PluginSettings" displayName="Crowdin Settings" />
+    <projectConfigurable parentId="tools" instance="com.crowdin.settings.CrowdinSettingsConfigurable" id="Crowdin.PluginSettings" displayName="Crowdin" />
     <projectService serviceImplementation="com.crowdin.settings.CrowdingSettingsState"/>
 
     <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
