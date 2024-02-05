@@ -80,6 +80,9 @@ public class UploadFromContextAction extends BackgroundAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isSourceFile = false;
         try {
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+                return;
+            }
             CrowdinConfig properties;
             properties = CrowdinPropertiesLoader.load(project);
             isSourceFile = properties.getFiles()
