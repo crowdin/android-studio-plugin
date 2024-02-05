@@ -169,7 +169,7 @@ See the [Placeholders](https://support.crowdin.com/configuration-file/#placehold
 
 **Note**: Currently `%original_path%` placeholder is not supported.
 
-### Additional settings
+### Plugin settings
 
 Plugin settings are located in `File > Settings > Tools > Crowdin`.
 
