@@ -8,9 +8,7 @@
 
 # Crowdin Android Studio Plugin [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?url=https%3A%2F%2Fgithub.com%2Fcrowdin%2Fandroid-studio-plugin&text=Manage%20and%20synchronize%20your%20localization%20resources%20with%20Crowdin%20project%20instantly%20from%20IDE)
 
-This plugin lets you integrate your Android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations or source strings from your Crowdin project.
-
-Also, it allows you to track your Crowdin project translation and proofreading progress directly from the IDE :computer:
+Integrate your Android Studio projects with Crowdin to streamline the localization process. The plugin allows you to instantly upload new source strings to your Crowdin project, autocomplete string keys, check translation progress and download translations from Crowdin.
 
 The plugin is compatible with all the **JetBrains IDE's** such as PHPStorm, IntelliJ Idea and other :rocket:
 
@@ -25,39 +23,69 @@ The plugin is compatible with all the **JetBrains IDE's** such as PHPStorm, Inte
 
 </div>
 
-## Getting started
+## Features
 
-* Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
-* Plugin automatically detects the file with sources strings. If changed, the file will be updated in Crowdin itself.
-* Plugin contains 3 tabs in the plugin panel
-  * Upload tab that allows you to upload translations and sources
-  * Download tab that allows you to download translations and sources or bundles for string-based projects
-  * Progress tab that allows you to track your Crowdin project translation and proofreading progress directly from the IDE :computer:
-* Uploading and Downloading sources and translations also possible by selecting option using the Right Mouse clicking on the file
-* Plugin also provide autocompletion of Crowdin strings keys. It helps to enter correct string key.
+### Upload source files to Crowdin
 
-## Configuration
+Upload source files to Crowdin for translation using the _Upload_ tab of the plugin panel. It displays all the source files matching the specified pattern in the configuration file.
 
-### Credentials
+<p align="center"><img src="resources/upload.gif" data-canonical-src="resources/upload.gif" width="600" height="auto" align="center"/></p>
+
+You can also upload existing translations to Crowdin using the _Upload_ tab.
+
+### Download source and translation files from Crowdin
+
+Download source and translation files from Crowdin using the _Download_ tab. It displays all the translation files matching the specified pattern in the configuration file. You can download translations for all target languages, specific target language as well as download source files edited in Crowdin.
+
+<p align="center"><img src="resources/download.gif" data-canonical-src="resources/download.gif" width="600" height="auto" align="center"/></p>
+
+You can also upload and download sources and translations by right-clicking on the file in your project tree and selecting the appropriate option.
+
+If you are using string-based projects, the list of bundles available for download is displayed in the _Download_ tab.
+
+### String keys autocompletion
+
+Use string keys in your code fetched from Crowdin and available in autocomplete suggestions. Whenever a user types something, the IDE autocompletion will suggest available string keys from Crowdin. The suggestion also includes the string text, so you can easily find the right key.
+
+There is a possibility to configure file extensions, where the string keys autocompletion will appear. By default, autocompletion is turned on and available in all files.
+
+<p align="center"><img src="resources/autocomplete.gif" data-canonical-src="resources/autocomplete.gif" width="600" height="auto" align="center"/></p>
+
+### Track translation and proofreading progress
+
+Track progress of translated and approved strings for each file and target language.
+
+<p align="center"><img src="resources/progress.gif" data-canonical-src="resources/progress.gif" width="600" height="auto" align="center"/></p>
+
+## Setup
+
+### Installation
+
+Install plugin via [JetBrains Plugin repository](https://plugins.jetbrains.com/idea/plugin/9463-crowdin).
+
+### Obtain credentials
+
+- Create a new Personal Access Token in your Crowdin Account settings.
+- Get the Project ID in the _Tools_ > _API_ section on your Crowdin project page.
+
+### Configuration
+
+#### Credentials
 
 To start using this plugin, create a file with project credentials named *crowdin.yml* in the root directory of the project.
 
 ```yml
-project_id: your-project-identifier
+project_id: your-project-id
 api_token: your-api-token
 ```
 
-`project_id` - This is a project *numeric id*
-
-`api_token` - This is a *personal access token*. Can be generated in your *Account Settings*
-
-If you are using Crowdin Enterprise, you also need to specify `base_url`:
+If you are using Crowdin Enterprise, you also need to specify the `base_url`:
 
 ```yml
-base_url: https://{organization-name}.crowdin.com
+base_url: https://{organization-name}.api.crowdin.com
 ```
 
-Also, you could load the credentials from environment variables:
+You can also load the credentials from environment variables:
 
 ```yml
 project_id_env: CROWDIN_PROJECT_ID
@@ -68,53 +96,54 @@ base_url_env: CROWDIN_BASE_URL
 If mixed, `project_id`, `api_token` and `base_url` are prioritized:
 
 ```yml
-project_id_env: CROWDIN_PROJECT_ID                   # Low priority
-api_token_env: CROWDIN_TOKEN                         # Low priority
-base_url_env: CROWDIN_URL                            # Low priority
-project_id: your_project_identifier                  # High priority
-api_token: your-api-token                            # High priority
-base_url: https://{organization-name}.crowdin.com    # High priority
+project_id_env: CROWDIN_PROJECT_ID                     # Low priority
+api_token_env: CROWDIN_TOKEN                           # Low priority
+base_url_env: CROWDIN_URL                              # Low priority
+project_id: your-project-id                            # High priority
+api_token: your-api-token                              # High priority
+base_url: https://{organization-name}.api.crowdin.com  # High priority
 ```
 
-Options above can also be specific in Crowdin plugin settings `File > Settings > Tools > Crowdin`
+**Tip**: The above options can also be set specifically in the Crowdin plugin settings: `File > Settings > Tools > Crowdin`.
 
-### Source files and translations
+#### Source files and translations
 
-To define source and translation patterns use `files` key. Example:
+To define source and translation patterns, use the `files' key. Example:
 
 ```yml
 preserve_hierarchy: true
 
 files:
-  - source: "app/src/main/res/values/file.xml"
+  - source: "app/src/main/res/values/strings.xml"
     translation: "app/src/main/res/values-%android_code%/%original_file_name%"
   - source: "ext/src/main/res/values/file.xml"
     translation: "ext/src/main/res/values-%android_code%/%original_file_name%"
 ```
 
-Use `preserve_hierarchy` if your project contains multiple modules you want to localize with the same source files naming.
+Use `preserve_hierarchy` if your project contains multiple modules that you want to localize with the same source file names.
 
-**Note**: Both `source` and `translation` keys should be specified
+> **Note:**
+> Both `source` and `translation` keys should be specified.
 
-**Note**: If `preserve_hierarchy` is set to `true`, plugin adds path to your translation pattern.
+> **Note:**
+> If `preserve_hierarchy` is set to `true`, the plugin will add the path to your translation pattern.
+>
+> ```yml
+> preserve_hierarchy: true
+>
+> files:
+>   - source: "**/values/strings.xml"
+>     translation: "/values-%two_letters_code%/%original_file_name%" #CORRECT
+>     # This will be converted to 'app/src/main/res/values-%two_letter_code%/%original_file_name%' export pattern for each file
+> ```
+
+#### Additional properties
+
+##### File properties
+
+To attach labels to the uploaded strings, use `labels`:
 
 ```yml
-preserve_hierarchy: true
-
-files:
-  - source: "**/values/strings.xml"
-    translation: "/values-%two_letters_code%/%original_file_name%" #CORRECT
-# this will be transformed to 'app/src/main/res/values-%two_letter_code%/%original_file_name%' export pattern for each file
-```
-
-### Additional properties
-
-#### File properties
-
-To attach labels to the uploaded strings use `labels`:
-
-```yml
-
 files:
   - source: "**/values/strings.xml"
     translation: "/values-%two_letters_code%/%original_file_name%"
@@ -123,7 +152,7 @@ files:
       - help-menu
 ```
 
-To specify excluded target languages use `excluded_target_languages`:
+To specify excluded target languages, use `excluded_target_languages`:
 
 ```yml
 files:
@@ -134,9 +163,9 @@ files:
       - fr
 ```
 
-To specify cleanup mode or update strings flags for string-based projects use `cleanup_mode` and `update_strings`:
+For String-based projects, use the `update_strings` option to update strings with the same identifiers and the `cleanup_mode` option to remove strings that are not present in the uploaded file:
 
-```ini
+```yml
 files:
   - source: "**/values/strings.xml"
     translation: "/values-%two_letters_code%/%original_file_name%"
@@ -144,15 +173,13 @@ files:
     cleanup_mode: true
 ```
 
-#### Translations Upload Options
+##### Translations upload options
 
-The below properties can be used to configure the import options to the uploaded translations
+The following properties can be used to configure the import options for uploaded translations:
 
-`import_eq_suggestions` - Defines whether to add translation if it's the same as the source string
-
-`auto_approve_imported` - Mark uploaded translations as approved
-
-`translate_hidden` - Allow translations upload to hidden source strings
+- `import_eq_suggestions` - Defines whether to add a translation if it's the same as the source string.
+- `auto_approve_imported` - Mark uploaded translations as approved.
+- `translate_hidden` - Allow translations upload to hidden source strings.
 
 ```yml
 # Applies to the default behavior and all files
@@ -161,40 +188,46 @@ auto_approve_imported: true
 translate_hidden: true
 ```
 
-### Placeholders
+#### Placeholders
 
 See the [Placeholders](https://support.crowdin.com/configuration-file/#placeholders) article to put appropriate variables.
 
-**Note**: `%android_code%` placeholder means a format such as `'fr-rCA'` ([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php) -r[<ISO 3166-1-alpha-2>](https://www.iso.org/obp/ui/#iso:pub:PUB500001:en)). When applying format with only two-letter language code such as `'fr'`([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php)) format, use `%two_letters_code%` placeholder.
+> **Note:**
+> `%android_code%` placeholder means a format such as `'fr-rCA'` ([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php) -r[<ISO 3166-1-alpha-2>](https://www.iso.org/obp/ui/#iso:pub:PUB500001:en)). When applying format with only two-letter language code such as `'fr'`([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php)) format, use `%two_letters_code%` placeholder.
 
-**Note**: Currently `%original_path%` placeholder is not supported.
+> **Note:**
+> Currently, the `%original_path%` placeholder is not supported.
 
 ### Plugin settings
 
 Plugin settings are located in `File > Settings > Tools > Crowdin`.
 
-### Login
+<p align="center"><img src="resources/settings.png" data-canonical-src="resources/settings.png" width="600" height="auto" align="center"/></p>
 
-In settings menu you can specify project id, api token and base url. Same options can be defined in `yml` configuration file.  
-If those settings will be specified in both places, `yml` and `Settings` menu, plugin will use values from `yml` file.
+#### Credentials
 
-#### Branch
+In the settings menu, you can specify the Project ID, API Token and base URL. Same options can be defined in `crowdin.yml` configuration file.
+If these settings are specified in both places, `crowdin.yml` and `Settings` menu, plugin will use values from the configuration file.
 
-To specify concrete branch you can use `branch` key in yml file or turn on `Use Git Branch`.
-Then plugin will use local Git branch.  
-If you do not use branches feature in Crowdin, make sure `Use Git Branch` option is disabled and `branch` is not defined in yml file.  
-Keep in mind that branch is required for string-based projects.
+#### Use Git Branch
+
+If you are using the branching functionality in Crowdin, you can enable `Use Git Branch` in the plugin settings, so the plugin will use the local git branch name as the Crowdin branch name.
+
+You can also set a specific branch name to work with by using the `branch` option in the `crowdin.yml` configuration file.
+
+If you are not using branching, make sure the `Use Git Branch` option is disabled and `branch` is not defined in the `crowdin.yml` file.
+
+Note that a **branch is required for string-based** projects.
 
 #### Automatic uploads
 
-By default, plugin will automatically upload source files to Crowdin on any change.  
-To disable this please turn off `Automatically upload on change` option.
+By default, the plugin will automatically upload source files to Crowdin on every change. To disable this, please uncheck the `Automatically upload on change` option.
 
-#### Strings autocompletion
+#### String keys autocompletion
 
-By default, this autocompletion feature will be enabled in all files. But you can configure files extensions where it should work.  
-To enable autocompletion only in json and xml files `File extensions` settings should be set to `json,xml`.  
-To disable autocompletion turn off `Enable Autocompletion` option.
+By default, the string keys autocompletion feature is enabled for all files. You can configure file extensions where you want it to work. For example, to enable autocompletion only in json and xml files, the `File extensions` settings should be set to `json,xml`.
+
+To disable autocompletion, uncheck the `Enable autocompletion` option.
 
 ## Seeking Assistance
 
