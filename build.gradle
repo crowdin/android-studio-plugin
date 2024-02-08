@@ -4,7 +4,7 @@ plugins {
     id 'jacoco'
 }
 
-group 'com.crowdin.crowdin-idea'
+group 'com.crowdin.crowdin-idea-qa'
 version '1.6.3'
 
 sourceCompatibility = '17'
