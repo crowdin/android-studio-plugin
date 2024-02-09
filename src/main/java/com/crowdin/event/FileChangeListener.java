@@ -113,14 +113,11 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
                     VirtualFile crowdinPropertyFile = CrowdinFileProvider.getCrowdinConfigFile(project);
                     boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
-                    if (crowdinPropertiesFileUpdated) {
-                        ProjectService projectService = project.getService(ProjectService.class);
-                        if (projectService.getLoadedComponents().contains(ProjectService.InitializationItem.UI_PANELS)) {
-                            CrowdinPanelWindowFactory.reloadPanels(project, false);
-                        }
-                    }
 
                     if (changedSources.isEmpty()) {
+                        if (crowdinPropertiesFileUpdated) {
+                            CrowdinPanelWindowFactory.reloadPanels(project, false);
+                        }
                         return;
                     }
 
@@ -136,6 +133,7 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     SourceLogic.processSources(project, FileUtil.getProjectBaseDir(project), crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), changedSources);
 
                     project.getService(CrowdinProjectCacheProvider.class).outdateBranch(branchName);
+                    CrowdinPanelWindowFactory.reloadPanels(project, true);
                 } catch (ProcessCanceledException e) {
                     throw e;
                 } catch (Exception e) {
