@@ -72,7 +72,7 @@ public class DownloadAction extends BackgroundAction {
 
             if (context.get().crowdinProjectCache.isStringsBased()) {
                 if (context.get().branch == null) {
-                    NotificationUtil.showErrorMessage(project, "Branch is missing");
+                    NotificationUtil.showErrorMessage(project, "Branch is missing in configuration file");
                     return;
                 }
 

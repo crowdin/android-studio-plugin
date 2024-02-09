@@ -68,7 +68,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                     .toList();
 
             if (context.get().crowdinProjectCache.isStringsBased() && context.get().branch == null) {
-                NotificationUtil.showErrorMessage(project, "Branch is missing");
+                NotificationUtil.showErrorMessage(project, "Branch is missing in configuration file");
                 return;
             }
 

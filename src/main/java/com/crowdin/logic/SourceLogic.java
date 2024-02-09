@@ -58,7 +58,7 @@ public class SourceLogic {
         Long branchId = (branch != null) ? branch.getId() : null;
 
         if (projectCache.isStringsBased() && branchId == null) {
-            NotificationUtil.showErrorMessage(project, "Branch is missing");
+            NotificationUtil.showErrorMessage(project, "Branch is missing in configuration file");
             return;
         }
 
