@@ -1,6 +1,11 @@
 package com.crowdin.settings;
 
+import com.crowdin.client.Crowdin;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
+import com.crowdin.logic.BranchLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
+import com.crowdin.util.NotificationUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
@@ -56,9 +61,24 @@ public class CrowdinSettingsConfigurable implements Configurable {
         instance.autoUpload = this.settingsPanel.getAutoUpload();
         instance.useGitBranch = this.settingsPanel.getUseGitBranch();
         instance.enableCompletion = this.settingsPanel.getEnableCompletion();
+
         if (needToReload) {
-            ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, true));
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+                return;
+            }
+
+            try {
+                //verify setup before doing a reload
+                CrowdinConfig properties = CrowdinPropertiesLoader.load(project);
+                Crowdin crowdin = new Crowdin(properties.getProjectId(), properties.getApiToken(), properties.getBaseUrl());
+                BranchLogic branchLogic = new BranchLogic(crowdin, project, properties);
+                branchLogic.acquireBranchName();
+                ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, true));
+            } catch (Exception e) {
+                NotificationUtil.showErrorMessage(project, e.getMessage());
+            }
         }
+
     }
 
     @Override
