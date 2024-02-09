@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Util {
 
     private static final String PLUGIN_NAME = "crowdin-android-studio-plugin";
-    private static final String PLUGIN_ID = "com.crowdin.crowdin-idea-qa";
+    private static final String PLUGIN_ID = "com.crowdin.crowdin-idea";
     private static final PluginId PLUGIN = PluginId.getId(PLUGIN_ID);
 
     public static String getPluginVersion() {
