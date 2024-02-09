@@ -20,6 +20,9 @@ public class CellRenderer extends DefaultTreeCellRenderer {
 
         JBLabel label = new JBLabel(cellData.getText());
         label.setIcon(cellData.getIcon());
+        if (cellData.getColor() != null) {
+            label.setForeground(cellData.getColor());
+        }
         return FormBuilder.createFormBuilder().addComponent(label).getPanel();
     }
 

@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class FileTree {
@@ -19,9 +22,17 @@ public class FileTree {
     public static DefaultMutableTreeNode buildTree(String name, List<String> files) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(name));
 
-        List<AbstractMap.SimpleEntry<String, List<String>>> parts = files
+        List<String> normalizedFiles = files
                 .stream()
                 .map(f -> f.startsWith(FileUtil.PATH_SEPARATOR) ? f.substring(1) : f)
+                .toList();
+
+        Map<String, Long> duplicatesCount = files
+                .stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        List<AbstractMap.SimpleEntry<String, List<String>>> parts = normalizedFiles
+                .stream()
                 .map(f -> {
                     List<String> fileParts = StreamSupport.stream(Paths.get(f).spliterator(), false).map(Path::toString).toList();
                     return new AbstractMap.SimpleEntry<>(f, fileParts);
@@ -66,7 +77,7 @@ public class FileTree {
                 }
 
                 DefaultMutableTreeNode element = j + 1 == subParts.size()
-                        ? new DefaultMutableTreeNode(CellData.file(part, filePath))
+                        ? new DefaultMutableTreeNode(CellData.file(part, filePath, duplicatesCount.getOrDefault(filePath, 1L) > 1))
                         : new DefaultMutableTreeNode(CellData.folder(part));
                 prev.add(element);
 
