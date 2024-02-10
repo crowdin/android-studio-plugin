@@ -21,6 +21,7 @@ public class SettingsPanel {
     private final JBCheckBox doNotShowConfirmation = new JBCheckBox("Do not show confirmation dialogs ");
     private final JBCheckBox useGitBranch = new JBCheckBox("Use Git Branch ");
     private final JBCheckBox autoUpload = new JBCheckBox("Automatically upload on change ");
+    private final JBCheckBox autoReload = new JBCheckBox("Automatically reload on change ");
     private final JBCheckBox enableCompletion = new JBCheckBox("Enable Autocompletion ");
 
     public SettingsPanel() {
@@ -33,6 +34,7 @@ public class SettingsPanel {
                 .addComponent(new JBLabel("Settings"), 20)
                 .addSeparator()
                 .addComponent(useGitBranch, 5)
+                .addComponent(autoReload, 5)
                 .addComponent(autoUpload, 5)
                 .addComponent(doNotShowConfirmation, 5)
                 .addComponent(new JBLabel("Autocomplete"), 10)
@@ -103,6 +105,14 @@ public class SettingsPanel {
 
     public boolean getAutoUpload() {
         return this.autoUpload.isSelected();
+    }
+
+    public void setAutoReload(boolean autoReload) {
+        this.autoReload.setSelected(autoReload);
+    }
+
+    public boolean getAutoReload() {
+        return this.autoReload.isSelected();
     }
 
     public void setEnableCompletion(boolean enableCompletion) {

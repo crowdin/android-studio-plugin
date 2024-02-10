@@ -9,7 +9,6 @@ import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.logic.SourceLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
-import com.crowdin.service.ProjectService;
 import com.crowdin.settings.CrowdingSettingsState;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
@@ -63,15 +62,34 @@ public class FileChangeListener implements Disposable, BulkFileListener {
         List<? extends VFileEvent> interestedFiles = events.stream()
                 .filter(f -> f.getFile() != null && instance.isInContent(f.getFile()))
                 .toList();
-        if (interestedFiles.isEmpty() || !CrowdingSettingsState.getInstance(this.project).autoUpload) {
+
+        if (interestedFiles.isEmpty()) {
             return;
+        }
+
+        if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+            return;
+        }
+
+        CrowdingSettingsState settings = CrowdingSettingsState.getInstance(project);
+
+        if (settings.autoReload) {
+            VirtualFile crowdinPropertyFile = CrowdinFileProvider.getCrowdinConfigFile(project);
+            boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
+            if (crowdinPropertiesFileUpdated) {
+                ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, false));
+                if (events.size() == 1) {
+                    //no need to start task below as it's just an update in config file
+                    return;
+                }
+            }
         }
 
         ProgressManager.getInstance().run(new Task.Backgroundable(this.project, "Crowdin") {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+                    if (!settings.autoUpload) {
                         return;
                     }
 
@@ -111,16 +129,6 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                         }
                     }
 
-                    VirtualFile crowdinPropertyFile = CrowdinFileProvider.getCrowdinConfigFile(project);
-                    boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
-
-                    if (changedSources.isEmpty()) {
-                        if (crowdinPropertiesFileUpdated) {
-                            CrowdinPanelWindowFactory.reloadPanels(project, false);
-                        }
-                        return;
-                    }
-
                     Branch branch = branchLogic.getBranch(crowdinProjectCache, true);
                     indicator.checkCanceled();
 
@@ -133,7 +141,8 @@ public class FileChangeListener implements Disposable, BulkFileListener {
                     SourceLogic.processSources(project, FileUtil.getProjectBaseDir(project), crowdin, crowdinProjectCache, branch, properties.isPreserveHierarchy(), changedSources);
 
                     project.getService(CrowdinProjectCacheProvider.class).outdateBranch(branchName);
-                    CrowdinPanelWindowFactory.reloadPanels(project, true);
+
+                    ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, true));
                 } catch (ProcessCanceledException e) {
                     throw e;
                 } catch (Exception e) {

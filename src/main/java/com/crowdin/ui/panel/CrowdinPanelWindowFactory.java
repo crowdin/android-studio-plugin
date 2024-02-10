@@ -1,6 +1,5 @@
 package com.crowdin.ui.panel;
 
-import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.download.DownloadWindow;
 import com.crowdin.ui.panel.progress.TranslationProgressWindow;
@@ -109,10 +108,6 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     public static void reloadPanels(Project project, boolean fullReload) {
-        if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
-            return;
-        }
-
         ProjectService projectService = project.getService(ProjectService.class);
         if (!projectService.getLoadedComponents().contains(ProjectService.InitializationItem.UI_PANELS)) {
             return;
