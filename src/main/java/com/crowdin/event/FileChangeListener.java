@@ -77,6 +77,12 @@ public class FileChangeListener implements Disposable, BulkFileListener {
             VirtualFile crowdinPropertyFile = CrowdinFileProvider.getCrowdinConfigFile(project);
             boolean crowdinPropertiesFileUpdated = events.stream().anyMatch(e -> Objects.equals(e.getFile(), crowdinPropertyFile));
             if (crowdinPropertiesFileUpdated) {
+                try {
+                    CrowdinPropertiesLoader.load(project);
+                } catch (Exception e) {
+                    NotificationUtil.showErrorMessage(project, e.getMessage());
+                    return;
+                }
                 ApplicationManager.getApplication().invokeAndWait(() -> CrowdinPanelWindowFactory.reloadPanels(project, false));
                 if (events.size() == 1) {
                     //no need to start task below as it's just an update in config file
