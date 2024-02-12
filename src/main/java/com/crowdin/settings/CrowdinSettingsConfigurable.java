@@ -43,7 +43,6 @@ public class CrowdinSettingsConfigurable implements Configurable {
                 !Objects.equals(this.settingsPanel.getProjectId(), instance.projectId) ||
                 !Objects.equals(this.settingsPanel.getCompletionFileExtensions(), instance.fileExtensions) ||
                 !Objects.equals(this.settingsPanel.getAutoUpload(), instance.autoUpload) ||
-                !Objects.equals(this.settingsPanel.getAutoReload(), instance.autoReload) ||
                 !Objects.equals(this.settingsPanel.getUseGitBranch(), instance.useGitBranch) ||
                 !Objects.equals(this.settingsPanel.getEnableCompletion(), instance.enableCompletion) ||
                 !Objects.equals(this.settingsPanel.getDoNotShowConfirmation(), instance.doNotShowConfirmation);
@@ -60,7 +59,6 @@ public class CrowdinSettingsConfigurable implements Configurable {
         instance.fileExtensions = this.settingsPanel.getCompletionFileExtensions();
         instance.doNotShowConfirmation = this.settingsPanel.getDoNotShowConfirmation();
         instance.autoUpload = this.settingsPanel.getAutoUpload();
-        instance.autoReload = this.settingsPanel.getAutoReload();
         instance.useGitBranch = this.settingsPanel.getUseGitBranch();
         instance.enableCompletion = this.settingsPanel.getEnableCompletion();
 
@@ -92,7 +90,6 @@ public class CrowdinSettingsConfigurable implements Configurable {
         this.settingsPanel.setCompletionFileExtensions(instance.fileExtensions);
         this.settingsPanel.setDoNotShowConfirmation(instance.doNotShowConfirmation);
         this.settingsPanel.setAutoUpload(instance.autoUpload);
-        this.settingsPanel.setAutoReload(instance.autoReload);
         this.settingsPanel.setUseGitBranch(instance.useGitBranch);
         this.settingsPanel.setEnableCompletion(instance.enableCompletion);
     }

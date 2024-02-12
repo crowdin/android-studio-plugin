@@ -219,10 +219,6 @@ If you are not using branching, make sure the `Use Git Branch` option is disable
 
 Note that a **branch is required for string-based** projects.
 
-#### Automatic reload
-
-By default, the plugin will automatically reload files tree after each change in configuration file. To disable this, please uncheck the `Automatically reload on change` option.
-
 #### Automatic uploads
 
 By default, the plugin will automatically upload source files to Crowdin on every change. To disable this, please uncheck the `Automatically upload on change` option.

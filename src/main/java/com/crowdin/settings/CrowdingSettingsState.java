@@ -22,7 +22,6 @@ public class CrowdingSettingsState implements PersistentStateComponent<CrowdingS
     public boolean doNotShowConfirmation = false;
     public boolean useGitBranch = false;
     public boolean autoUpload = true;
-    public boolean autoReload = true;
     public boolean enableCompletion = true;
 
     public String getApiToken() {
