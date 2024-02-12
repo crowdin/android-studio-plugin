@@ -31,16 +31,14 @@ public class CellData {
 
     private final boolean isRoot;
 
-    private final String link;
-
     private final JBColor color;
 
     public static CellData root(String text) {
-        return new CellData(true, text, LOGO, null, null, null, null);
+        return new CellData(true, text, LOGO, null, null, null);
     }
 
     public static CellData folder(String text) {
-        return new CellData(false, text, AllIcons.Nodes.Folder, null, null, null, null);
+        return new CellData(false, text, AllIcons.Nodes.Folder, null, null, null);
     }
 
     public static CellData file(String text, String file, boolean duplicate) {
@@ -51,24 +49,19 @@ public class CellData {
                 .filter(FILES_TYPES_ICONS::containsKey)
                 .map(FILES_TYPES_ICONS::get)
                 .orElse(AllIcons.FileTypes.Text);
-        return new CellData(false, text, icon, file, null, null, duplicate ? JBColor.RED : null);
+        return new CellData(false, text, icon, file, null, duplicate ? JBColor.RED : null);
     }
 
     public static CellData bundle(Bundle bundle) {
-        return new CellData(false, bundle.getName(), AllIcons.FileTypes.Archive, null, bundle, null, null);
+        return new CellData(false, bundle.getName(), AllIcons.FileTypes.Archive, null, bundle, null);
     }
 
-    public static CellData link(String text, String link) {
-        return new CellData(false, text, AllIcons.Ide.Link, null, null, link, null);
-    }
-
-    private CellData(boolean isRoot, String text, Icon icon, String file, Bundle bundle, String link, JBColor color) {
+    private CellData(boolean isRoot, String text, Icon icon, String file, Bundle bundle, JBColor color) {
         this.isRoot = isRoot;
         this.text = text;
         this.icon = icon;
         this.file = file;
         this.bundle = bundle;
-        this.link = link;
         this.color = color;
     }
 
@@ -104,14 +97,6 @@ public class CellData {
         return bundle;
     }
 
-    public boolean isLink() {
-        return link != null;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
     @Override
     public String toString() {
         return "CellData{" +
@@ -120,7 +105,6 @@ public class CellData {
                 ", file='" + file + '\'' +
                 ", bundle=" + bundle +
                 ", isRoot=" + isRoot +
-                ", link='" + link + '\'' +
                 '}';
     }
 }

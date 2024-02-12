@@ -18,6 +18,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -33,12 +34,23 @@ public class DownloadWindow implements ContentTab {
     private boolean isBundlesMode = false;
     private DefaultMutableTreeNode selectedElement;
     private final JBLabel placeholder = new JBLabel("Tree loading", SwingConstants.CENTER);
+    private final JBLabel placeholder2 = new JBLabel("", SwingConstants.CENTER);
+
+    private final JPanel placeholderPanel = new JPanel(new BorderLayout());
+
+    private String link;
 
     public DownloadWindow() {
         this.placeholder.setComponentStyle(UIUtil.ComponentStyle.LARGE);
+        this.placeholder2.setComponentStyle(UIUtil.ComponentStyle.LARGE);
+        this.placeholder2.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        this.placeholder2.setForeground(new Color(0, 102, 204));
+        this.placeholderPanel.add(placeholder, BorderLayout.CENTER);
+        this.placeholderPanel.add(placeholder2, BorderLayout.PAGE_END);
+
         this.panel = FormBuilder
                 .createFormBuilder()
-                .addComponent(placeholder)
+                .addComponent(placeholderPanel)
                 .addComponent(new JBScrollPane(tree))
                 .getPanel();
 
@@ -46,20 +58,11 @@ public class DownloadWindow implements ContentTab {
         this.tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         this.tree.setVisible(false);
 
-        this.tree.addMouseListener(new MouseAdapter() {
+        this.placeholder2.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                if (selRow != -1) {
-                    if (e.getClickCount() == 2) {
-                        Optional
-                                .ofNullable(selPath.getLastPathComponent())
-                                .filter(DefaultMutableTreeNode.class::isInstance)
-                                .map(CellRenderer::getData)
-                                .filter(CellData::isLink)
-                                .ifPresent(cell -> BrowserUtil.browse(cell.getLink()));
-                    }
+                if (link != null) {
+                    BrowserUtil.browse(link);
                 }
             }
         });
@@ -103,15 +106,19 @@ public class DownloadWindow implements ContentTab {
     }
 
     public void rebuildFileTree(String projectName, List<String> files) {
+        this.link = null;
         this.isBundlesMode = false;
         this.selectedElement = null;
+
         if (files.isEmpty()) {
-            tree.setVisible(false);
-            placeholder.setText("No files found matching your configuration");
-            placeholder.setVisible(true);
+            this.tree.setVisible(false);
+            this.placeholder.setText("No files found matching your configuration");
+            this.placeholder2.setVisible(false);
+            this.placeholderPanel.setVisible(true);
             return;
         }
-        this.placeholder.setVisible(false);
+
+        this.placeholderPanel.setVisible(false);
         this.tree.setVisible(true);
 
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
@@ -121,9 +128,21 @@ public class DownloadWindow implements ContentTab {
     }
 
     public void rebuildBundlesTree(String projectName, List<Bundle> bundles, String bundleInfoUrl) {
+        this.link = bundleInfoUrl;
         this.isBundlesMode = true;
         this.selectedElement = null;
-        this.placeholder.setVisible(false);
+
+        if (bundles.isEmpty()) {
+            this.tree.setVisible(false);
+            this.placeholder.setText("No bundles found.");
+            this.placeholder2.setText("Manage bundles.");
+            this.placeholder2.setVisible(true);
+            this.placeholder.setVisible(true);
+            this.placeholderPanel.setVisible(true);
+            return;
+        }
+
+        this.placeholderPanel.setVisible(false);
         this.tree.setVisible(true);
 
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
@@ -131,9 +150,6 @@ public class DownloadWindow implements ContentTab {
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
         bundles.forEach(bundle -> root.add(new DefaultMutableTreeNode(CellData.bundle(bundle))));
-        if (bundles.isEmpty()) {
-            root.add(new DefaultMutableTreeNode(CellData.link("Check how to create bundle", bundleInfoUrl)));
-        }
         this.tree.setModel(new DefaultTreeModel(root));
         expandAll();
     }
