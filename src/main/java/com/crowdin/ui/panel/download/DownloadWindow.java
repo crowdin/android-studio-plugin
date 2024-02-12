@@ -107,7 +107,7 @@ public class DownloadWindow implements ContentTab {
         this.selectedElement = null;
         if (files.isEmpty()) {
             tree.setVisible(false);
-            placeholder.setText("No files found");
+            placeholder.setText("No files found matching your configuration");
             placeholder.setVisible(true);
             return;
         }
