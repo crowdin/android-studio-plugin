@@ -1,7 +1,7 @@
 package com.crowdin.action;
 
-import com.crowdin.client.config.FileBean;
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.client.translations.model.UploadTranslationsRequest;
@@ -21,15 +21,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -82,6 +85,8 @@ public class UploadTranslationsAction extends BackgroundAction {
 
             AtomicInteger uploadedFilesCounter = new AtomicInteger(0);
 
+            Set<File> uploadedFiles = new HashSet<>();
+
             for (FileBean fileBean : context.get().properties.getFiles()) {
                 for (VirtualFile source : FileUtil.getSourceFilesRec(context.get().root, fileBean.getSource())) {
                     VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
@@ -114,6 +119,10 @@ public class UploadTranslationsAction extends BackgroundAction {
                             continue;
                         }
 
+                        if (context.get().crowdinProjectCache.isStringsBased() && uploadedFiles.contains(translationFile)) {
+                            continue;
+                        }
+
                         Long storageId;
                         try (InputStream translationFileStrem = new FileInputStream(translationFile)) {
                             storageId = context.get().crowdin.addStorage(translationFile.getName(), translationFileStrem);
@@ -126,6 +135,7 @@ public class UploadTranslationsAction extends BackgroundAction {
                             if (context.get().crowdinProjectCache.isStringsBased()) {
                                 UploadTranslationsStringsRequest request = RequestBuilder.uploadStringsTranslation(context.get().branch.getId(), storageId, context.get().properties.isImportEqSuggestions(), context.get().properties.isAutoApproveImported(), context.get().properties.isTranslateHidden());
                                 context.get().crowdin.uploadStringsTranslation(translationPath.getKey().getId(), request);
+                                uploadedFiles.add(translationFile);
                             } else {
                                 UploadTranslationsRequest request = RequestBuilder.uploadTranslation(crowdinSource.getId(), storageId, context.get().properties.isImportEqSuggestions(), context.get().properties.isAutoApproveImported(), context.get().properties.isTranslateHidden());
                                 context.get().crowdin.uploadTranslation(translationPath.getKey().getId(), request);
