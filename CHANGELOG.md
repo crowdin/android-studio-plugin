@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.0.0]
+
+- Plugin UI redesign
+- New configuration file format
+- String-based projects support
+- Plugin settings added
+- Upgraded dependencies
+
+([#119](https://github.com/crowdin/android-studio-plugin/pull/119),
+[#121](https://github.com/crowdin/android-studio-plugin/pull/121))
+
 ## [1.6.3]
 
 - fix: branch remove special characters ([#114](https://github.com/crowdin/android-studio-plugin/pull/114))
