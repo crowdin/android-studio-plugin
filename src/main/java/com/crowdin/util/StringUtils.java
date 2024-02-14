@@ -14,16 +14,8 @@ public final class StringUtils {
         }
     }
 
-    public static String removeEnd(String str, String remove) {
-        if (!isEmpty(str) && !isEmpty(remove)) {
-            return str.endsWith(remove) ? str.substring(0, str.length() - remove.length()) : str;
-        } else {
-            return str;
-        }
-    }
-
     public static boolean isEmpty(String str) {
-        return str == null || str.length() == 0;
+        return str == null || str.isEmpty();
     }
 
     public static boolean containsNone(String str, String invalidChars) {

@@ -2,8 +2,8 @@ package com.crowdin.logic;
 
 import com.crowdin.client.BranchInfo;
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.CrowdinConfig;
 import com.crowdin.client.sourcefiles.model.AddBranchRequest;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.service.CrowdinProjectCacheProvider;
@@ -19,11 +19,11 @@ public class BranchLogic {
 
     private final Crowdin crowdin;
     private final Project project;
-    private final CrowdinProperties properties;
+    private final CrowdinConfig properties;
 
     private BranchInfo branchInfo;
 
-    public BranchLogic(Crowdin crowdin, Project project, CrowdinProperties properties) {
+    public BranchLogic(Crowdin crowdin, Project project, CrowdinConfig properties) {
         this.crowdin = crowdin;
         this.project = project;
         this.properties = properties;
@@ -31,30 +31,34 @@ public class BranchLogic {
 
     public String acquireBranchName() {
         BranchInfo branch;
-        if (properties.isDisabledBranches()) {
-            branch = new BranchInfo("", "");
-        } else {
+        if (properties.isUseGitBranch()) {
             branch = GitUtil.getCurrentBranch(project);
+        } else if (!StringUtils.isEmpty(properties.getBranch())) {
+            branch = new BranchInfo(properties.getBranch(), properties.getBranch());
+        } else {
+            branch = new BranchInfo("", "");
         }
-        if (!CrowdinFileUtil.isValidBranchName(branch.getName())) {
+
+        if (!CrowdinFileUtil.isValidBranchName(branch.name())) {
             throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.branch_contains_forbidden_symbols"));
         }
+
         this.branchInfo = branch;
-        return branch.getName();
+        return branch.name();
     }
 
     public Branch getBranch(CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, boolean createIfNotExists) {
         if (this.branchInfo == null) {
             this.acquireBranchName();
         }
-        Branch branch = projectCache.getBranches().get(this.branchInfo.getName());
-        if (branch == null && !StringUtils.isEmpty(this.branchInfo.getName())) {
+        Branch branch = projectCache.getBranches().get(this.branchInfo.name());
+        if (branch == null && !StringUtils.isEmpty(this.branchInfo.name())) {
             if (createIfNotExists) {
-                AddBranchRequest addBranchRequest = RequestBuilder.addBranch(this.branchInfo.getName(), this.branchInfo.getTitle());
+                AddBranchRequest addBranchRequest = RequestBuilder.addBranch(this.branchInfo.name(), this.branchInfo.title());
                 branch = crowdin.addBranch(addBranchRequest);
                 NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.created_branch"), branch.getId(), branch.getName()));
             } else {
-                throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"), this.branchInfo.getName()));
+                throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.branch_not_exists"), this.branchInfo.name()));
             }
         } else if (branch != null) {
             NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.using_branch"), branch.getId(), branch.getName()));

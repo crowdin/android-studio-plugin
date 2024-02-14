@@ -1,18 +1,19 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
-import com.crowdin.service.CrowdinSettings;
+import com.crowdin.settings.CrowdingSettingsState;
+import com.crowdin.ui.dialog.ConfirmActionDialog;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
 import com.crowdin.util.StringUtils;
-import com.crowdin.util.UIUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
@@ -49,10 +51,10 @@ public abstract class BackgroundAction extends AnAction {
     ) {
         VirtualFile root = FileUtil.getProjectBaseDir(project);
 
-        CrowdinSettings crowdinSettings = project.getService(CrowdinSettings.class);
+        CrowdingSettingsState crowdinSettings = CrowdingSettingsState.getInstance(project);
 
         if (!StringUtils.isEmpty(question) && !StringUtils.isEmpty(okBtn)) {
-            boolean confirmation = UIUtil.confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString(question), okBtn);
+            boolean confirmation = confirmDialog(project, crowdinSettings, MESSAGES_BUNDLE.getString(question), okBtn);
             if (!confirmation) {
                 return Optional.empty();
             }
@@ -61,7 +63,7 @@ public abstract class BackgroundAction extends AnAction {
             }
         }
 
-        CrowdinProperties properties;
+        CrowdinConfig properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);
         } catch (Exception e) {
@@ -107,5 +109,24 @@ public abstract class BackgroundAction extends AnAction {
                 performInBackground(e, indicator);
             }
         });
+    }
+
+    private boolean confirmDialog(Project project, CrowdingSettingsState settings, String questionText, String okButtonText) {
+        if (ApplicationManager.getApplication().isHeadlessEnvironment()) {
+            return true;
+        }
+        if (!settings.doNotShowConfirmation) {
+            AtomicReference<Boolean> confirmation = new AtomicReference<>();
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                ConfirmActionDialog confirmDialog =
+                        new ConfirmActionDialog(project, questionText, okButtonText);
+                confirmation.set(confirmDialog.showAndGet());
+                settings.doNotShowConfirmation = confirmDialog.isDoNotAskAgain();
+            });
+            return confirmation.get();
+        } else {
+            return true;
+        }
+
     }
 }

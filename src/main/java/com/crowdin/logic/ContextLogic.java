@@ -1,8 +1,8 @@
 package com.crowdin.logic;
 
 import com.crowdin.service.CrowdinProjectCacheProvider;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.util.FileUtil;
@@ -15,14 +15,13 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
 
 public class ContextLogic {
 
     public static Optional<Map.Entry<VirtualFile, Language>> findSourceFileFromTranslationFile(
-            VirtualFile file, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache
+            VirtualFile file, CrowdinConfig properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache crowdinProjectCache
     ) {
         Path filePath = Paths.get(file.getPath());
         for (FileBean fileBean : properties.getFiles()) {
@@ -43,7 +42,7 @@ public class ContextLogic {
     }
 
     public static Long findSourceIdFromSourceFile(
-            CrowdinProperties properties, Map<String, FileInfo> filePaths, VirtualFile file, VirtualFile root
+            CrowdinConfig properties, Map<String, FileInfo> filePaths, VirtualFile file, VirtualFile root
     ) {
         String fileRelativePath = FileUtil.sepAtStart(FileUtil.findRelativePath(root, file));
         if (properties.isPreserveHierarchy()) {

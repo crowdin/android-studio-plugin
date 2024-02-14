@@ -124,7 +124,7 @@ public final class FileUtil {
         } else {
             List<String> sourcePatternSplits = Arrays.stream(splitPath(noSepAtStart(filePathPattern)))
                     .map(PlaceholderUtil::formatSourcePatternForRegex)
-                    .collect(Collectors.toList());
+                    .toList();
 
             StringBuilder sourcePatternRegex = new StringBuilder();
             for (int i = 0; i < sourcePatternSplits.size() - 1; i++) {

@@ -1,5 +1,8 @@
 package com.crowdin.ui.tree;
 
+import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.FormBuilder;
+
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -15,8 +18,12 @@ public class CellRenderer extends DefaultTreeCellRenderer {
             return null;
         }
 
-        FilesTreeItem filesTreeItem = new FilesTreeItem(cellData.getText(), cellData.getIcon());
-        return filesTreeItem.getContent();
+        JBLabel label = new JBLabel(cellData.getText());
+        label.setIcon(cellData.getIcon());
+        if (cellData.getColor() != null) {
+            label.setForeground(cellData.getColor());
+        }
+        return FormBuilder.createFormBuilder().addComponent(label).getPanel();
     }
 
     public static CellData getData(Object value) {

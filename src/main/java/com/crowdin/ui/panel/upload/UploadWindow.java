@@ -1,11 +1,13 @@
 package com.crowdin.ui.panel.upload;
 
 import com.crowdin.ui.panel.ContentTab;
-import com.crowdin.ui.tree.CellData;
 import com.crowdin.ui.tree.CellRenderer;
 import com.crowdin.ui.tree.FileTree;
-import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.ui.FormBuilder;
+import com.intellij.util.ui.UIUtil;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -16,18 +18,24 @@ import java.util.List;
 import java.util.Optional;
 
 public class UploadWindow implements ContentTab {
-    private JPanel panel1;
-    private JScrollPane scrollPane;
-    private Tree tree1;
+    private final JPanel panel;
+    private final Tree tree = new Tree();
+    private final JBLabel placeholder = new JBLabel("Tree loading", SwingConstants.CENTER);
 
     private DefaultMutableTreeNode selectedElement;
 
     public UploadWindow() {
-        scrollPane.getViewport().setBackground(JBColor.WHITE);
-        tree1.setCellRenderer(new CellRenderer());
-        tree1.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        this.setPlug("Refresh tree");
-        tree1.addTreeSelectionListener(e ->
+        placeholder.setComponentStyle(UIUtil.ComponentStyle.LARGE);
+        this.panel = FormBuilder
+                .createFormBuilder()
+                .addComponent(placeholder)
+                .addComponent(new JBScrollPane(tree))
+                .getPanel();
+
+        this.tree.setCellRenderer(new CellRenderer());
+        this.tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        this.tree.setVisible(false);
+        this.tree.addTreeSelectionListener(e ->
                 Optional.ofNullable(e.getNewLeadSelectionPath())
                         .map(TreePath::getLastPathComponent)
                         .map(DefaultMutableTreeNode.class::cast)
@@ -35,13 +43,9 @@ public class UploadWindow implements ContentTab {
         );
     }
 
-    public void setPlug(String text) {
-        tree1.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(CellData.root(text))));
-    }
-
     @Override
     public JPanel getContent() {
-        return panel1;
+        return panel;
     }
 
     public List<String> getSelectedFiles() {
@@ -50,15 +54,24 @@ public class UploadWindow implements ContentTab {
 
     public void rebuildTree(String projectName, List<String> files) {
         this.selectedElement = null;
-        tree1.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+        if (files.isEmpty()) {
+            tree.setVisible(false);
+            placeholder.setText("No files found matching your configuration");
+            placeholder.setVisible(true);
+            return;
+        }
+
+        this.placeholder.setVisible(false);
+        this.tree.setVisible(true);
+        this.tree.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
         expandAll();
     }
 
     public void expandAll() {
-        FileTree.expandAll(tree1);
+        FileTree.expandAll(this.tree);
     }
 
     public void collapseAll() {
-        FileTree.collapseAll(tree1);
+        FileTree.collapseAll(this.tree);
     }
 }

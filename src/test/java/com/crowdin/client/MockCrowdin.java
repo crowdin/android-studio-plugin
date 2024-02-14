@@ -1,7 +1,5 @@
 package com.crowdin.client;
 
-import static java.util.Collections.singletonMap;
-
 import com.crowdin.api.model.BranchBuilder;
 import com.crowdin.api.model.LanguageBuilder;
 import com.crowdin.client.bundles.model.Bundle;
@@ -38,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static java.util.Collections.singletonMap;
 
 /**
  * Mock Crowdin client for testing purposes, so that real HTTP requests are not sent to Crowdin.

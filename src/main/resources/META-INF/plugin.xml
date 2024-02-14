@@ -7,28 +7,17 @@
   <idea-version since-build="222.*"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[
-      <p>
-      This plugin lets you integrate android project with Crowdin. It enables you to upload new source strings to the system instantly as well as download translations from your Crowdin project.<br/>
+      Integrate your Android Studio (or any other JetBrains IDE) projects with Crowdin to streamline the localization process. The plugin allows you to instantly upload new source strings to your Crowdin project, autocomplete string keys, check translation progress and download translations from Crowdin.<br/>
       <br/>
-      To start using this plugin, create a file with project credentials named <strong>crowdin.properties</strong> in the root directory of the project.
-      <br/><br/>
-      <code>
-        project-id=your-project-numeric-id<br/>
-        api-token=your-api-token<br/>
-      </code>
-      <br/>
-      If you are using Crowdin Enterprise, you also need to specify <em>base-url</em>:
-      <br/><br/>
-      <code>
-        base-url=https://{organization-name}.crowdin.com
-      </code>
-      <br/><br/>
+      <strong>Features</strong><br/>
       <ul>
-        <li>Plugin will automatically find localization files in the values directory and if renewed it will be uploaded to Crowdin instantly.</li>
-        <li>To download translations from Crowdin, choose in menu: <strong>Tools > Crowdin > Download Translations</strong>. Translations will be exported to the <strong>Resources</strong> folder.</li>
+        <li>Upload source files to Crowdin instantly</li>
+        <li>Download source and translation files from Crowdin</li>
+        <li>Use string keys in your code fetched from Crowdin and available in autocomplete suggestions</li>
+        <li>Track translation and proofreading progress</li>
       </ul>
-      </br>
-      For more about plugin configuration visit <a href="https://github.com/crowdin/android-studio-plugin">plugin homepage</a>.
+      <br/>
+      For more about plugin configuration visit the <a href="https://github.com/crowdin/android-studio-plugin">plugin homepage</a>.
 ]]></description>
 
   <change-notes>
@@ -37,7 +26,9 @@
   <extensions defaultExtensionNs="com.intellij">
     <postStartupActivity implementation="com.crowdin.activity.CrowdinStartupActivity"/>
 
-    <projectService serviceImplementation="com.crowdin.service.CrowdinSettings"/>
+    <projectConfigurable parentId="tools" instance="com.crowdin.settings.CrowdinSettingsConfigurable" id="Crowdin.PluginSettings" displayName="Crowdin" />
+    <projectService serviceImplementation="com.crowdin.settings.CrowdingSettingsState"/>
+
     <projectService serviceImplementation="com.crowdin.service.ProjectService"/>
     <projectService serviceImplementation="com.crowdin.service.CrowdinProjectCacheProvider"/>
 
@@ -54,6 +45,8 @@
       <action id="Crowdin.GroupByFiles" text="Group by Files" class="com.crowdin.ui.panel.progress.action.GroupProgressByFiles"/>
       <separator/>
       <action id="Crowdin.RefreshTranslationProgressAction" text="Refresh" class="com.crowdin.ui.panel.progress.action.RefreshTranslationProgressAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings1" />
     </group>
 
     <group id="Crowdin.UploadToolbar">
@@ -63,6 +56,8 @@
       <action id="Crowdin.RefreshUploadAction" text="Refresh" class="com.crowdin.ui.panel.upload.action.RefreshAction"/>
       <action id="Crowdin.ExpandUploadTree" text="Expand" class="com.crowdin.ui.panel.upload.action.ExpandAction"/>
       <action id="Crowdin.CollapseUploadTree" text="Collapse" class="com.crowdin.ui.panel.upload.action.CollapseAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings2" />
     </group>
 
     <group id="Crowdin.DownloadToolbar">
@@ -72,6 +67,8 @@
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
       <action id="Crowdin.ExpandDownloadTree" text="Expand" class="com.crowdin.ui.panel.download.action.ExpandAction"/>
       <action id="Crowdin.CollapseDownloadTree" text="Collapse" class="com.crowdin.ui.panel.download.action.CollapseAction"/>
+      <separator />
+      <action text="Settings" class="com.crowdin.action.SettingsAction" id="Crowdin.Settings3" />
     </group>
 
     <action icon="/icons/icon.svg" id="Crowdin.Upload" class="com.crowdin.action.UploadFromContextAction" text="Upload to Crowdin" description="Upload this file to Crowdin">

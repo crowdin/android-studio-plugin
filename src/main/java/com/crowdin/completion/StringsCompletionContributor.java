@@ -1,8 +1,8 @@
 package com.crowdin.completion;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.CrowdinPropertiesLoader;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.client.sourcefiles.model.Branch;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.logic.BranchLogic;
@@ -40,7 +40,11 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
-        CrowdinProperties properties;
+        if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+            return;
+        }
+
+        CrowdinConfig properties;
         try {
             properties = CrowdinPropertiesLoader.load(project);
         } catch (Exception e) {
@@ -48,12 +52,12 @@ public class StringsCompletionContributor extends CompletionContributor {
             return;
         }
 
-        if (properties.isAutocompletionDisabled()) {
+        if (!properties.isAutocompletionEnabled()) {
             return;
         }
 
         if (properties.getAutocompletionFileExtensions() != null &&
-                properties.getAutocompletionFileExtensions().size() > 0 &&
+                !properties.getAutocompletionFileExtensions().isEmpty() &&
                 !properties.getAutocompletionFileExtensions().contains(extension)) {
             return;
         }
@@ -91,14 +95,14 @@ public class StringsCompletionContributor extends CompletionContributor {
                         @SuppressWarnings("unchecked")
                         Map<String, String> map = (Map<String, String>) s.getText();
                         Optional<String> text = Stream.of
-                                (
-                                        Optional.ofNullable(map.get("one")),
-                                        Optional.ofNullable(map.get("zero")),
-                                        Optional.ofNullable(map.get("two")),
-                                        Optional.ofNullable(map.get("few")),
-                                        Optional.ofNullable(map.get("many")),
-                                        Optional.ofNullable(map.get("other"))
-                                )
+                                        (
+                                                Optional.ofNullable(map.get("one")),
+                                                Optional.ofNullable(map.get("zero")),
+                                                Optional.ofNullable(map.get("two")),
+                                                Optional.ofNullable(map.get("few")),
+                                                Optional.ofNullable(map.get("many")),
+                                                Optional.ofNullable(map.get("other"))
+                                        )
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
                                 .findFirst();

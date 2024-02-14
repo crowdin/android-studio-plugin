@@ -19,6 +19,7 @@ dependencies {
     implementation 'net.lingala.zip4j:zip4j:2.11.3'
     implementation 'com.github.crowdin:crowdin-api-client-java:1.14.0'
     implementation 'commons-io:commons-io:2.15.1'
+    implementation 'org.yaml:snakeyaml:2.2'
 
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.2'

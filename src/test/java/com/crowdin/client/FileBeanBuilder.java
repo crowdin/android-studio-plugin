@@ -1,5 +1,7 @@
 package com.crowdin.client;
 
+import com.crowdin.client.config.FileBean;
+
 public class FileBeanBuilder {
 
     private FileBean fb;

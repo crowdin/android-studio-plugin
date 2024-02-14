@@ -2,7 +2,7 @@ package com.crowdin.ui.panel.upload.action;
 
 import com.crowdin.action.ActionContext;
 import com.crowdin.action.BackgroundAction;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.panel.upload.UploadWindow;

@@ -1,4 +1,4 @@
-package com.crowdin.client;
+package com.crowdin.client.config;
 
 import java.util.List;
 import java.util.Objects;
@@ -71,5 +71,17 @@ public class FileBean {
     @Override
     public int hashCode() {
         return Objects.hash(source, translation, excludedTargetLanguages, labels, cleanupMode, updateStrings);
+    }
+
+    @Override
+    public String toString() {
+        return "FileBean{" +
+                "source='" + source + '\'' +
+                ", translation='" + translation + '\'' +
+                ", excludedTargetLanguages=" + excludedTargetLanguages +
+                ", labels=" + labels +
+                ", cleanupMode=" + cleanupMode +
+                ", updateStrings=" + updateStrings +
+                '}';
     }
 }

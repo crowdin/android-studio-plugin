@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 
 public class DirectoryBuilder {
 
-    private Directory directory;
+    private final Directory directory;
 
     public static DirectoryBuilder standard() {
         Directory directory = new Directory();

@@ -1,7 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.sourcefiles.model.FileInfo;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;

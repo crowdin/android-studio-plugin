@@ -1,8 +1,8 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.FileBean;
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
@@ -58,7 +58,7 @@ public class SourceLogic {
         Long branchId = (branch != null) ? branch.getId() : null;
 
         if (projectCache.isStringsBased() && branchId == null) {
-            NotificationUtil.showErrorMessage(project, "Branch is missing");
+            NotificationUtil.showErrorMessage(project, "Branch is missing in configuration file");
             return;
         }
 
@@ -204,6 +204,11 @@ public class SourceLogic {
             request.setBranchId(branchId);
             request.setUpdateStrings(fileBean.getUpdateStrings());
             request.setCleanupMode(fileBean.getCleanupMode());
+
+            if (fileBean.getLabels() != null && !fileBean.getLabels().isEmpty()) {
+                List<Long> labelIds = fileBean.getLabels().stream().map(labels::get).collect(Collectors.toList());
+                request.setLabelIds(labelIds);
+            }
 
             UploadStringsProgress progress = crowdin.uploadStrings(request);
             String id = progress.getIdentifier();

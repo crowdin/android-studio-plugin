@@ -1,11 +1,12 @@
 package com.crowdin.util;
 
-import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Util {
@@ -15,14 +16,10 @@ public class Util {
     private static final PluginId PLUGIN = PluginId.getId(PLUGIN_ID);
 
     public static String getPluginVersion() {
-//        since 193.5233.102
-//        return PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID)).getVersion();
-        for (IdeaPluginDescriptor plugin : PluginManagerCore.getPlugins()) {
-            if (PLUGIN == plugin.getPluginId()) {
-                return plugin.getVersion();
-            }
-        }
-        return "";
+        return Optional
+                .ofNullable(PluginManagerCore.getPlugin(PLUGIN))
+                .map(PluginDescriptor::getVersion)
+                .orElse("");
     }
 
     public static String getUserAgent() {

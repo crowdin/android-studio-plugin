@@ -1,5 +1,6 @@
 package com.crowdin.action;
 
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.logic.ContextLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
@@ -75,6 +76,10 @@ public class DownloadSourceFromContextAction extends BackgroundAction {
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
         boolean isSourceFile = false;
         try {
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
+                return;
+            }
+
             Optional<ActionContext> context = super.prepare(project, null, false, false, false, null, null);
 
             if (context.isEmpty()) {

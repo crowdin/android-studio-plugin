@@ -1,6 +1,7 @@
 package com.crowdin.action;
 
 import com.crowdin.client.RequestBuilder;
+import com.crowdin.client.config.CrowdinPropertiesLoader;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.logic.ContextLogic;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
@@ -82,6 +83,10 @@ public class DownloadTranslationFromContextAction extends BackgroundAction {
 
         try {
             if (file == null) {
+                return;
+            }
+
+            if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
                 return;
             }
 

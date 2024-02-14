@@ -108,13 +108,17 @@ public class CrowdinPanelWindowFactory implements ToolWindowFactory, DumbAware {
     }
 
     public static void reloadPanels(Project project, boolean fullReload) {
+        ProjectService projectService = project.getService(ProjectService.class);
+        if (!projectService.getLoadedComponents().contains(ProjectService.InitializationItem.UI_PANELS)) {
+            return;
+        }
+
         Optional
                 .ofNullable(ToolWindowManager.getInstance(project))
                 .map(toolWindowManager -> toolWindowManager.getToolWindow(TOOLWINDOW_ID))
                 .map(ToolWindow::getContentManager)
                 .ifPresent(manager -> {
                     ActionManager actionManager = ActionManager.getInstance();
-                    ProjectService projectService = project.getService(ProjectService.class);
                     if (fullReload) {
                         runRefresh(project, actionManager, PROGRESS_REFRESH_ACTION, () -> projectService.getTranslationProgressWindow().setPlug("Loading..."));
                     }

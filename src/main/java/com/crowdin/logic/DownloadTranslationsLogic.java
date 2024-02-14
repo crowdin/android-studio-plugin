@@ -1,8 +1,8 @@
 package com.crowdin.logic;
 
 import com.crowdin.client.Crowdin;
-import com.crowdin.client.CrowdinProperties;
-import com.crowdin.client.FileBean;
+import com.crowdin.client.config.CrowdinConfig;
+import com.crowdin.client.config.FileBean;
 import com.crowdin.client.RequestBuilder;
 import com.crowdin.client.languages.model.Language;
 import com.crowdin.client.sourcefiles.model.Branch;
@@ -36,13 +36,13 @@ public class DownloadTranslationsLogic {
 
     private final Project project;
     private final Crowdin crowdin;
-    private final CrowdinProperties properties;
+    private final CrowdinConfig properties;
     private final VirtualFile root;
     private final CrowdinProjectCacheProvider.CrowdinProjectCache projectCache;
     private final Branch branch;
 
     public DownloadTranslationsLogic(
-            Project project, Crowdin crowdin, CrowdinProperties properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, Branch branch
+            Project project, Crowdin crowdin, CrowdinConfig properties, VirtualFile root, CrowdinProjectCacheProvider.CrowdinProjectCache projectCache, Branch branch
     ) {
         this.project = project;
         this.crowdin = crowdin;

@@ -19,12 +19,11 @@ class LanguageMappingTest {
     private static final String existingLanguageId = LanguageBuilder.UKR.build().getId();
     private static final String existingPlaceHolder = PlaceholderUtil.PLACEHOLDER_LANGUAGE_ID_NAME;
     private static final String defaultLanguageId = LanguageBuilder.ENG.build().getId();
-    private static final Map<String, Map<String, String>> testServerMappings = new HashMap<String, Map<String, String>>() {{
-        put(existingLanguageId, new HashMap<String, String>(){{
+    private static final Map<String, Map<String, String>> testServerMappings = new HashMap<>() {{
+        put(existingLanguageId, new HashMap<>() {{
             put(existingPlaceHolder, existingLanguageId);
         }});
     }};
-
 
 
     @ParameterizedTest
@@ -43,7 +42,7 @@ class LanguageMappingTest {
                 arguments(testServerMappings, nonExistingLanguageId, existingPlaceHolder, false),
                 arguments(testServerMappings, nonExistingLanguageId, nonExistingPlaceHolder, false),
                 arguments(testServerMappings, existingLanguageId, existingPlaceHolder, true)
-                );
+        );
     }
 
     @ParameterizedTest

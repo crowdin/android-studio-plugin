@@ -1,0 +1,10 @@
+project_id: 42
+api_token: a4p2i
+
+files:
+  - source: /values/*.xml
+    translation: /values-%android_code%/%original_file_name%
+  - source: /another/path/*.xml
+    translation: /another/path-%android_code%/%original_file_name%
+  - source: /values2/*.xml
+    translation: /values2-%android_code%/%original_file_name%
