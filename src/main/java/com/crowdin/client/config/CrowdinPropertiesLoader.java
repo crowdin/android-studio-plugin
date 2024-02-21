@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.CONFIG_FILE;
 import static com.crowdin.Constants.MESSAGES_BUNDLE;
@@ -59,7 +60,7 @@ public class CrowdinPropertiesLoader {
             try {
 
                 Object propProjectId = properties.get(PROJECT_ID);
-                String propProjectIdEnv = (String) properties.get(PROJECT_ID_ENV);
+                String propProjectIdEnv = getStringProperty(properties, PROJECT_ID_ENV);
 
                 if (propProjectId != null) {
                     try {
@@ -88,8 +89,8 @@ public class CrowdinPropertiesLoader {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROJECT_ID));
                 }
 
-                String propApiToken = (String) properties.get(API_TOKEN);
-                String propApiTokenEnv = (String) properties.get(API_TOKEN_ENV);
+                String propApiToken = getStringProperty(properties, API_TOKEN);
+                String propApiTokenEnv = getStringProperty(properties, API_TOKEN_ENV);
                 if (!StringUtils.isEmpty(propApiToken)) {
                     crowdinProperties.setApiToken(propApiToken);
                 } else if (!StringUtils.isEmpty(propApiTokenEnv)) {
@@ -105,8 +106,8 @@ public class CrowdinPropertiesLoader {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), API_TOKEN));
                 }
 
-                String propBaseUrl = (String) properties.get(BASE_URL);
-                String propBaseUrlEnv = (String) properties.get(BASE_URL_ENV);
+                String propBaseUrl = getStringProperty(properties, BASE_URL);
+                String propBaseUrlEnv = getStringProperty(properties, BASE_URL_ENV);
                 if (!StringUtils.isEmpty(propBaseUrl)) {
                     if (isBaseUrlValid(propBaseUrl)) {
                         crowdinProperties.setBaseUrl(propBaseUrl);
@@ -144,22 +145,22 @@ public class CrowdinPropertiesLoader {
                 crowdinProperties.setAutocompletionEnabled(settings.enableCompletion);
 
                 crowdinProperties.setUseGitBranch(settings.useGitBranch);
-                Boolean preserveHierarchy = (Boolean) properties.get(PROPERTY_PRESERVE_HIERARCHY);
+                Boolean preserveHierarchy = getBooleanProperty(properties, PROPERTY_PRESERVE_HIERARCHY);
                 crowdinProperties.setPreserveHierarchy(preserveHierarchy);
-                Boolean debug = (Boolean) properties.get(PROPERTY_DEBUG);
+                Boolean debug = getBooleanProperty(properties, PROPERTY_DEBUG);
                 crowdinProperties.setDebug(debug);
-                Boolean importEqSuggestions = (Boolean) properties.get(PROPERTY_IMPORT_EQ_SUGGESTIONS);
+                Boolean importEqSuggestions = getBooleanProperty(properties, PROPERTY_IMPORT_EQ_SUGGESTIONS);
                 crowdinProperties.setImportEqSuggestions(importEqSuggestions);
-                Boolean autoApproveImported = (Boolean) properties.get(PROPERTY_AUTO_APPROVE_IMPORTED);
+                Boolean autoApproveImported = getBooleanProperty(properties, PROPERTY_AUTO_APPROVE_IMPORTED);
                 crowdinProperties.setAutoApproveImported(autoApproveImported);
-                Boolean translateHidden = (Boolean) properties.get(PROPERTY_TRANSLATE_HIDDEN);
+                Boolean translateHidden = getBooleanProperty(properties, PROPERTY_TRANSLATE_HIDDEN);
                 crowdinProperties.setTranslateHidden(translateHidden);
-                String branch = (String) properties.get(PROPERTY_BRANCH);
+                String branch = getStringProperty(properties, PROPERTY_BRANCH);
                 crowdinProperties.setBranch(branch);
 
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + e.getMessage());
+                throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + " " + e.getMessage());
             }
         }
 
@@ -173,16 +174,16 @@ public class CrowdinPropertiesLoader {
     private static List<FileBean> getSourcesWithTranslations(Map<String, Object> properties, List<String> errors) {
         List<FileBean> fileBeans = new ArrayList<>();
 
-        List<Map<String, Object>> files = (List<Map<String, Object>>) properties.get(PROPERTY_FILES);
+        List<Map<String, Object>> files = getListOfObjectsProperty(properties, PROPERTY_FILES);
 
         if (files != null) {
             files.forEach(file -> {
-                String source = (String) file.get(PROPERTY_FILES_SOURCE);
-                String translation = (String) file.get(PROPERTY_FILES_TRANSLATION);
-                Boolean updateStrings = (Boolean) file.get(PROPERTY_FILES_UPDATE_STRINGS);
-                Boolean cleanupMode = (Boolean) file.get(PROPERTY_FILES_CLEANUP_MODE);
-                List<String> labels = (List<String>) file.get(PROPERTY_LABELS);
-                List<String> excludedTargetLanguages = (List<String>) file.get(PROPERTY_EXCLUDED_TARGET_LANGUAGES);
+                String source = getStringProperty(file, PROPERTY_FILES_SOURCE);
+                String translation = getStringProperty(file, PROPERTY_FILES_TRANSLATION);
+                Boolean updateStrings = getBooleanProperty(file, PROPERTY_FILES_UPDATE_STRINGS);
+                Boolean cleanupMode = getBooleanProperty(file, PROPERTY_FILES_CLEANUP_MODE);
+                List<String> labels = getListStringsProperty(file, PROPERTY_LABELS);
+                List<String> excludedTargetLanguages = getListStringsProperty(file, PROPERTY_EXCLUDED_TARGET_LANGUAGES);
 
                 if (!StringUtils.isEmpty(source) && !StringUtils.isEmpty(translation)) {
                     FileBean fb = new FileBean();
@@ -193,15 +194,84 @@ public class CrowdinPropertiesLoader {
                     fb.setUpdateStrings(updateStrings);
                     fb.setCleanupMode(cleanupMode);
                     fileBeans.add(fb);
-                } else if (StringUtils.isEmpty(translation)) {
-                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROPERTY_FILES_SOURCE));
                 } else if (StringUtils.isEmpty(source)) {
+                    errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROPERTY_FILES_SOURCE));
+                } else if (StringUtils.isEmpty(translation)) {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROPERTY_FILES_TRANSLATION));
                 }
             });
         }
 
         return fileBeans;
+    }
+
+    private static String getStringProperty(Map<String, Object> map, String property) {
+        return getProperty(map, property, String.class);
+    }
+
+    private static List<String> getListStringsProperty(Map<String, Object> map, String property) {
+        List list = getProperty(map, property, List.class);
+        if (list == null) {
+            return null;
+        }
+        List<String> res = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            Object el = list.get(i);
+            try {
+                res.add(String.class.cast(el));
+            } catch (ClassCastException e) {
+                throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_format"), String.format("%s[%s]", property, i)));
+            }
+        }
+        return res;
+    }
+
+    private static List<Map<String, Object>> getListOfObjectsProperty(Map<String, Object> map, String property) {
+        List list = getProperty(map, property, List.class);
+        if (list == null) {
+            return null;
+        }
+        List<Map<String, Object>> res = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            Object el = list.get(i);
+            try {
+                Map<Object, Object> object = Map.class.cast(el);
+
+                int finalI = i;
+                Map<String, Object> castedObject = object
+                        .entrySet()
+                        .stream()
+                        .peek(entry -> {
+                            if (entry.getKey() == null || entry.getValue() == null) {
+                                throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_format"), String.format("%s[%s]", property, finalI)));
+                            }
+                        })
+                        .collect(Collectors.toMap(
+                                field -> String.class.cast(field.getKey()),
+                                Map.Entry::getValue
+                        ));
+                res.add(castedObject);
+            } catch (ClassCastException e) {
+                throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_format"), String.format("%s[%s]", property, i)));
+            }
+        }
+        return res;
+    }
+
+    private static Boolean getBooleanProperty(Map<String, Object> map, String property) {
+        return getProperty(map, property, Boolean.class);
+    }
+
+    private static <T> T getProperty(Map<String, Object> map, String property, Class<T> clazz) {
+        try {
+            Object value = map.get(property);
+            if (value != null) {
+                return clazz.cast(value);
+            }
+            return null;
+        } catch (ClassCastException e) {
+            throw new RuntimeException(String.format(MESSAGES_BUNDLE.getString("errors.config.invalid_format"), property));
+        }
     }
 
     protected static boolean isBaseUrlValid(String baseUrl) {

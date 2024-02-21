@@ -407,17 +407,16 @@ public class Crowdin implements CrowdinClient {
         try {
             return exec.get();
         } catch (HttpException e) {
-            HttpException ex = (HttpException) e;
-            String code = (ex.getError() != null && ex.getError().getCode() != null) ? ex.getError().getCode() : "<empty_code>";
-            String message = (ex.getError() != null && ex.getError().getMessage() != null) ? ex.getError().getMessage() : "<empty_message>";
+            String code = (e.getError() != null && e.getError().getCode() != null) ? e.getError().getCode() : "empty_code";
+            String message = (e.getError() != null && e.getError().getMessage() != null) ? e.getError().getMessage() : "empty_message";
             String errorMessage = ("401".equals(code))
                     ? MESSAGES_BUNDLE.getString("errors.authorize")
-                    : String.format("Error from server: <Code: %s, Message: %s>", code, message);
+                    : String.format("Error from server: Code: %s, Message: %s", code, message);
             throw new RuntimeException(errorMessage, e);
         } catch (HttpBadRequestException e) {
             String errorMessage;
             if (e.getErrors() == null) {
-                errorMessage = "Wrong parameters: <Key: <empty_key>, Code: <empty_code>, Message: <empty_message>";
+                errorMessage = "Wrong parameters: Key: empty_key, Code: empty_code, Message: empty_message";
             } else {
                 errorMessage = "Wrong parameters: \n" + e.getErrors()
                         .stream()
@@ -426,10 +425,10 @@ public class Crowdin implements CrowdinClient {
                                 .stream()
                                 .filter(Objects::nonNull)
                                 .map(error ->
-                                        String.format("<Key: %s, Code: %s, Message: %s>",
-                                                (holder.getKey() != null) ? holder.getKey() : "<empty_key>",
-                                                (error.getCode() != null) ? error.getCode() : "<empty_code>",
-                                                (error.getMessage() != null) ? error.getMessage() : "<empty_message>")))
+                                        String.format("Key: %s, Code: %s, Message: %s",
+                                                (holder.getKey() != null) ? holder.getKey() : "empty_key",
+                                                (error.getCode() != null) ? error.getCode() : "empty_code",
+                                                (error.getMessage() != null) ? error.getMessage() : "empty_message")))
                         .collect(Collectors.joining("\n"));
             }
             throw new RuntimeException(errorMessage, e);
