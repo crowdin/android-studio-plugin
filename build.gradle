@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '2.0.0'
+version '2.0.1'
 
 sourceCompatibility = '17'
 
@@ -38,11 +38,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes = """
-      - Plugin UI redesign<br>
-      - New configuration file format<br>
-      - String-based projects support<br>
-      - Plugin settings added<br>
-      - Upgraded dependencies"""
+      - Improved error messages"""
 }
 
 wrapper {
