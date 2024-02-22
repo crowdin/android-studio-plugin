@@ -23,6 +23,8 @@ public class CrowdinFileProvider {
         }
         try (InputStream in = crowdinPropertyFile.getInputStream()) {
             return YAML.load(in);
+        } catch (ClassCastException e) {
+            throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + "The Yaml file is not in the correct format");
         } catch (IOException e) {
             throw new RuntimeException(MESSAGES_BUNDLE.getString("errors.config.has_errors") + e.getMessage());
         }
