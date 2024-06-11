@@ -38,7 +38,7 @@ public class CrowdinPropertiesLoader {
     private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
     private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
 
-    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
+    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.(api\\.)?)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
     public static boolean isWorkspaceNotPrepared(Project project) {
         return CrowdinFileProvider.getCrowdinConfigFile(project) == null;

@@ -33,6 +33,7 @@ public class CrowdinPropertiesLoaderTest {
         Assertions.assertTrue(isBaseUrlValid("http://test.dev.crowdin.com"));
         Assertions.assertTrue(isBaseUrlValid("http://my-organization.test.dev.crowdin.com"));
         Assertions.assertTrue(isBaseUrlValid("https://ti-it.crowdin.com"));
+        Assertions.assertTrue(isBaseUrlValid("https://ti-it.api.crowdin.com"));
         Assertions.assertFalse(isBaseUrlValid("http://my-organization.testdev.crowdin.com"));
         Assertions.assertFalse(isBaseUrlValid("http://crowdin.com"));
         Assertions.assertFalse(isBaseUrlValid("http://myorganization.crowdin.com"));
