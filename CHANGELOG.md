@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.0.2]
+
+- fix: base url validation ([#126](https://github.com/crowdin/android-studio-plugin/pull/126))
+
 ## [2.0.1]
 
 - fix: improved error messages ([#124](https://github.com/crowdin/android-studio-plugin/pull/124))
