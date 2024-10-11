@@ -30,7 +30,6 @@ class ContextLogicTest {
     private MockedStatic<FileUtil> fileUtilMockedStatic;
     private MockedStatic<PlaceholderUtil> placeholderUtilMockedStatic;
 
-
     @BeforeEach
     void setUp() {
         properties = mock(CrowdinConfig.class);
@@ -76,7 +75,6 @@ class ContextLogicTest {
                 ContextLogic.findSourceIdFromSourceFile(properties, filePaths, file, root));
         assertTrue(exception.getMessage().contains("Couldn't find any crowdin representative for source file '/source/file'. Skipping"));
     }
-
 
     @Test
     void testFindSourceIdFromSourceFile_NoPreserveHierarchy_FileFound() {
