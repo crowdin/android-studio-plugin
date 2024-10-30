@@ -38,6 +38,8 @@ public interface CrowdinClient {
 
     Long getProjectId();
 
+    String getBaseUrl();
+
     Long addStorage(String fileName, InputStream content);
 
     void updateSource(Long sourceId, UpdateFileRequest request);
@@ -99,6 +101,4 @@ public interface CrowdinClient {
     Label addLabel(AddLabelRequest request);
 
     List<Bundle> getBundles();
-
-    String getBundlesUrl(Project project);
 }

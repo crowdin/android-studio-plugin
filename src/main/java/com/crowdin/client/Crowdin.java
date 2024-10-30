@@ -8,7 +8,6 @@ import com.crowdin.client.core.model.*;
 import com.crowdin.client.labels.model.AddLabelRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
@@ -59,6 +58,11 @@ public class Crowdin implements CrowdinClient {
     @Override
     public Long getProjectId() {
         return this.projectId;
+    }
+
+    @Override
+    public String getBaseUrl() {
+        return this.baseUrl;
     }
 
     @Override
@@ -342,16 +346,6 @@ public class Crowdin implements CrowdinClient {
                 .stream()
                 .map(ResponseObject::getData)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public String getBundlesUrl(Project project) {
-        if (this.baseUrl != null) {
-            String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
-            return base + "u/projects/" + project.getId() + "/translations#bundles";
-        } else {
-            return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles";
-        }
     }
 
     private boolean concurrentIssue(Exception error) {

@@ -1,6 +1,7 @@
 package com.crowdin.ui.panel.download;
 
 import com.crowdin.client.bundles.model.Bundle;
+import com.crowdin.client.projectsgroups.model.Project;
 import com.crowdin.ui.panel.ContentTab;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.ui.tree.CellData;
@@ -24,8 +25,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Optional;
 
-import static com.crowdin.Constants.DOWNLOAD_SOURCES_ACTION;
-import static com.crowdin.Constants.DOWNLOAD_TRANSLATIONS_ACTION;
+import static com.crowdin.Constants.*;
 
 public class DownloadWindow implements ContentTab {
 
@@ -38,7 +38,8 @@ public class DownloadWindow implements ContentTab {
 
     private final JPanel placeholderPanel = new JPanel(new BorderLayout());
 
-    private String link;
+    private String baseUrl;
+    private Project project;
 
     public DownloadWindow() {
         this.placeholder.setComponentStyle(UIUtil.ComponentStyle.LARGE);
@@ -61,6 +62,7 @@ public class DownloadWindow implements ContentTab {
         this.placeholder2.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                var link = buildBundleUrl();
                 if (link != null) {
                     BrowserUtil.browse(link);
                 }
@@ -86,8 +88,10 @@ public class DownloadWindow implements ContentTab {
 
             if (cell.isBundle()) {
                 CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download bundle", true, true);
+                CrowdinPanelWindowFactory.updateToolbar(BUNDLE_SETTINGS_ACTION, "Bundle settings", true, true);
             } else {
                 CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
+                CrowdinPanelWindowFactory.updateToolbar(BUNDLE_SETTINGS_ACTION, "Select bundle to view settings", true, false);
             }
         });
     }
@@ -98,15 +102,18 @@ public class DownloadWindow implements ContentTab {
     }
 
     public Bundle getSelectedBundle() {
-        return CellRenderer.getData(this.selectedElement).getBundle();
+        return Optional.ofNullable(this.selectedElement)
+                .map(e -> CellRenderer.getData(e).getBundle())
+                .orElse(null);
     }
 
     public List<String> getSelectedFiles() {
         return FileTree.getFiles(this.selectedElement);
     }
 
-    public void rebuildFileTree(String projectName, List<String> files) {
-        this.link = null;
+    public void rebuildFileTree(Project project, String baseUrl, List<String> files) {
+        this.baseUrl = baseUrl;
+        this.project = project;
         this.isBundlesMode = false;
         this.selectedElement = null;
 
@@ -115,6 +122,9 @@ public class DownloadWindow implements ContentTab {
             this.placeholder.setText("No files found matching your configuration");
             this.placeholder2.setVisible(false);
             this.placeholderPanel.setVisible(true);
+            CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, false);
+            CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, false);
+            CrowdinPanelWindowFactory.updateToolbar(BUNDLE_SETTINGS_ACTION, "", false, false);
             return;
         }
 
@@ -123,12 +133,14 @@ public class DownloadWindow implements ContentTab {
 
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "Download Sources", true, true);
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Download Translations", true, true);
-        this.tree.setModel(new DefaultTreeModel(FileTree.buildTree(projectName, files)));
+        CrowdinPanelWindowFactory.updateToolbar(BUNDLE_SETTINGS_ACTION, "", false, false);
+        this.tree.setModel(new DefaultTreeModel(FileTree.buildTree(this.project.getName(), files)));
         FileTree.expandAll(tree);
     }
 
-    public void rebuildBundlesTree(String projectName, List<Bundle> bundles, String bundleInfoUrl) {
-        this.link = bundleInfoUrl;
+    public void rebuildBundlesTree(Project project, String baseUrl, List<Bundle> bundles) {
+        this.project = project;
+        this.baseUrl = baseUrl;
         this.isBundlesMode = true;
         this.selectedElement = null;
 
@@ -147,8 +159,9 @@ public class DownloadWindow implements ContentTab {
 
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_SOURCES_ACTION, "", false, false);
         CrowdinPanelWindowFactory.updateToolbar(DOWNLOAD_TRANSLATIONS_ACTION, "Select bundle to download", true, false);
+        CrowdinPanelWindowFactory.updateToolbar(BUNDLE_SETTINGS_ACTION, "Select bundle to view settings", true, false);
 
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(projectName));
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(CellData.root(this.project.getName()));
         bundles.forEach(bundle -> root.add(new DefaultMutableTreeNode(CellData.bundle(bundle))));
         this.tree.setModel(new DefaultTreeModel(root));
         expandAll();
@@ -160,5 +173,29 @@ public class DownloadWindow implements ContentTab {
 
     public void collapseAll() {
         FileTree.collapseAll(this.tree);
+    }
+
+    public String buildBundleUrl() {
+        if (!this.isBundlesMode) {
+            return null;
+        }
+
+        var bundle = this.getSelectedBundle();
+
+        if (bundle == null) {
+            if (this.baseUrl != null) {
+                String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
+                return base + "u/projects/" + project.getId() + "/download";
+            } else {
+                return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles";
+            }
+        }
+
+        if (this.baseUrl != null) {
+            String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
+            return base + "u/projects/" + project.getId() + "/translations/bundle/" + bundle.getId();
+        } else {
+            return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles:" + bundle.getId();
+        }
     }
 }

@@ -64,9 +64,8 @@ public class RefreshAction extends BackgroundAction {
             }
 
             if (context.get().crowdinProjectCache.isStringsBased()) {
-                String url = context.get().crowdin.getBundlesUrl(context.get().crowdinProjectCache.getProject());
                 ApplicationManager.getApplication()
-                        .invokeAndWait(() -> window.rebuildBundlesTree(context.get().crowdinProjectCache.getProject().getName(), context.get().crowdinProjectCache.getBundles(), url));
+                        .invokeAndWait(() -> window.rebuildBundlesTree(context.get().crowdinProjectCache.getProject(), context.get().crowdin.getBaseUrl(), context.get().crowdinProjectCache.getBundles()));
                 return;
             }
 
@@ -91,7 +90,7 @@ public class RefreshAction extends BackgroundAction {
             }
 
             ApplicationManager.getApplication()
-                    .invokeAndWait(() -> window.rebuildFileTree(context.get().crowdinProjectCache.getProject().getName(), files));
+                    .invokeAndWait(() -> window.rebuildFileTree(context.get().crowdinProjectCache.getProject(), context.get().crowdin.getBaseUrl(), files));
         } catch (ProcessCanceledException ex) {
             throw ex;
         } catch (Exception ex) {
