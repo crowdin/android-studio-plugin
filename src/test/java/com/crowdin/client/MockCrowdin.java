@@ -65,6 +65,11 @@ public class MockCrowdin implements CrowdinClient {
     }
 
     @Override
+    public String getBaseUrl() {
+        return null;
+    }
+
+    @Override
     public Long addStorage(String fileName, InputStream content) {
         return null;
     }
@@ -218,11 +223,6 @@ public class MockCrowdin implements CrowdinClient {
 
     @Override
     public List<Bundle> getBundles() {
-        return null;
-    }
-
-    @Override
-    public String getBundlesUrl(Project project) {
         return null;
     }
 }

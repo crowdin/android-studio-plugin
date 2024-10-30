@@ -65,6 +65,7 @@
     <group id="Crowdin.DownloadToolbar">
       <action id="Crowdin.DownloadSources" icon="/icons/download-sources.svg" class="com.crowdin.action.DownloadSourcesAction" text="Download Sources" />
       <action id="Crowdin.DownloadTranslations" icon="/icons/download.svg" class="com.crowdin.action.DownloadAction" text="Download Translations"  />
+      <action id="Crowdin.BundleSettings" class="com.crowdin.action.BundleSettingsAction" text="Bundle Settings"  />
       <separator/>
       <action id="Crowdin.RefreshDownloadAction" text="Refresh" class="com.crowdin.ui.panel.download.action.RefreshAction"/>
       <action id="Crowdin.ExpandDownloadTree" text="Expand" class="com.crowdin.ui.panel.download.action.ExpandAction"/>
