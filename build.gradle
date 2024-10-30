@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '2.0.2'
+version '2.1.0'
 
 sourceCompatibility = '17'
 
@@ -40,7 +40,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes = """
-      - Fix base_url validation"""
+      - Add Bundle settings button"""
 }
 
 wrapper {

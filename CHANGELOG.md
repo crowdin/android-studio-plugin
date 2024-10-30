@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.1.0]
+
+- feat: bundle settings button ([#136](https://github.com/crowdin/android-studio-plugin/pull/136))
+
 ## [2.0.2]
 
 - fix: base url validation ([#126](https://github.com/crowdin/android-studio-plugin/pull/126))
