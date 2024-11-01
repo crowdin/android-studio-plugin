@@ -46,4 +46,8 @@ public class Util {
         }
         return baseUrl.split(".crowdin.com")[0].split("https://")[1];
     }
+
+    public static boolean isEnterpriseUrl(String baseUrl) {
+        return !baseUrl.contains("https://api.crowdin.com");
+    }
 }
