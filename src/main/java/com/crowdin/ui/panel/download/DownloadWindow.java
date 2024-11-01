@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.crowdin.Constants.*;
+import static com.crowdin.util.Util.extractOrganization;
 
 public class DownloadWindow implements ContentTab {
 
@@ -184,16 +185,16 @@ public class DownloadWindow implements ContentTab {
 
         if (bundle == null) {
             if (this.baseUrl != null) {
-                String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
-                return base + "u/projects/" + project.getId() + "/download";
+                String organization = extractOrganization(this.baseUrl);
+                return "https://" + organization + ".crowdin.com/u/projects/" + project.getId() + "/download";
             } else {
                 return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles";
             }
         }
 
         if (this.baseUrl != null) {
-            String base = this.baseUrl.endsWith("/") ? this.baseUrl : this.baseUrl + "/";
-            return base + "u/projects/" + project.getId() + "/translations/bundle/" + bundle.getId();
+            String organization = extractOrganization(this.baseUrl);
+            return "https://" + organization + ".crowdin.com/u/projects/" + project.getId() + "/translations/bundle/" + bundle.getId();
         } else {
             return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles:" + bundle.getId();
         }
