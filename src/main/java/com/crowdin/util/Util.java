@@ -39,4 +39,15 @@ public class Util {
         return e.getMessage().contains("files are not allowed to upload in string-based projects") ||
                 e.getMessage().contains("files are not allowed to upload in strings-based projects");
     }
+
+    public static String extractOrganization(String baseUrl) {
+        if (baseUrl.contains(".api.crowdin.com")) {
+            return baseUrl.split(".api.crowdin.com")[0].split("https://")[1];
+        }
+        return baseUrl.split(".crowdin.com")[0].split("https://")[1];
+    }
+
+    public static boolean isEnterpriseUrl(String baseUrl) {
+        return !baseUrl.contains("https://api.crowdin.com");
+    }
 }
