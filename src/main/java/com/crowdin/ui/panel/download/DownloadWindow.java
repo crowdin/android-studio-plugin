@@ -193,11 +193,6 @@ public class DownloadWindow implements ContentTab {
             }
         }
 
-        if (this.baseUrl != null && isEnterpriseUrl(this.baseUrl)) {
-            String organization = extractOrganization(this.baseUrl);
-            return "https://" + organization + ".crowdin.com/u/projects/" + project.getId() + "/translations/bundle/" + bundle.getId();
-        } else {
-            return "https://crowdin.com/project/" + project.getIdentifier() + "/download#bundles:" + bundle.getId();
-        }
+        return bundle.getWebUrl();
     }
 }
