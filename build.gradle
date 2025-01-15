@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.crowdin.crowdin-idea'
-version '2.1.0'
+version '2.2.0'
 
 sourceCompatibility = '17'
 
@@ -40,7 +40,7 @@ intellij {
 }
 patchPluginXml {
     changeNotes = """
-      - Add Bundle settings button"""
+      - Add escape_special_characters option support"""
 }
 
 wrapper {

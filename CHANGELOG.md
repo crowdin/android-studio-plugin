@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.2.0]
+
+- feat: option to skip special chars escape ([#144](https://github.com/crowdin/android-studio-plugin/pull/144))
+
 ## [2.1.0]
 
 - feat: bundle settings button ([#136](https://github.com/crowdin/android-studio-plugin/pull/136))
