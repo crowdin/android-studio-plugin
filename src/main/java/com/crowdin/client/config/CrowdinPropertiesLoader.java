@@ -183,7 +183,7 @@ public class CrowdinPropertiesLoader {
                 String translation = getStringProperty(file, PROPERTY_FILES_TRANSLATION);
                 Boolean updateStrings = getBooleanProperty(file, PROPERTY_FILES_UPDATE_STRINGS);
                 Boolean cleanupMode = getBooleanProperty(file, PROPERTY_FILES_CLEANUP_MODE);
-                Boolean escapeSpecialCharacters = getBooleanProperty(file, PROPERTY_ESCAPE_SPECIAL_CHARACTERS);
+                Integer escapeSpecialCharacters = getIntegerProperty(file, PROPERTY_ESCAPE_SPECIAL_CHARACTERS);
                 List<String> labels = getListStringsProperty(file, PROPERTY_LABELS);
                 List<String> excludedTargetLanguages = getListStringsProperty(file, PROPERTY_EXCLUDED_TARGET_LANGUAGES);
 
@@ -210,6 +210,10 @@ public class CrowdinPropertiesLoader {
 
     private static String getStringProperty(Map<String, Object> map, String property) {
         return getProperty(map, property, String.class);
+    }
+
+    private static Integer getIntegerProperty(Map<String, Object> map, String property) {
+        return getProperty(map, property, Integer.class);
     }
 
     private static List<String> getListStringsProperty(Map<String, Object> map, String property) {

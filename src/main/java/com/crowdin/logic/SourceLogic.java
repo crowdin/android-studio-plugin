@@ -115,7 +115,7 @@ public class SourceLogic {
             }
 
             if (fileBean.getEscapeSpecialCharacters() != null) {
-                exportOptions.setEscapeSpecialCharacters(fileBean.getEscapeSpecialCharacters() ? 1 : 0);
+                exportOptions.setEscapeSpecialCharacters(fileBean.getEscapeSpecialCharacters());
             }
 
             String outputName = FileUtil.noSepAtStart(path);

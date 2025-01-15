@@ -179,7 +179,7 @@ It's also possible to disable escaping special characters (`=`, `:`, `!` and `#`
 files:
   - source: "**/values/strings.xml"
     translation: "/values-%two_letters_code%/%original_file_name%"
-    escape_special_characters: false
+    escape_special_characters: 0
 ```
 
 ##### Translations upload options

@@ -11,7 +11,7 @@ public class FileBean {
     private List<String> labels;
     private Boolean cleanupMode;
     private Boolean updateStrings;
-    private Boolean escapeSpecialCharacters;
+    private Integer escapeSpecialCharacters;
 
     public String getSource() {
         return source;
@@ -61,11 +61,11 @@ public class FileBean {
         this.updateStrings = updateStrings;
     }
 
-    public Boolean getEscapeSpecialCharacters() {
+    public Integer getEscapeSpecialCharacters() {
         return escapeSpecialCharacters;
     }
 
-    public void setEscapeSpecialCharacters(Boolean escapeSpecialCharacters) {
+    public void setEscapeSpecialCharacters(Integer escapeSpecialCharacters) {
         this.escapeSpecialCharacters = escapeSpecialCharacters;
     }
 
