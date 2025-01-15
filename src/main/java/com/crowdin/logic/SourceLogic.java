@@ -6,13 +6,7 @@ import com.crowdin.client.config.FileBean;
 import com.crowdin.client.core.model.PatchRequest;
 import com.crowdin.client.labels.model.Label;
 import com.crowdin.client.languages.model.Language;
-import com.crowdin.client.sourcefiles.model.AddDirectoryRequest;
-import com.crowdin.client.sourcefiles.model.AddFileRequest;
-import com.crowdin.client.sourcefiles.model.Branch;
-import com.crowdin.client.sourcefiles.model.Directory;
-import com.crowdin.client.sourcefiles.model.FileInfo;
-import com.crowdin.client.sourcefiles.model.GeneralFileExportOptions;
-import com.crowdin.client.sourcefiles.model.UpdateFileRequest;
+import com.crowdin.client.sourcefiles.model.*;
 import com.crowdin.client.sourcestrings.model.UploadStringsProgress;
 import com.crowdin.client.sourcestrings.model.UploadStringsRequest;
 import com.crowdin.service.CrowdinProjectCacheProvider;
@@ -102,7 +96,7 @@ public class SourceLogic {
         try {
             VirtualFile pathToPattern = FileUtil.getBaseDir(source, fileBean.getSource());
 
-            GeneralFileExportOptions exportOptions = new GeneralFileExportOptions();
+            PropertyFileExportOptions exportOptions = new PropertyFileExportOptions();
 
             String path;
             String parentPath;
@@ -118,6 +112,10 @@ public class SourceLogic {
                 path = sepAtStart(source.getName());
                 parentPath = "";
                 exportOptions.setExportPattern(sepAtStart(fileBean.getTranslation()));
+            }
+
+            if (fileBean.getEscapeSpecialCharacters() != null) {
+                exportOptions.setEscapeSpecialCharacters(fileBean.getEscapeSpecialCharacters());
             }
 
             String outputName = FileUtil.noSepAtStart(path);

@@ -37,6 +37,7 @@ public class CrowdinPropertiesLoader {
     private static final String PROPERTY_FILES_CLEANUP_MODE = "cleanup_mode";
     private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
     private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
+    private static final String PROPERTY_ESCAPE_SPECIAL_CHARACTERS = "escape_special_characters";
 
     private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.(api\\.)?)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
@@ -182,6 +183,7 @@ public class CrowdinPropertiesLoader {
                 String translation = getStringProperty(file, PROPERTY_FILES_TRANSLATION);
                 Boolean updateStrings = getBooleanProperty(file, PROPERTY_FILES_UPDATE_STRINGS);
                 Boolean cleanupMode = getBooleanProperty(file, PROPERTY_FILES_CLEANUP_MODE);
+                Integer escapeSpecialCharacters = getIntegerProperty(file, PROPERTY_ESCAPE_SPECIAL_CHARACTERS);
                 List<String> labels = getListStringsProperty(file, PROPERTY_LABELS);
                 List<String> excludedTargetLanguages = getListStringsProperty(file, PROPERTY_EXCLUDED_TARGET_LANGUAGES);
 
@@ -193,6 +195,7 @@ public class CrowdinPropertiesLoader {
                     fb.setExcludedTargetLanguages(excludedTargetLanguages);
                     fb.setUpdateStrings(updateStrings);
                     fb.setCleanupMode(cleanupMode);
+                    fb.setEscapeSpecialCharacters(escapeSpecialCharacters);
                     fileBeans.add(fb);
                 } else if (StringUtils.isEmpty(source)) {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROPERTY_FILES_SOURCE));
@@ -207,6 +210,10 @@ public class CrowdinPropertiesLoader {
 
     private static String getStringProperty(Map<String, Object> map, String property) {
         return getProperty(map, property, String.class);
+    }
+
+    private static Integer getIntegerProperty(Map<String, Object> map, String property) {
+        return getProperty(map, property, Integer.class);
     }
 
     private static List<String> getListStringsProperty(Map<String, Object> map, String property) {

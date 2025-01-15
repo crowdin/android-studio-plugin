@@ -11,6 +11,7 @@ public class FileBean {
     private List<String> labels;
     private Boolean cleanupMode;
     private Boolean updateStrings;
+    private Integer escapeSpecialCharacters;
 
     public String getSource() {
         return source;
@@ -60,17 +61,25 @@ public class FileBean {
         this.updateStrings = updateStrings;
     }
 
+    public Integer getEscapeSpecialCharacters() {
+        return escapeSpecialCharacters;
+    }
+
+    public void setEscapeSpecialCharacters(Integer escapeSpecialCharacters) {
+        this.escapeSpecialCharacters = escapeSpecialCharacters;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileBean fileBean = (FileBean) o;
-        return Objects.equals(source, fileBean.source) && Objects.equals(translation, fileBean.translation) && Objects.equals(excludedTargetLanguages, fileBean.excludedTargetLanguages) && Objects.equals(labels, fileBean.labels) && Objects.equals(cleanupMode, fileBean.cleanupMode) && Objects.equals(updateStrings, fileBean.updateStrings);
+        return Objects.equals(source, fileBean.source) && Objects.equals(translation, fileBean.translation) && Objects.equals(excludedTargetLanguages, fileBean.excludedTargetLanguages) && Objects.equals(labels, fileBean.labels) && Objects.equals(cleanupMode, fileBean.cleanupMode) && Objects.equals(updateStrings, fileBean.updateStrings) && Objects.equals(escapeSpecialCharacters, fileBean.escapeSpecialCharacters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(source, translation, excludedTargetLanguages, labels, cleanupMode, updateStrings);
+        return Objects.hash(source, translation, excludedTargetLanguages, labels, cleanupMode, updateStrings, escapeSpecialCharacters);
     }
 
     @Override
@@ -82,6 +91,7 @@ public class FileBean {
                 ", labels=" + labels +
                 ", cleanupMode=" + cleanupMode +
                 ", updateStrings=" + updateStrings +
+                ", escapeSpecialCharacters=" + escapeSpecialCharacters +
                 '}';
     }
 }

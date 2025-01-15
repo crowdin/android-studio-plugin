@@ -173,6 +173,15 @@ files:
     cleanup_mode: true
 ```
 
+It's also possible to disable escaping special characters (`=`, `:`, `!` and `#`):
+
+```yml
+files:
+  - source: "**/values/strings.xml"
+    translation: "/values-%two_letters_code%/%original_file_name%"
+    escape_special_characters: 0
+```
+
 ##### Translations upload options
 
 The following properties can be used to configure the import options for uploaded translations:
