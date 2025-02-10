@@ -122,10 +122,10 @@ files:
 
 Use `preserve_hierarchy` if your project contains multiple modules that you want to localize with the same source file names.
 
-> **Note:**
+> [!WARNING]
 > Both `source` and `translation` keys should be specified.
 
-> **Note:**
+> [!NOTE]
 > If `preserve_hierarchy` is set to `true`, the plugin will add the path to your translation pattern.
 >
 > ```yml
@@ -138,6 +138,19 @@ Use `preserve_hierarchy` if your project contains multiple modules that you want
 > ```
 
 #### Additional properties
+
+##### Branch
+
+If you are using the branching functionality in Crowdin, you can specify the branch name in the configuration file:
+
+```yml
+branch: main
+```
+
+Alternatively, you can enable the [Use Git Branch](#use-git-branch) option in the plugin settings to use the local git branch name as the Crowdin branch name.
+
+> [!WARNING]
+> For **string-based** projects, the branch name must be specified either in the configuration file or in the plugin settings.
 
 ##### File properties
 
@@ -201,10 +214,10 @@ translate_hidden: true
 
 See the [Placeholders](https://support.crowdin.com/configuration-file/#placeholders) article to put appropriate variables.
 
-> **Note:**
+> [!TIP]
 > `%android_code%` placeholder means a format such as `'fr-rCA'` ([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php) -r[<ISO 3166-1-alpha-2>](https://www.iso.org/obp/ui/#iso:pub:PUB500001:en)). When applying format with only two-letter language code such as `'fr'`([<ISO 639-1>](http://www.loc.gov/standards/iso639-2/php/code_list.php)) format, use `%two_letters_code%` placeholder.
 
-> **Note:**
+> [!WARNING]
 > Currently, the `%original_path%` placeholder is not supported.
 
 ### Plugin settings
@@ -226,7 +239,8 @@ You can also set a specific branch name to work with by using the `branch` optio
 
 If you are not using branching, make sure the `Use Git Branch` option is disabled and `branch` is not defined in the `crowdin.yml` file.
 
-Note that a **branch is required for string-based** projects.
+> [!WARNING]
+> For **string-based** projects, the branch name must be specified either in the configuration file or in the plugin settings.
 
 #### Automatic uploads
 
