@@ -17,9 +17,9 @@ Steps to reproduce the behavior:
 3. Click on '....'
 4. See error
 
-**Environment:**
-1. Android Studio version [e.g. 3.6.3]
-2. OS version [e.g. Windows 10]
+**Environment**
+1. Android Studio version [e.g., 3.6.3]
+2. OS version [e.g., Windows 10]
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -30,4 +30,4 @@ If applicable, add screenshots to help explain your problem.
 **Additional context**
 
 Run the plugin in Debug mode and provide an extended log.
-To enable Debug mode add `debug=true` to the *crowdin.properties* file.
+To enable Debug mode, add `debug=true` to the *crowdin.yml* file.
