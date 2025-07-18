@@ -15,7 +15,7 @@ public class CellRenderer extends DefaultTreeCellRenderer {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         CellData cellData = CellRenderer.getData(value);
         if (cellData == null) {
-            return null;
+            return FormBuilder.createFormBuilder().getPanel();
         }
 
         JBLabel label = new JBLabel(cellData.getText());
