@@ -118,6 +118,10 @@ public class SourceLogic {
                 exportOptions.setEscapeSpecialCharacters(fileBean.getEscapeSpecialCharacters());
             }
 
+            if (fileBean.getEscapeQuotes() != null) {
+                exportOptions.setEscapeQuotes(fileBean.getEscapeQuotes());
+            }
+
             String outputName = FileUtil.noSepAtStart(path);
             FileInfo foundFile = filePaths.get(path);
             if (foundFile != null) {

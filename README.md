@@ -195,6 +195,20 @@ files:
     escape_special_characters: 0
 ```
 
+Or to escape quotes
+
+- `0` - do not escape
+- `1` - escape single quote with another single quote
+- `2` - escape single quote with a backslash
+- `3` - escape single quote with another single quote only in strings containing variables ( {0} )
+
+```yml
+files:
+  - source: "**/values/strings.xml"
+    translation: "/values-%two_letters_code%/%original_file_name%"
+    escape_quotes: 3
+```
+
 ##### Translations upload options
 
 The following properties can be used to configure the import options for uploaded translations:

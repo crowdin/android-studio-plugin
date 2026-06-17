@@ -38,6 +38,7 @@ public class CrowdinPropertiesLoader {
     private static final String PROPERTY_FILES_UPDATE_STRINGS = "update_strings";
     private static final String PROPERTY_EXCLUDED_TARGET_LANGUAGES = "excluded_target_languages";
     private static final String PROPERTY_ESCAPE_SPECIAL_CHARACTERS = "escape_special_characters";
+    private static final String PROPERTY_ESCAPE_QUOTES = "escape_quotes";
 
     private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.(api\\.)?)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
 
@@ -184,6 +185,7 @@ public class CrowdinPropertiesLoader {
                 Boolean updateStrings = getBooleanProperty(file, PROPERTY_FILES_UPDATE_STRINGS);
                 Boolean cleanupMode = getBooleanProperty(file, PROPERTY_FILES_CLEANUP_MODE);
                 Integer escapeSpecialCharacters = getIntegerProperty(file, PROPERTY_ESCAPE_SPECIAL_CHARACTERS);
+                Integer escapeQuotes = getIntegerProperty(file, PROPERTY_ESCAPE_QUOTES);
                 List<String> labels = getListStringsProperty(file, PROPERTY_LABELS);
                 List<String> excludedTargetLanguages = getListStringsProperty(file, PROPERTY_EXCLUDED_TARGET_LANGUAGES);
 
@@ -196,6 +198,7 @@ public class CrowdinPropertiesLoader {
                     fb.setUpdateStrings(updateStrings);
                     fb.setCleanupMode(cleanupMode);
                     fb.setEscapeSpecialCharacters(escapeSpecialCharacters);
+                    fb.setEscapeQuotes(escapeQuotes);
                     fileBeans.add(fb);
                 } else if (StringUtils.isEmpty(source)) {
                     errors.add(String.format(MESSAGES_BUNDLE.getString("errors.config.missing_property"), PROPERTY_FILES_SOURCE));
