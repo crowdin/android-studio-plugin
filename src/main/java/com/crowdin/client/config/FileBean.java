@@ -12,6 +12,7 @@ public class FileBean {
     private Boolean cleanupMode;
     private Boolean updateStrings;
     private Integer escapeSpecialCharacters;
+    private Integer escapeQuotes;
 
     public String getSource() {
         return source;
@@ -69,17 +70,24 @@ public class FileBean {
         this.escapeSpecialCharacters = escapeSpecialCharacters;
     }
 
+    public Integer getEscapeQuotes() {
+        return escapeQuotes;
+    }
+
+    public void setEscapeQuotes(Integer escapeQuotes) {
+        this.escapeQuotes = escapeQuotes;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileBean fileBean = (FileBean) o;
-        return Objects.equals(source, fileBean.source) && Objects.equals(translation, fileBean.translation) && Objects.equals(excludedTargetLanguages, fileBean.excludedTargetLanguages) && Objects.equals(labels, fileBean.labels) && Objects.equals(cleanupMode, fileBean.cleanupMode) && Objects.equals(updateStrings, fileBean.updateStrings) && Objects.equals(escapeSpecialCharacters, fileBean.escapeSpecialCharacters);
+        return Objects.equals(source, fileBean.source) && Objects.equals(translation, fileBean.translation) && Objects.equals(excludedTargetLanguages, fileBean.excludedTargetLanguages) && Objects.equals(labels, fileBean.labels) && Objects.equals(cleanupMode, fileBean.cleanupMode) && Objects.equals(updateStrings, fileBean.updateStrings) && Objects.equals(escapeSpecialCharacters, fileBean.escapeSpecialCharacters) && Objects.equals(escapeQuotes, fileBean.escapeQuotes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(source, translation, excludedTargetLanguages, labels, cleanupMode, updateStrings, escapeSpecialCharacters);
+        return Objects.hash(source, translation, excludedTargetLanguages, labels, cleanupMode, updateStrings, escapeSpecialCharacters, escapeQuotes);
     }
 
     @Override
@@ -92,6 +100,7 @@ public class FileBean {
                 ", cleanupMode=" + cleanupMode +
                 ", updateStrings=" + updateStrings +
                 ", escapeSpecialCharacters=" + escapeSpecialCharacters +
+                ", escapeQuotes=" + escapeQuotes +
                 '}';
     }
 }
