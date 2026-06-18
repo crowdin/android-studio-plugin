@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.3.0]
+
+- feat: escape_quotes support ([#152](https://github.com/crowdin/android-studio-plugin/pull/152))
+
 ## [2.2.1]
 
 - fix: IDE error: Cannot read field "x" because "nd" is null ([#149](https://github.com/crowdin/android-studio-plugin/pull/149))
