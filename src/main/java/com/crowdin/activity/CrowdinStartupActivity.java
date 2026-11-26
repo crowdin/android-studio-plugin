@@ -9,6 +9,7 @@ import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.service.ProjectService;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.NotificationUtil;
+import com.intellij.ide.impl.TrustedProjects;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -24,6 +25,13 @@ public class CrowdinStartupActivity implements StartupActivity {
     public void runActivity(@NotNull Project project) {
         try {
             new FileChangeListener(project);
+
+            // Do not read crowdin.yml or contact the API for a project the user has not trusted yet.
+            // Otherwise merely opening an untrusted repository with a crafted crowdin.yml would make
+            // the plugin send the stored API token to the host declared in that file.
+            if (!TrustedProjects.isTrusted(project)) {
+                return;
+            }
 
             if (CrowdinPropertiesLoader.isWorkspaceNotPrepared(project)) {
                 return;

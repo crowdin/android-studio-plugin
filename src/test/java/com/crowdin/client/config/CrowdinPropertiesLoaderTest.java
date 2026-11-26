@@ -39,6 +39,29 @@ public class CrowdinPropertiesLoaderTest {
         Assertions.assertFalse(isBaseUrlValid("http://myorganization.crowdin.com"));
     }
 
+    @Test
+    public void isBaseUrlValidRejectsForeignHostsTest() {
+        // A foreign host must never be accepted, regardless of how it is dressed up to
+        // look like a *.dev.crowdin.com / *.crowdin.com URL. The token must only ever be
+        // sent to a genuine crowdin.com host.
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example/x.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example#.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example:8080/.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("http://1.2.3.4/.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example/.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example?.dev.crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("https://crowdin.com@evil.example/"));
+        Assertions.assertFalse(isBaseUrlValid("https://crowdin.com.evil.example/"));
+        Assertions.assertFalse(isBaseUrlValid("https://evil.example/x.crowdin.com"));
+        // Credentials embedded in a *.dev host must not open an HTTP downgrade hole either.
+        Assertions.assertFalse(isBaseUrlValid("http://evil.example@x.dev.crowdin.com"));
+        // Non http(s) schemes are rejected outright.
+        Assertions.assertFalse(isBaseUrlValid("ftp://crowdin.com"));
+        Assertions.assertFalse(isBaseUrlValid("file:///etc/passwd"));
+        Assertions.assertFalse(isBaseUrlValid(""));
+        Assertions.assertFalse(isBaseUrlValid("not a url"));
+    }
+
     @ParameterizedTest
     @MethodSource
     public void testGetSources(Map<String, Object> properties, List<FileBean> expected) {

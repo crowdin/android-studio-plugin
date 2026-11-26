@@ -8,6 +8,7 @@ import com.crowdin.client.sourcestrings.model.SourceString;
 import com.crowdin.logic.BranchLogic;
 import com.crowdin.service.CrowdinProjectCacheProvider;
 import com.crowdin.util.NotificationUtil;
+import com.intellij.ide.impl.TrustedProjects;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -37,6 +38,11 @@ public class StringsCompletionContributor extends CompletionContributor {
         String extension = parameters.getOriginalFile().getVirtualFile().getExtension();
 
         if (project == null) {
+            return;
+        }
+
+        // Do not read crowdin.yml or contact the API for an untrusted project.
+        if (!TrustedProjects.isTrusted(project)) {
             return;
         }
 

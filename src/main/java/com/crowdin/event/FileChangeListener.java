@@ -13,6 +13,7 @@ import com.crowdin.settings.CrowdingSettingsState;
 import com.crowdin.ui.panel.CrowdinPanelWindowFactory;
 import com.crowdin.util.FileUtil;
 import com.crowdin.util.NotificationUtil;
+import com.intellij.ide.impl.TrustedProjects;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -56,6 +57,10 @@ public class FileChangeListener implements Disposable, BulkFileListener {
 
     public void after(List<? extends VFileEvent> events) {
         if (this.project.isDisposed()) {
+            return;
+        }
+        // Never read crowdin.yml or upload sources for a project the user has not trusted.
+        if (!TrustedProjects.isTrusted(this.project)) {
             return;
         }
         ProjectFileIndex instance = ProjectFileIndex.getInstance(this.project);
