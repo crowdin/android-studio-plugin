@@ -36,5 +36,12 @@ public class UtilTest {
         Assertions.assertEquals("org-1", Util.extractOrganization("https://org-1.api.crowdin.com"));
         Assertions.assertEquals("org-test", Util.extractOrganization("https://org-test.api.crowdin.com"));
         Assertions.assertEquals("org-test", Util.extractOrganization("https://org-test.api.crowdin.com/"));
+        // Dev environments use http:// and previously threw ArrayIndexOutOfBoundsException here.
+        Assertions.assertEquals("org", Util.extractOrganization("http://org.dev.crowdin.com"));
+        Assertions.assertEquals("my-org", Util.extractOrganization("http://my-org.test.dev.crowdin.com"));
+        // No organization label / malformed input must not crash.
+        Assertions.assertEquals("crowdin", Util.extractOrganization("https://crowdin.com"));
+        Assertions.assertNull(Util.extractOrganization(null));
+        Assertions.assertNull(Util.extractOrganization("not a url"));
     }
 }

@@ -5,6 +5,8 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginDescriptor;
 import com.intellij.openapi.extensions.PluginId;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,10 +43,22 @@ public class Util {
     }
 
     public static String extractOrganization(String baseUrl) {
-        if (baseUrl.contains(".api.crowdin.com")) {
-            return baseUrl.split(".api.crowdin.com")[0].split("https://")[1];
+        if (baseUrl == null) {
+            return null;
         }
-        return baseUrl.split(".crowdin.com")[0].split("https://")[1];
+        final String host;
+        try {
+            host = new URI(baseUrl).getHost();
+        } catch (URISyntaxException e) {
+            return null;
+        }
+        if (host == null) {
+            return null;
+        }
+        // The organization is the left-most host label, e.g. "org" in
+        // org.crowdin.com, org.api.crowdin.com or org.dev.crowdin.com.
+        int firstDot = host.indexOf('.');
+        return firstDot > 0 ? host.substring(0, firstDot) : host;
     }
 
     public static boolean isEnterpriseUrl(String baseUrl) {
