@@ -110,6 +110,13 @@ public class DownloadTranslationsLogic {
                 for (Map.Entry<Language, String> translationPathEntry : translationPaths.entrySet()) {
                     File fromFile = new File(FileUtil.joinPaths(tempDir, relativePathToPattern, translationPathEntry.getValue()));
                     File toFile = new File(FileUtil.joinPaths(pathToPattern.getPath(), translationPathEntry.getValue()));
+                    if (!FileUtil.isWithinBaseDir(root.getPath(), toFile)) {
+                        // A crafted translation pattern (e.g. containing `..`) must never make us
+                        // write a downloaded file outside of the project directory.
+                        NotificationUtil.showWarningMessage(project, String.format(
+                                MESSAGES_BUNDLE.getString("errors.download.outside_project"), toFile));
+                        continue;
+                    }
                     if (!files.contains(fromFile)) {
                         NotificationUtil.logDebugMessage(project, String.format(MESSAGES_BUNDLE.getString("messages.debug.download.file_not_found"),
                                 FileUtil.joinPaths(relativePathToPattern, translationPathEntry.getValue())));
