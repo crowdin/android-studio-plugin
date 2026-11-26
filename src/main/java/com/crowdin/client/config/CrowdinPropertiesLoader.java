@@ -6,11 +6,13 @@ import com.crowdin.util.StringUtils;
 import com.crowdin.util.Util;
 import com.intellij.openapi.project.Project;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.crowdin.Constants.CONFIG_FILE;
@@ -40,7 +42,8 @@ public class CrowdinPropertiesLoader {
     private static final String PROPERTY_ESCAPE_SPECIAL_CHARACTERS = "escape_special_characters";
     private static final String PROPERTY_ESCAPE_QUOTES = "escape_quotes";
 
-    private static final Pattern BASE_URL_PATTERN = Pattern.compile("^(https://([a-zA-Z0-9_-]+\\.(api\\.)?)?crowdin\\.com/?|http://(.+)\\.dev\\.crowdin\\.com/?)$");
+    private static final String CROWDIN_DOMAIN = "crowdin.com";
+    private static final String CROWDIN_DEV_DOMAIN = "dev.crowdin.com";
 
     public static boolean isWorkspaceNotPrepared(Project project) {
         return CrowdinFileProvider.getCrowdinConfigFile(project) == null;
@@ -285,6 +288,45 @@ public class CrowdinPropertiesLoader {
     }
 
     protected static boolean isBaseUrlValid(String baseUrl) {
-        return BASE_URL_PATTERN.matcher(baseUrl).matches();
+        if (StringUtils.isEmpty(baseUrl)) {
+            return false;
+        }
+
+        final URI uri;
+        try {
+            uri = new URI(baseUrl.trim());
+        } catch (URISyntaxException e) {
+            return false;
+        }
+
+        String scheme = uri.getScheme();
+        String host = uri.getHost();
+        if (scheme == null || host == null) {
+            return false;
+        }
+
+        // Reject embedded credentials, a query string, a fragment or any non-root path.
+        // These are exactly the tricks used to smuggle a foreign host past a naive check,
+        // e.g. http://evil.example/x.dev.crowdin.com, http://evil.example#.dev.crowdin.com,
+        // http://evil.example:8080/.dev.crowdin.com or http://crowdin.com@evil.example.
+        if (uri.getUserInfo() != null || uri.getRawQuery() != null || uri.getRawFragment() != null) {
+            return false;
+        }
+        String path = uri.getRawPath();
+        if (path != null && !path.isEmpty() && !path.equals("/")) {
+            return false;
+        }
+
+        host = host.toLowerCase(Locale.ROOT);
+        switch (scheme.toLowerCase(Locale.ROOT)) {
+            case "https":
+                // Production / Crowdin Enterprise: crowdin.com and any *.crowdin.com subdomain.
+                return host.equals(CROWDIN_DOMAIN) || host.endsWith("." + CROWDIN_DOMAIN);
+            case "http":
+                // Plain HTTP is only ever permitted for internal *.dev.crowdin.com environments.
+                return host.endsWith("." + CROWDIN_DEV_DOMAIN);
+            default:
+                return false;
+        }
     }
 }
