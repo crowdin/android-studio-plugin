@@ -219,6 +219,27 @@ public class FileUtilTest extends BasePlatformTestCase {
 
     @ParameterizedTest
     @MethodSource
+    public void testIsWithinBaseDir(String baseDir, File file, boolean expected) {
+        assertEquals("baseDir=" + baseDir + " file=" + file,
+                expected, FileUtil.isWithinBaseDir(baseDir, file));
+    }
+
+    public static Stream<Arguments> testIsWithinBaseDir() {
+        String base = "/home/user/project";
+        return Stream.of(
+                arguments(base, new File("/home/user/project/values/strings.xml"), true),
+                arguments(base, new File("/home/user/project"), true),
+                arguments(base, new File("/home/user/project/sub/../values/strings.xml"), true),
+                arguments(base, new File("/home/user/project/../evil/strings.xml"), false),
+                arguments(base, new File("/home/user/project/../../../../tmp/evil/strings.xml"), false),
+                arguments(base, new File("/home/user/project2/strings.xml"), false),
+                arguments(base, new File("/etc/passwd"), false),
+                arguments(base, null, false),
+                arguments(null, new File("/home/user/project/values/strings.xml"), false));
+    }
+
+    @ParameterizedTest
+    @MethodSource
     public void testUnixPath(String filePath, String expected) {
         String result = FileUtil.unixPath(filePath);
         assertEquals(expected, result);

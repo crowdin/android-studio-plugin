@@ -181,6 +181,21 @@ public final class FileUtil {
         return path.replaceAll("[\\\\/]+", IS_WINDOWS ? "\\\\" : "/");
     }
 
+    /**
+     * Returns {@code true} only if {@code file} resolves to a location inside {@code baseDir}
+     * (or {@code baseDir} itself). {@code ..} segments are resolved lexically, so this is safe
+     * for files that do not exist yet. Used to make sure a repo-controlled translation pattern
+     * cannot write outside of the project directory.
+     */
+    public static boolean isWithinBaseDir(String baseDir, File file) {
+        if (baseDir == null || file == null) {
+            return false;
+        }
+        Path base = Paths.get(baseDir).toAbsolutePath().normalize();
+        Path target = Paths.get(file.getPath()).toAbsolutePath().normalize();
+        return target.startsWith(base);
+    }
+
     public static String unixPath(String path) {
         return path.replaceAll("[\\\\/]+", "/");
     }
