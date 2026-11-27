@@ -4,7 +4,7 @@
   <version>2.3.1</version>
 <!--  https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html#platformVersions-->
 <!--  https://www.jetbrains.com/idea/download/other.html-->
-  <idea-version since-build="222.*"/>
+  <idea-version since-build="222"/>
   <vendor email="support@crowdin.com" url="https://crowdin.com/contacts">Crowdin</vendor>
   <description><![CDATA[
       Integrate your Android Studio (or any other JetBrains IDE) projects with Crowdin to streamline the localization process. The plugin allows you to instantly upload new source strings to your Crowdin project, autocomplete string keys, check translation progress and download translations from Crowdin.<br/>
