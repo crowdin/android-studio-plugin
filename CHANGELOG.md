@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.3.1]
+
+- fix: improve base_url validation ([#156](https://github.com/crowdin/android-studio-plugin/pull/156))
+- fix: improve translation download path handling ([#157](https://github.com/crowdin/android-studio-plugin/pull/157))
+- fix: improve organization detection from base_url ([#158](https://github.com/crowdin/android-studio-plugin/pull/158))
+
 ## [2.3.0]
 
 - feat: escape_quotes support ([#152](https://github.com/crowdin/android-studio-plugin/pull/152))
